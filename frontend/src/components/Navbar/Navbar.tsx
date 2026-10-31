@@ -1,8 +1,9 @@
+import { NavLink } from 'react-router-dom'
 import './Navbar.css'
 
 const NAV_LINKS = [
-  { label: 'Learning', href: '#' },
-  { label: 'Exercises', href: '#' },
+  { label: 'Learning', to: '/learning' },
+  { label: 'Exercises', to: '/exercises' },
 ]
 
 export default function Navbar() {
@@ -10,23 +11,25 @@ export default function Navbar() {
     <header className="navbar" role="banner">
       <div className="navbar__inner">
         {/* Logo */}
-        <a href="/" className="navbar__logo" aria-label="Codora home">
+        <NavLink to="/" className="navbar__logo" aria-label="Codora home">
           <div className="navbar__logo-icon" aria-hidden="true">
             &gt;_
           </div>
           <span className="navbar__logo-name">Codora</span>
-        </a>
+        </NavLink>
 
         {/* Navigation */}
         <nav className="navbar__nav" aria-label="Main navigation">
           {NAV_LINKS.map((link) => (
-            <a
+            <NavLink
               key={link.label}
-              href={link.href}
-              className="navbar__nav-link"
+              to={link.to}
+              className={({ isActive }) =>
+                ['navbar__nav-link', isActive ? 'navbar__nav-link--active' : ''].join(' ').trim()
+              }
             >
               {link.label}
-            </a>
+            </NavLink>
           ))}
         </nav>
 

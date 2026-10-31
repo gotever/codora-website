@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import './LearningCard.css'
 
 // Icon: open book (inline SVG)
@@ -58,9 +59,9 @@ export default function LearningCard() {
       {/* Footer */}
       <div className="learning-card__footer">
         <span className="learning-card__footer-note">From your first line to functions</span>
-        <a href="#" className="learning-card__link" id="link-explore-lessons">
+        <Link to="/learning" className="learning-card__link" id="link-explore-lessons">
           Explore lessons →
-        </a>
+        </Link>
       </div>
     </article>
   )
