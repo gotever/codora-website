@@ -1,0 +1,127 @@
+.navbar {
+  width: 100%;
+  height: var(--navbar-height);
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar__inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+}
+
+/* Logo */
+.navbar__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.navbar__logo-icon {
+  width: 32px;
+  height: 32px;
+  background-color: var(--color-accent);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+
+.navbar__logo-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.3px;
+}
+
+/* Navigation links */
+.navbar__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.navbar__nav-link {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+  text-decoration: none;
+}
+
+.navbar__nav-link:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-border-light);
+}
+
+.navbar__nav-link--active {
+  color: var(--color-text-primary);
+}
+
+/* Auth buttons */
+.navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.navbar__btn {
+  height: 36px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.navbar__btn--signup {
+  background-color: var(--color-accent);
+  color: #fff;
+}
+
+.navbar__btn--signup:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.navbar__btn--login {
+  background-color: transparent;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.navbar__btn--login:hover {
+  border-color: var(--color-text-secondary);
+  background-color: var(--color-border-light);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .navbar__nav {
+    display: none;
+  }
+
+  .navbar__btn {
+    padding: 0 var(--space-3);
+  }
+}

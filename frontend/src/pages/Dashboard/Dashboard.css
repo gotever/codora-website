@@ -1,0 +1,26 @@
+.dashboard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Cards section */
+.dashboard__cards-section {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 var(--space-6) var(--space-8);
+}
+
+.dashboard__cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+@media (max-width: 700px) {
+  .dashboard__cards-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,35 @@
+.footer {
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  margin-top: auto;
+}
+
+.footer__inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.footer__left {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.footer__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+}
+
+.footer__code-tag {
+  font-size: 12px;
+  opacity: 0.7;
+}

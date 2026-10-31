@@ -1,0 +1,141 @@
+.learning-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 1;
+  min-width: 0;
+  transition: box-shadow var(--transition-base);
+}
+
+.learning-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Card top row */
+.learning-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.learning-card__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.learning-card__label-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.learning-card__badge {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* Heading & description */
+.learning-card__heading {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  margin-bottom: var(--space-2);
+}
+
+.learning-card__description {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-5);
+}
+
+/* Lesson preview box */
+.learning-card__preview {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.learning-card__preview-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.learning-card__preview-chapter {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.learning-card__preview-time {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.learning-card__preview-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.learning-card__preview-doc-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.learning-card__preview-title span {
+  color: var(--color-accent);
+}
+
+/* Footer row */
+.learning-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.learning-card__footer-note {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.learning-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: gap var(--transition-fast);
+}
+
+.learning-card__link:hover {
+  gap: var(--space-2);
+}
