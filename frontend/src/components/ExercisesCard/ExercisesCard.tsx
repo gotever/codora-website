@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import './ExercisesCard.css'
 
 // Icon: code brackets </> 
@@ -55,9 +56,9 @@ export default function ExercisesCard() {
           <span>·</span>
           Helpful hints
         </span>
-        <a href="#" className="exercises-card__link" id="link-browse-exercises">
+        <Link to="/exercises" className="exercises-card__link" id="link-browse-exercises">
           Browse exercises →
-        </a>
+        </Link>
       </div>
     </article>
   )

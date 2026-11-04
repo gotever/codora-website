@@ -1,0 +1,145 @@
+.exercises-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.exercises-page__content {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--space-8) var(--space-6);
+}
+
+/* Page header */
+.exercises-page__header {
+  margin-bottom: var(--space-8);
+}
+
+.exercises-page__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-3);
+}
+
+.exercises-page__title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.5px;
+  margin-bottom: var(--space-2);
+}
+
+.exercises-page__subtitle {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+}
+
+/* Exercise list */
+.exercises-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--color-surface);
+}
+
+.exercises-page__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color var(--transition-fast);
+}
+
+.exercises-page__item:last-child {
+  border-bottom: none;
+}
+
+.exercises-page__item:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.exercises-page__item-number {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  width: 24px;
+}
+
+.exercises-page__item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.exercises-page__item-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.exercises-page__item-tags {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.exercises-page__item-tag {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background-color: var(--color-border-light);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.exercises-page__badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.exercises-page__badge--easy {
+  color: #16a34a;
+  background-color: #dcfce7;
+}
+
+.exercises-page__badge--medium {
+  color: #d97706;
+  background-color: #fef3c7;
+}
+
+.exercises-page__badge--hard {
+  color: #dc2626;
+  background-color: #fee2e2;
+}
+
+.exercises-page__item-arrow {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+}
+
+.exercises-page__item:hover .exercises-page__item-arrow {
+  transform: translateX(3px);
+  color: var(--color-accent);
+}
+

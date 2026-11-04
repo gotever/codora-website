@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import './Hero.css'
 
 export default function Hero() {
@@ -25,22 +26,22 @@ export default function Hero() {
 
       {/* CTAs */}
       <div className="hero__actions">
-        <button
-          type="button"
+        <Link
+          to="/learning"
           className="hero__btn hero__btn--primary"
           id="btn-start-learning"
         >
           Start learning
           <span className="hero__btn-icon" aria-hidden="true">→</span>
-        </button>
-        <button
-          type="button"
+        </Link>
+        <Link
+          to="/exercises"
           className="hero__btn hero__btn--secondary"
           id="btn-try-exercise"
         >
           Try an exercise
           <span className="hero__btn-icon" aria-hidden="true">&lt;/&gt;</span>
-        </button>
+        </Link>
       </div>
 
       {/* Code hint */}
