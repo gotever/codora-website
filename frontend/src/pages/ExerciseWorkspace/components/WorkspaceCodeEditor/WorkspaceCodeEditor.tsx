@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, useMemo } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import Editor, { type OnMount, type BeforeMount } from '@monaco-editor/react'
 import './WorkspaceCodeEditor.css'
 
 interface WorkspaceCodeEditorProps {
@@ -9,130 +10,73 @@ interface WorkspaceCodeEditorProps {
   onReset?: () => void
 }
 
-const LANGUAGES = ['Python 3', 'JavaScript', 'TypeScript']
-
-// Tokenizer for Python syntax highlighting
-function highlightPython(code: string): string {
-  const lines = code.split('\n')
-  return lines
-    .map((line) => {
-      // Escape HTML entities first
-      let escaped = line
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-
-      // Comments
-      const commentIdx = escaped.indexOf('#')
-      let commentPart = ''
-      if (commentIdx !== -1) {
-        commentPart = `<span class="tok-comment">${escaped.slice(commentIdx)}</span>`
-        escaped = escaped.slice(0, commentIdx)
-      }
-
-      // Triple quoted docstrings or strings
-      escaped = escaped.replace(
-        /(&quot;&quot;&quot;[\s\S]*?&quot;&quot;&quot;|"""[\s\S]*?"""|'''[\s\S]*?''')/g,
-        '<span class="tok-string">$1</span>'
-      )
-
-      // Regular strings (double and single quoted)
-      escaped = escaped.replace(
-        /(".*?"|'.*?'|&quot;.*?&quot;)/g,
-        '<span class="tok-string">$1</span>'
-      )
-
-      // Function definitions: def func_name
-      escaped = escaped.replace(
-        /\b(def)\s+([a-zA-Z_][a-zA-Z0-9_]*)/g,
-        '<span class="tok-keyword">$1</span> <span class="tok-fn">$2</span>'
-      )
-
-      // Python keywords
-      const keywords =
-        /\b(return|pass|if|else|elif|for|in|while|break|continue|and|or|not|is|import|from|as|class|try|except|finally|raise|with|lambda|yield|async|await|None|True|False)\b/g
-      escaped = escaped.replace(keywords, '<span class="tok-keyword">$1</span>')
-
-      // Built-in functions
-      const builtins =
-        /\b(print|len|range|sum|min|max|abs|map|filter|list|dict|set|int|str|float|bool|type|enumerate|zip)\b/g
-      escaped = escaped.replace(builtins, '<span class="tok-builtin">$1</span>')
-
-      // Numbers
-      escaped = escaped.replace(/\b(\d+)\b/g, '<span class="tok-number">$1</span>')
-
-      return escaped + commentPart
-    })
-    .join('\n')
-}
-
 export default function WorkspaceCodeEditor({
   value,
   onChange,
   filename,
-  language = 'Python 3',
   onReset,
 }: WorkspaceCodeEditorProps) {
-  const [selectedLanguage, setSelectedLanguage] = useState(language)
-  const [langMenuOpen, setLangMenuOpen] = useState(false)
-  const [cursorPos, setCursorPos] = useState({ line: 5, col: 9 })
   const [copied, setCopied] = useState(false)
+  const [cursorPos, setCursorPos] = useState({ line: 1, col: 1 })
+  const [editorReady, setEditorReady] = useState(false)
+  const editorRef = useRef<any>(null)
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const preRef = useRef<HTMLPreElement>(null)
-  const lineNumbersRef = useRef<HTMLDivElement>(null)
-
-  const lines = useMemo(() => value.split('\n'), [value])
-  const highlightedCode = useMemo(() => highlightPython(value), [value])
-
-  const updateCursorPos = () => {
-    if (!textareaRef.current) return
-    const selStart = textareaRef.current.selectionStart
-    const textBefore = value.substring(0, selStart)
-    const linesBefore = textBefore.split('\n')
-    const currentLine = linesBefore.length
-    const currentCol = linesBefore[linesBefore.length - 1].length + 1
-    setCursorPos({ line: currentLine, col: currentCol })
-  }
-
-  useEffect(() => {
-    if (!textareaRef.current) return
-    const selStart = textareaRef.current.selectionStart
-    const textBefore = value.substring(0, selStart)
-    const linesBefore = textBefore.split('\n')
-    const currentLine = linesBefore.length
-    const currentCol = linesBefore[linesBefore.length - 1].length + 1
-    setCursorPos({ line: currentLine, col: currentCol })
-  }, [value])
-
-  // Synchronize scrolling between textarea, highlighted pre, and line numbers
-  const handleScroll = () => {
-    if (!textareaRef.current) return
-    const { scrollTop, scrollLeft } = textareaRef.current
-    if (preRef.current) {
-      preRef.current.scrollTop = scrollTop
-      preRef.current.scrollLeft = scrollLeft
-    }
-    if (lineNumbersRef.current) {
-      lineNumbersRef.current.scrollTop = scrollTop
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Tab') {
-      e.preventDefault()
-      const ta = textareaRef.current
-      if (!ta) return
-      const start = ta.selectionStart
-      const end = ta.selectionEnd
-      const updated = value.substring(0, start) + '    ' + value.substring(end)
-      onChange(updated)
-      requestAnimationFrame(() => {
-        ta.selectionStart = ta.selectionEnd = start + 4
-        updateCursorPos()
+  const handleBeforeMount: BeforeMount = useCallback((monaco) => {
+    try {
+      monaco.editor.defineTheme('codora-light', {
+        base: 'vs',
+        inherit: true,
+        rules: [
+          { token: 'keyword', foreground: '3b5bdb', fontStyle: 'bold' },
+          { token: 'keyword.control', foreground: '3b5bdb', fontStyle: 'bold' },
+          { token: 'string', foreground: '059669' },
+          { token: 'string.escape', foreground: '059669' },
+          { token: 'comment', foreground: '9ca3af', fontStyle: 'italic' },
+          { token: 'number', foreground: 'd97706' },
+          { token: 'type', foreground: '7c3aed' },
+          { token: 'identifier', foreground: '1e293b' },
+          { token: 'delimiter', foreground: '64748b' },
+          { token: 'delimiter.bracket', foreground: '64748b' },
+          { token: 'tag', foreground: '2563eb' },
+        ],
+        colors: {
+          'editor.background': '#ffffff',
+          'editor.foreground': '#1e293b',
+          'editor.lineHighlightBackground': '#3b5bdb10',
+          'editor.selectionBackground': '#3b5bdb22',
+          'editor.inactiveSelectionBackground': '#3b5bdb11',
+          'editorCursor.foreground': '#3b5bdb',
+          'editorLineNumber.foreground': '#94a3b8',
+          'editorLineNumber.activeForeground': '#1e293b',
+          'editorGutter.background': '#fafbfd',
+          'editorIndentGuide.background': '#e5e7eb',
+          'editorIndentGuide.activeBackground': '#cbd5e1',
+        },
       })
+    } catch (e) {
+      console.warn('Custom Monaco theme definition skipped:', e)
     }
-  }
+  }, [])
+
+  const handleEditorMount: OnMount = useCallback((editor) => {
+    editorRef.current = editor
+    setEditorReady(true)
+
+    // Track cursor position
+    editor.onDidChangeCursorPosition((e: any) => {
+      setCursorPos({ line: e.position.lineNumber, col: e.position.column })
+    })
+
+    // Auto-focus editor
+    editor.focus()
+  }, [])
+
+  // Update editor value if value prop changes externally (e.g. exercise change or reset)
+  useEffect(() => {
+    if (editorRef.current && editorRef.current.getValue() !== value) {
+      editorRef.current.setValue(value)
+    }
+  }, [value])
 
   const handleCopy = async () => {
     try {
@@ -146,7 +90,7 @@ export default function WorkspaceCodeEditor({
 
   return (
     <div className="ws-editor">
-      {/* Top Header: </> Code, Language Selector, Actions */}
+      {/* Top Header: </> Code, Actions */}
       <div className="ws-editor__top-bar">
         <div className="ws-editor__title">
           <svg
@@ -167,53 +111,6 @@ export default function WorkspaceCodeEditor({
         </div>
 
         <div className="ws-editor__actions">
-          {/* Language selector */}
-          <div className="ws-editor__lang-selector">
-            <button
-              type="button"
-              className="ws-editor__lang-btn"
-              onClick={() => setLangMenuOpen((v) => !v)}
-              aria-haspopup="listbox"
-              aria-expanded={langMenuOpen}
-            >
-              <span>{selectedLanguage}</span>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-                width="12"
-                height="12"
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-            {langMenuOpen && (
-              <ul className="ws-editor__lang-menu" role="listbox">
-                {LANGUAGES.map((lang) => (
-                  <li
-                    key={lang}
-                    role="option"
-                    aria-selected={lang === selectedLanguage}
-                    className={[
-                      'ws-editor__lang-option',
-                      lang === selectedLanguage ? 'ws-editor__lang-option--active' : '',
-                    ].join(' ')}
-                    onClick={() => {
-                      setSelectedLanguage(lang)
-                      setLangMenuOpen(false)
-                    }}
-                  >
-                    {lang}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
           {/* Action icon buttons */}
           <button
             type="button"
@@ -275,26 +172,6 @@ export default function WorkspaceCodeEditor({
               </svg>
             )}
           </button>
-          <button
-            type="button"
-            className="ws-editor__icon-btn"
-            title="Fullscreen"
-            aria-label="Toggle fullscreen"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              width="15"
-              height="15"
-            >
-              <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" />
-            </svg>
-          </button>
         </div>
       </div>
 
@@ -304,62 +181,57 @@ export default function WorkspaceCodeEditor({
         <span className="ws-editor__saved-status">Draft saved locally</span>
       </div>
 
-      {/* Main editor area with line numbers, code highlighting & textarea */}
+      {/* Monaco Editor Container */}
       <div className="ws-editor__canvas">
-        {/* Line numbers column */}
-        <div ref={lineNumbersRef} className="ws-editor__gutter" aria-hidden="true">
-          {lines.map((_, i) => (
-            <div
-              key={i}
-              className={[
-                'ws-editor__line-num',
-                cursorPos.line === i + 1 ? 'ws-editor__line-num--active' : '',
-              ].join(' ')}
-            >
-              {i + 1}
+        <Editor
+          height="360px"
+          language="python"
+          value={value}
+          onChange={(val) => onChange(val ?? '')}
+          onMount={handleEditorMount}
+          beforeMount={handleBeforeMount}
+          theme="codora-light"
+          loading={
+            <div className="ws-editor__loading">
+              <span className="ws-editor__loading-spinner" />
+              <span>Initializing editor…</span>
             </div>
-          ))}
-        </div>
-
-        {/* Editor editing container */}
-        <div className="ws-editor__stage">
-          {/* Active line background bar */}
-          <div
-            className="ws-editor__active-line-bg"
-            style={{
-              top: `${(cursorPos.line - 1) * 22 + 10}px`,
-            }}
-          />
-
-          {/* Highlighted syntax display */}
-          <pre
-            ref={preRef}
-            className="ws-editor__highlight"
-            aria-hidden="true"
-            dangerouslySetInnerHTML={{ __html: highlightedCode + '\n' }}
-          />
-
-          {/* Interactive textarea */}
-          <textarea
-            ref={textareaRef}
-            className="ws-editor__textarea"
-            value={value}
-            onChange={(e) => {
-              onChange(e.target.value)
-              updateCursorPos()
-            }}
-            onKeyUp={updateCursorPos}
-            onClick={updateCursorPos}
-            onSelect={updateCursorPos}
-            onKeyDown={handleKeyDown}
-            onScroll={handleScroll}
-            spellCheck={false}
-            autoCapitalize="none"
-            autoCorrect="off"
-            autoComplete="off"
-            aria-label="Code editor"
-          />
-        </div>
+          }
+          options={{
+            fontSize: 13,
+            fontFamily: "'Fira Code', 'Cascadia Code', Consolas, ui-monospace, monospace",
+            fontLigatures: true,
+            lineHeight: 22,
+            tabSize: 4,
+            insertSpaces: true,
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            padding: { top: 12, bottom: 12 },
+            lineNumbersMinChars: 3,
+            glyphMargin: false,
+            folding: true,
+            renderLineHighlight: 'all',
+            overviewRulerLanes: 0,
+            hideCursorInOverviewRuler: true,
+            overviewRulerBorder: false,
+            scrollbar: {
+              verticalScrollbarSize: 8,
+              horizontalScrollbarSize: 8,
+            },
+            suggestOnTriggerCharacters: true,
+            quickSuggestions: true,
+            wordBasedSuggestions: 'currentDocument',
+            bracketPairColorization: { enabled: true },
+            guides: {
+              indentation: true,
+              bracketPairs: true,
+            },
+            smoothScrolling: true,
+            cursorBlinking: 'smooth',
+            cursorSmoothCaretAnimation: 'on',
+          }}
+        />
       </div>
 
       {/* Editor status footer: Spaces: 4 | Ln X, Col Y */}

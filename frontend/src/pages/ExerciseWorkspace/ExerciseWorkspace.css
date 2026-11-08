@@ -323,7 +323,9 @@
 }
 
 .workspace__editor-slot {
-  min-height: 380px;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
 }
 
 .workspace__console-slot {
@@ -382,5 +384,57 @@
     align-items: flex-start;
     padding: var(--space-2) var(--space-4);
   }
+}
+
+
+/* Pyodide status indicator in footer */
+.workspace__pyodide-status {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.workspace__pyodide-status--ready {
+  color: #16a34a;
+}
+
+/* Pyodide loading banner */
+.workspace__pyodide-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background-color: #eff6ff;
+  border-bottom: 1px solid #bfdbfe;
+  color: #1e40af;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.workspace__pyodide-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #93c5fd;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: pyodide-spin 0.8s linear infinite;
+}
+
+@keyframes pyodide-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.workspace__pyodide-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-4);
+  background-color: #fef2f2;
+  border-bottom: 1px solid #fecaca;
+  color: #991b1b;
+  font-size: 13px;
+  font-weight: 500;
 }
 

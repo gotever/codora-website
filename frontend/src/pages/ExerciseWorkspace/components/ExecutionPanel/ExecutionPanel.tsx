@@ -11,12 +11,17 @@ interface ExecutionPanelProps {
   runResult: {
     status: 'idle' | 'running' | 'success' | 'error'
     message?: string
+    stdout?: string
     results?: {
       caseId: string
       passed: boolean
       actualOutput: string
+      error?: string
+      executionTime?: number
     }[]
   }
+  pyodideReady?: boolean
+  pyodideLoading?: boolean
 }
 
 export default function ExecutionPanel({
@@ -26,6 +31,8 @@ export default function ExecutionPanel({
   isRunning,
   isSubmitting,
   runResult,
+  pyodideReady = false,
+  pyodideLoading = false,
 }: ExecutionPanelProps) {
   const [activeTab, setActiveTab] = useState<'testcases' | 'output'>('testcases')
   const [selectedCaseIdx, setSelectedCaseIdx] = useState(0)
@@ -34,6 +41,8 @@ export default function ExecutionPanel({
   const currentCaseResult = runResult.results?.find((r) => r.caseId === currentCase?.id)
 
   const isCasePassed = currentCaseResult?.passed
+
+  const buttonsDisabled = isRunning || isSubmitting || !pyodideReady
 
   return (
     <div className="exec-panel">
@@ -52,14 +61,18 @@ export default function ExecutionPanel({
                 ? 'exec-panel__status-dot--success'
                 : runResult.status === 'error'
                 ? 'exec-panel__status-dot--error'
+                : pyodideLoading
+                ? 'exec-panel__status-dot--running'
                 : 'exec-panel__status-dot--ready'
             }`}
           />
           <span className="exec-panel__status-text">
             {isRunning
-              ? 'Running...'
+              ? 'Running…'
               : isSubmitting
-              ? 'Evaluating...'
+              ? 'Evaluating…'
+              : pyodideLoading
+              ? 'Loading Python…'
               : runResult.status === 'success'
               ? 'Passed'
               : runResult.status === 'error'
@@ -153,7 +166,7 @@ export default function ExecutionPanel({
               {/* Status on right */}
               <div className="exec-panel__case-summary">
                 {runResult.status === 'idle' && <span>Not run yet</span>}
-                {runResult.status === 'running' && <span>Testing...</span>}
+                {runResult.status === 'running' && <span>Testing…</span>}
                 {runResult.status === 'success' && (
                   <span className="exec-panel__success-text">All cases passed</span>
                 )}
@@ -186,17 +199,26 @@ export default function ExecutionPanel({
                   >
                     <div className="exec-panel__result-header">
                       <span>{isCasePassed ? '✓ Passed' : '✗ Output mismatch'}</span>
-                      <span className="exec-panel__result-time">14ms</span>
+                      {currentCaseResult.executionTime !== undefined && (
+                        <span className="exec-panel__result-time">{currentCaseResult.executionTime}ms</span>
+                      )}
                     </div>
                     <div className="exec-panel__result-actual">
                       <span>Your output:</span>
                       <code>{currentCaseResult.actualOutput}</code>
                     </div>
+                    {currentCaseResult.error && (
+                      <div className="exec-panel__result-error">
+                        <code>{currentCaseResult.error}</code>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 <p className="exec-panel__hint-text">
-                  Run your code to see the result. Submit to check all test cases.
+                  {pyodideReady
+                    ? 'Run your code to see the result. Submit to check all test cases.'
+                    : 'Waiting for Python runtime to load…'}
                 </p>
               </div>
             )}
@@ -211,19 +233,17 @@ export default function ExecutionPanel({
             ) : runResult.status === 'running' ? (
               <div className="exec-panel__terminal-running">
                 <span className="exec-panel__spinner" />
-                <span>Executing Python script in isolated sandbox...</span>
+                <span>Executing Python code via Pyodide (WebAssembly)…</span>
               </div>
             ) : (
               <pre className="exec-panel__terminal-pre">
                 <code>
-                  {`Python 3.12.0 (main, standard environment)
-[sandbox: initialized 0.04s]
+                  {`Python 3.12 (Pyodide — in-browser WebAssembly)
+[sandbox: client-side execution]
 ====================================
-${runResult.message || 'Execution finished.'}
+${runResult.stdout || ''}
 
-Memory: 14.2 MB
-Runtime: 24ms
-Status: ${runResult.status === 'success' ? 'All 3 test cases passed' : 'Test cases failed'}
+${runResult.message || 'Execution finished.'}
 `}
                 </code>
               </pre>
@@ -238,7 +258,8 @@ Status: ${runResult.status === 'success' ? 'All 3 test cases passed' : 'Test cas
           type="button"
           className="exec-panel__btn-run"
           onClick={onRun}
-          disabled={isRunning || isSubmitting}
+          disabled={buttonsDisabled}
+          title={!pyodideReady ? 'Waiting for Python runtime…' : 'Run code'}
         >
           <svg
             viewBox="0 0 24 24"
@@ -249,14 +270,15 @@ Status: ${runResult.status === 'success' ? 'All 3 test cases passed' : 'Test cas
           >
             <polygon points="5 3 19 12 5 21 5 3" />
           </svg>
-          <span>{isRunning ? 'Running...' : 'Run'}</span>
+          <span>{isRunning ? 'Running…' : !pyodideReady ? 'Loading…' : 'Run'}</span>
         </button>
 
         <button
           type="button"
           className="exec-panel__btn-submit"
           onClick={onSubmit}
-          disabled={isRunning || isSubmitting}
+          disabled={buttonsDisabled}
+          title={!pyodideReady ? 'Waiting for Python runtime…' : 'Submit code'}
         >
           <svg
             viewBox="0 0 24 24"
@@ -271,7 +293,7 @@ Status: ${runResult.status === 'success' ? 'All 3 test cases passed' : 'Test cas
           >
             <path d="M12 19V5M5 12l7-7 7 7" />
           </svg>
-          <span>{isSubmitting ? 'Submitting...' : 'Submit'}</span>
+          <span>{isSubmitting ? 'Submitting…' : 'Submit'}</span>
         </button>
       </div>
     </div>

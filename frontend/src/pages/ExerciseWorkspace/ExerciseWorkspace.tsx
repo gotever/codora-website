@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { EXERCISES, TEST_CASES, type Exercise } from '../../data/exercises'
+import { EXERCISES, TEST_CASES, type Exercise, type TestCase } from '../../data/exercises'
+import { usePyodide, type PyodideResult } from '../../hooks/usePyodide'
 import ProblemDescription from './components/ProblemDescription/ProblemDescription'
 import ProgressiveHints from './components/ProgressiveHints/ProgressiveHints'
 import WorkspaceCodeEditor from './components/WorkspaceCodeEditor/WorkspaceCodeEditor'
@@ -11,6 +12,7 @@ import './ExerciseWorkspace.css'
 export default function ExerciseWorkspace() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { isLoading: pyodideLoading, loadError: pyodideError, runTestCase, isReady } = usePyodide()
 
   // Find current exercise by id or fallback to default
   const exercise: Exercise = useMemo(() => {
@@ -31,6 +33,12 @@ export default function ExerciseWorkspace() {
   const [isAITutorOpen, setIsAITutorOpen] = useState(false)
   const [nudgeAccordionOpen, setNudgeAccordionOpen] = useState(false)
 
+  // Keep code and run state in sync when switching exercises
+  useEffect(() => {
+    setCode(exercise.initialCode)
+    setRunResult({ status: 'idle' })
+  }, [exercise.id, exercise.initialCode])
+
   // Test cases for this exercise
   const testCases = TEST_CASES[exercise.id] || TEST_CASES['sum-of-even-numbers']
 
@@ -38,10 +46,13 @@ export default function ExerciseWorkspace() {
   const [runResult, setRunResult] = useState<{
     status: 'idle' | 'running' | 'success' | 'error'
     message?: string
+    stdout?: string
     results?: {
       caseId: string
       passed: boolean
       actualOutput: string
+      error?: string
+      executionTime?: number
     }[]
   }>({
     status: 'idle',
@@ -65,91 +76,154 @@ export default function ExerciseWorkspace() {
     }
   }
 
-  // Simulate Run code
-  const handleRun = () => {
+  /**
+   * Normalize a Python repr value for comparison.
+   * Handles quoting differences: Python uses single quotes by default for strings,
+   * but our expected output might use double quotes.
+   */
+  function normalizeForComparison(value: string): string {
+    let v = value.trim()
+    // Python's repr returns 'None' for None
+    if (v === 'None') return 'None'
+    // Normalize string quoting: remove outer quotes and compare the inner content
+    if ((v.startsWith("'") && v.endsWith("'")) || (v.startsWith('"') && v.endsWith('"'))) {
+      return v.slice(1, -1)
+    }
+    return v
+  }
+
+  /**
+   * Run a single test case through Pyodide and return the result.
+   */
+  async function executeTestCase(tc: TestCase): Promise<{
+    caseId: string
+    passed: boolean
+    actualOutput: string
+    error?: string
+    executionTime?: number
+  }> {
+    try {
+      const result: PyodideResult = await runTestCase(
+        code,
+        exercise.functionName,
+        tc.argsExpression
+      )
+
+      if (!result.success) {
+        return {
+          caseId: tc.id,
+          passed: false,
+          actualOutput: result.error || 'Runtime error',
+          error: result.error,
+          executionTime: result.executionTime,
+        }
+      }
+
+      const actualValue = result.returnValue ?? 'None'
+      const normalizedActual = normalizeForComparison(actualValue)
+      const normalizedExpected = normalizeForComparison(tc.expectedOutput)
+      const passed = normalizedActual === normalizedExpected
+
+      return {
+        caseId: tc.id,
+        passed,
+        actualOutput: actualValue,
+        executionTime: result.executionTime,
+      }
+    } catch (err: any) {
+      return {
+        caseId: tc.id,
+        passed: false,
+        actualOutput: err?.message || 'Unknown error',
+        error: err?.message || 'Unknown error',
+        executionTime: 0,
+      }
+    }
+  }
+
+  // Run code — execute all test cases with real Python
+  const handleRun = async () => {
+    if (!isReady) return
+
     setIsRunning(true)
     setRunResult({ status: 'running' })
 
-    setTimeout(() => {
-      setIsRunning(false)
-      // Check if user has written an actual solution or still has default pass
-      const isStillPass = code.includes('pass') && !code.includes('+=') && !code.includes('sum(')
+    const startTime = performance.now()
+    const results = []
 
-      if (isStillPass) {
-        setRunResult({
-          status: 'error',
-          message:
-            'Test case 1 failed: Expected 12, but function returned None (pass statement executed).',
-          results: testCases.map((tc, idx) => ({
-            caseId: tc.id,
-            passed: idx === 99, // fail
-            actualOutput: 'None',
-          })),
-        })
-      } else {
-        setRunResult({
-          status: 'success',
-          message: 'All test cases executed successfully without errors.',
-          results: testCases.map((tc) => ({
-            caseId: tc.id,
-            passed: true,
-            actualOutput: tc.expectedOutput,
-          })),
-        })
-      }
-    }, 700)
+    for (const tc of testCases) {
+      const result = await executeTestCase(tc)
+      results.push(result)
+    }
+
+    const totalTime = Math.round(performance.now() - startTime)
+    const allPassed = results.every((r) => r.passed)
+    const passedCount = results.filter((r) => r.passed).length
+    const totalCount = results.length
+
+    const firstError = results.find((r) => !r.passed)
+
+    setRunResult({
+      status: allPassed ? 'success' : 'error',
+      message: allPassed
+        ? `All test cases executed successfully. (${totalTime}ms)`
+        : `Test failed: ${passedCount}/${totalCount} passed.${
+            firstError?.error ? `\n${firstError.error}` : ''
+          }`,
+      stdout: results.map((r) => {
+        const tc = testCases.find((t) => t.id === r.caseId)
+        return `${tc?.label}: ${r.passed ? '✓ PASS' : '✗ FAIL'} → ${r.actualOutput} (${r.executionTime}ms)`
+      }).join('\n'),
+      results,
+    })
+
+    setIsRunning(false)
   }
 
-  // Simulate Submit code
-  const handleSubmit = () => {
+  // Submit code — run all cases and record submission
+  const handleSubmit = async () => {
+    if (!isReady) return
+
     setIsSubmitting(true)
+    setRunResult({ status: 'running' })
 
-    setTimeout(() => {
-      setIsSubmitting(false)
-      const isStillPass = code.includes('pass') && !code.includes('+=') && !code.includes('sum(')
+    const startTime = performance.now()
+    const results = []
 
-      if (isStillPass) {
-        setRunResult({
-          status: 'error',
-          message: 'Submission failed: 0/3 test cases passed. Output was None.',
-          results: testCases.map((tc) => ({
-            caseId: tc.id,
-            passed: false,
-            actualOutput: 'None',
-          })),
-        })
-        setSubmissions((prev) => [
-          {
-            id: String(Date.now()),
-            time: 'Just now',
-            status: 'Wrong Answer',
-            runtime: '32 ms',
-            memory: '14.1 MB',
-          },
-          ...prev,
-        ])
-      } else {
-        setRunResult({
-          status: 'success',
-          message: 'Accepted! All 3/3 test cases passed. Fantastic job!',
-          results: testCases.map((tc) => ({
-            caseId: tc.id,
-            passed: true,
-            actualOutput: tc.expectedOutput,
-          })),
-        })
-        setSubmissions((prev) => [
-          {
-            id: String(Date.now()),
-            time: 'Just now',
-            status: 'Accepted',
-            runtime: '21 ms',
-            memory: '14.2 MB',
-          },
-          ...prev,
-        ])
-      }
-    }, 1000)
+    for (const tc of testCases) {
+      const result = await executeTestCase(tc)
+      results.push(result)
+    }
+
+    const totalTime = Math.round(performance.now() - startTime)
+    const allPassed = results.every((r) => r.passed)
+    const passedCount = results.filter((r) => r.passed).length
+    const totalCount = results.length
+
+    setRunResult({
+      status: allPassed ? 'success' : 'error',
+      message: allPassed
+        ? `Accepted! All ${totalCount}/${totalCount} test cases passed. Fantastic job! (${totalTime}ms)`
+        : `Submission failed: ${passedCount}/${totalCount} test cases passed.`,
+      stdout: results.map((r) => {
+        const tc = testCases.find((t) => t.id === r.caseId)
+        return `${tc?.label}: ${r.passed ? '✓ PASS' : '✗ FAIL'} → ${r.actualOutput} (${r.executionTime}ms)`
+      }).join('\n'),
+      results,
+    })
+
+    setSubmissions((prev) => [
+      {
+        id: String(Date.now()),
+        time: 'Just now',
+        status: allPassed ? 'Accepted' : 'Wrong Answer',
+        runtime: `${totalTime} ms`,
+        memory: '~14 MB',
+      },
+      ...prev,
+    ])
+
+    setIsSubmitting(false)
   }
 
   return (
@@ -230,6 +304,20 @@ export default function ExerciseWorkspace() {
           </div>
         </div>
       </nav>
+
+      {/* Pyodide loading banner */}
+      {pyodideLoading && (
+        <div className="workspace__pyodide-banner">
+          <span className="workspace__pyodide-spinner" />
+          <span>Loading Python runtime (Pyodide)… This may take a few seconds on first visit.</span>
+        </div>
+      )}
+
+      {pyodideError && (
+        <div className="workspace__pyodide-error">
+          <span>⚠ Failed to load Python runtime: {pyodideError}</span>
+        </div>
+      )}
 
       {/* 2. Main Two-Column Workspace Content */}
       <main className="workspace__main">
@@ -418,6 +506,8 @@ export default function ExerciseWorkspace() {
               isRunning={isRunning}
               isSubmitting={isSubmitting}
               runResult={runResult}
+              pyodideReady={isReady}
+              pyodideLoading={pyodideLoading}
             />
           </div>
         </section>
@@ -429,9 +519,13 @@ export default function ExerciseWorkspace() {
           <span>A little practice. A lot of possibility.</span>
         </div>
         <div className="workspace__footer-right">
-          <span>Python 3.12</span>
+          <span className={`workspace__pyodide-status ${isReady ? 'workspace__pyodide-status--ready' : ''}`}>
+            {isReady ? '● Pyodide Ready' : pyodideLoading ? '○ Loading…' : '○ Offline'}
+          </span>
           <span className="workspace__footer-dot">·</span>
-          <span>Ready when you are</span>
+          <span>Python 3.12 (WebAssembly)</span>
+          <span className="workspace__footer-dot">·</span>
+          <span>{isReady ? 'Ready when you are' : 'Initializing…'}</span>
         </div>
       </footer>
 
@@ -445,4 +539,3 @@ export default function ExerciseWorkspace() {
     </div>
   )
 }
-

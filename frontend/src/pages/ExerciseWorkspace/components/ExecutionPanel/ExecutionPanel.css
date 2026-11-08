@@ -440,3 +440,17 @@
   cursor: not-allowed;
 }
 
+
+/* Error details within result box */
+.exec-panel__result-error {
+  margin-top: 4px;
+  padding: 6px 8px;
+  background-color: rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 120px;
+  overflow-y: auto;
+}

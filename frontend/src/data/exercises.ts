@@ -11,6 +11,8 @@ export interface TestCase {
   inputLabel: string
   expectedOutput: string
   explanation?: string
+  /** Python expression for the argument(s) to pass to the function under test */
+  argsExpression: string
 }
 
 export interface HintLevel {
@@ -29,6 +31,8 @@ export interface Exercise {
   tags: string[]
   description: string
   functionSignature: string
+  /** The Python function name that students must implement */
+  functionName: string
   inputDescription?: string
   outputDescription?: string
   examples: {
@@ -74,6 +78,7 @@ export const EXERCISES: Exercise[] = [
     courseId: 'python-fundamentals',
     courseTitle: 'Python fundamentals',
     filename: 'sum_even.py',
+    functionName: 'sum_even',
     description:
       'Given a list of integers <code>numbers</code>, return the sum of all even numbers in the list. An even number is divisible by 2 with no remainder.',
     functionSignature: 'sum_even(numbers)',
@@ -153,6 +158,7 @@ You initialise a <code>total</code> variable to 0, loop through every element, a
     courseId: 'python-fundamentals',
     courseTitle: 'Python fundamentals',
     filename: 'reverse_string.py',
+    functionName: 'reverse_string',
     description:
       'Given a string <code>s</code>, return it reversed.',
     functionSignature: 'reverse_string(s)',
@@ -213,6 +219,7 @@ You initialise a <code>total</code> variable to 0, loop through every element, a
     courseId: 'python-fundamentals',
     courseTitle: 'Python fundamentals',
     filename: 'count_vowels.py',
+    functionName: 'count_vowels',
     description:
       'Given a string <code>s</code>, return the number of vowels (a, e, i, o, u) in the string. Treat uppercase and lowercase letters the same.',
     functionSignature: 'count_vowels(s)',
@@ -277,6 +284,7 @@ You can also do this in one line with a generator expression: <code>sum(1 for c 
     courseId: 'python-fundamentals',
     courseTitle: 'Python fundamentals',
     filename: 'find_maximum.py',
+    functionName: 'find_maximum',
     description:
       'Given a non-empty list of integers <code>numbers</code>, return the largest number in the list without using the built-in <code>max()</code> function.',
     functionSignature: 'find_maximum(numbers)',
@@ -349,7 +357,7 @@ export const EXERCISE_LIST: ExerciseListItem[] = EXERCISES.map((e) => ({
 }))
 
 // ----------------------------------------------------------------
-// Mock test cases per exercise id
+// Test cases per exercise id — with argsExpression for Pyodide runner
 // ----------------------------------------------------------------
 
 export const TEST_CASES: Record<string, TestCase[]> = {
@@ -361,6 +369,7 @@ export const TEST_CASES: Record<string, TestCase[]> = {
       input: '[1, 2, 3, 4, 5, 6]',
       expectedOutput: '12',
       explanation: 'The even numbers are 2, 4, and 6. Their sum is 12.',
+      argsExpression: '([1, 2, 3, 4, 5, 6],)',
     },
     {
       id: 'case-2',
@@ -369,6 +378,7 @@ export const TEST_CASES: Record<string, TestCase[]> = {
       input: '[1, 3, 5]',
       expectedOutput: '0',
       explanation: 'There are no even numbers, so the result is 0.',
+      argsExpression: '([1, 3, 5],)',
     },
     {
       id: 'case-3',
@@ -377,6 +387,7 @@ export const TEST_CASES: Record<string, TestCase[]> = {
       input: '[]',
       expectedOutput: '0',
       explanation: 'An empty list has no even numbers.',
+      argsExpression: '([],)',
     },
   ],
   'reverse-a-string': [
@@ -385,21 +396,24 @@ export const TEST_CASES: Record<string, TestCase[]> = {
       label: 'Case 1',
       inputLabel: 's =',
       input: '"hello"',
-      expectedOutput: '"olleh"',
+      expectedOutput: "'olleh'",
+      argsExpression: '("hello",)',
     },
     {
       id: 'case-2',
       label: 'Case 2',
       inputLabel: 's =',
       input: '"Python"',
-      expectedOutput: '"nohtyP"',
+      expectedOutput: "'nohtyP'",
+      argsExpression: '("Python",)',
     },
     {
       id: 'case-3',
       label: 'Case 3',
       inputLabel: 's =',
       input: '""',
-      expectedOutput: '""',
+      expectedOutput: "''",
+      argsExpression: '("",)',
     },
   ],
   'count-vowels': [
@@ -409,6 +423,7 @@ export const TEST_CASES: Record<string, TestCase[]> = {
       inputLabel: 's =',
       input: '"Hello World"',
       expectedOutput: '3',
+      argsExpression: '("Hello World",)',
     },
     {
       id: 'case-2',
@@ -416,6 +431,7 @@ export const TEST_CASES: Record<string, TestCase[]> = {
       inputLabel: 's =',
       input: '"Python"',
       expectedOutput: '1',
+      argsExpression: '("Python",)',
     },
     {
       id: 'case-3',
@@ -423,6 +439,7 @@ export const TEST_CASES: Record<string, TestCase[]> = {
       inputLabel: 's =',
       input: '"aeiou"',
       expectedOutput: '5',
+      argsExpression: '("aeiou",)',
     },
   ],
   'find-maximum': [
@@ -432,6 +449,7 @@ export const TEST_CASES: Record<string, TestCase[]> = {
       inputLabel: 'numbers =',
       input: '[3, 1, 7, 2, 5]',
       expectedOutput: '7',
+      argsExpression: '([3, 1, 7, 2, 5],)',
     },
     {
       id: 'case-2',
@@ -439,6 +457,7 @@ export const TEST_CASES: Record<string, TestCase[]> = {
       inputLabel: 'numbers =',
       input: '[-5, -1, -3]',
       expectedOutput: '-1',
+      argsExpression: '([-5, -1, -3],)',
     },
     {
       id: 'case-3',
@@ -446,7 +465,7 @@ export const TEST_CASES: Record<string, TestCase[]> = {
       inputLabel: 'numbers =',
       input: '[42]',
       expectedOutput: '42',
+      argsExpression: '([42],)',
     },
   ],
 }
-
