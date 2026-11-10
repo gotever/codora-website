@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { Lesson } from '../../data/courses'
 import './LessonRow.css'
 
@@ -26,15 +27,21 @@ export default function LessonRow({ lesson }: LessonRowProps) {
   const padded = String(lesson.id).padStart(2, '0')
 
   return (
-    <li className="lesson-row" role="listitem">
-      <span className="lesson-row__number" aria-label={`Lesson ${padded}`}>
-        {padded}
-      </span>
-      <div className="lesson-row__content">
-        <p className="lesson-row__title">{lesson.title}</p>
-        <p className="lesson-row__description">{lesson.description}</p>
-      </div>
-      <ArrowIcon />
+    <li role="listitem">
+      <Link
+        to={`/lessons/${lesson.id}`}
+        className="lesson-row"
+        aria-label={`Lesson ${padded}: ${lesson.title}`}
+      >
+        <span className="lesson-row__number" aria-label={`Lesson ${padded}`}>
+          {padded}
+        </span>
+        <div className="lesson-row__content">
+          <p className="lesson-row__title">{lesson.title}</p>
+          <p className="lesson-row__description">{lesson.description}</p>
+        </div>
+        <ArrowIcon />
+      </Link>
     </li>
   )
 }

@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import './Navbar.css'
 
 const NAV_LINKS = [
@@ -7,6 +7,8 @@ const NAV_LINKS = [
 ]
 
 export default function Navbar() {
+  const location = useLocation()
+
   return (
     <header className="navbar" role="banner">
       <div className="navbar__inner">
@@ -20,17 +22,27 @@ export default function Navbar() {
 
         {/* Navigation */}
         <nav className="navbar__nav" aria-label="Main navigation">
-          {NAV_LINKS.map((link) => (
-            <NavLink
-              key={link.label}
-              to={link.to}
-              className={({ isActive }) =>
-                ['navbar__nav-link', isActive ? 'navbar__nav-link--active' : ''].join(' ').trim()
-              }
-            >
-              {link.label}
-            </NavLink>
-          ))}
+          {NAV_LINKS.map((link) => {
+            const isLearningActive =
+              link.to === '/learning' && location.pathname.startsWith('/lessons')
+
+            return (
+              <NavLink
+                key={link.label}
+                to={link.to}
+                className={({ isActive }) =>
+                  [
+                    'navbar__nav-link',
+                    isActive || isLearningActive ? 'navbar__nav-link--active' : '',
+                  ]
+                    .join(' ')
+                    .trim()
+                }
+              >
+                {link.label}
+              </NavLink>
+            )
+          })}
         </nav>
 
         {/* Auth actions */}

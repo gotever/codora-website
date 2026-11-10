@@ -1,0 +1,136 @@
+.lesson-page-container {
+  min-height: calc(100vh - var(--navbar-height));
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface);
+  position: relative;
+}
+
+/* 3-Column Desktop Layout */
+.lesson-layout {
+  display: flex;
+  width: 100%;
+  flex: 1;
+  align-items: stretch;
+}
+
+.lesson-center-column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface);
+}
+
+/* Mobile Top Action Bar */
+.lesson-mobile-bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px var(--space-4);
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: var(--navbar-height);
+  z-index: 50;
+}
+
+.lesson-mobile-bar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--color-border-light);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lesson-mobile-bar__btn--assistant {
+  background-color: var(--color-accent-light);
+  border-color: rgba(59, 91, 219, 0.2);
+  color: var(--color-accent);
+}
+
+.lesson-mobile-bar__ai-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background-color: var(--color-accent);
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lesson-mobile-bar__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+}
+
+/* Floating button on mobile / tablet when assistant is closed */
+.lesson-floating-assistant-btn {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 90;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  border: 1px solid rgba(59, 91, 219, 0.3);
+  box-shadow: 0 4px 16px rgba(59, 91, 219, 0.15), 0 2px 6px rgba(0, 0, 0, 0.05);
+  padding: 8px 16px 8px 10px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.lesson-floating-assistant-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-accent);
+}
+
+.lesson-floating-assistant-btn__icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b5bdb 0%, #6366f1 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.lesson-floating-assistant-btn__text {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Responsive queries */
+@media (max-width: 1240px) {
+  .lesson-floating-assistant-btn {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 1080px) {
+  .lesson-mobile-bar {
+    display: flex;
+  }
+}
+
