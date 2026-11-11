@@ -340,6 +340,72 @@ Starting with the first element avoids issues with negative numbers (unlike star
     pass
 `,
   },
+  {
+    id: 'is-palindrome',
+    number: 5,
+    total: 12,
+    title: 'Check palindrome',
+    difficulty: 'Easy',
+    tags: ['Strings', 'Basics'],
+    courseId: 'python-fundamentals',
+    courseTitle: 'Python fundamentals',
+    filename: 'is_palindrome.py',
+    functionName: 'is_palindrome',
+    description:
+      'Given a string <code>s</code>, write a function that returns <code>True</code> if <code>s</code> reads the same backwards and forwards (a palindrome), or <code>False</code> otherwise.',
+    functionSignature: 'is_palindrome(s)',
+    inputDescription: 'A string s containing lowercase English letters.',
+    outputDescription: 'A boolean: True if s is a palindrome, False otherwise.',
+    examples: [
+      {
+        id: 1,
+        input: 's = "radar"',
+        output: 'True',
+        explanation: '"radar" reversed is still "radar".',
+      },
+      {
+        id: 2,
+        input: 's = "hello"',
+        output: 'False',
+        explanation: '"hello" reversed is "olleh", so it is not a palindrome.',
+      },
+    ],
+    constraints: [
+      '1 ≤ len(s) ≤ 10,000',
+      's consists only of lowercase English letters.',
+    ],
+    hints: [
+      {
+        level: 1,
+        label: 'A Little Nudge',
+        sublabel: 'Think about reversing the string.',
+        content:
+          'A palindrome is identical forwards and backwards. What happens if you compare the original string with its reverse?',
+      },
+      {
+        level: 2,
+        label: 'Guide Me Further',
+        sublabel: 'Python string slicing trick.',
+        content:
+          'Python strings support slicing with a step. Did you know <code>s[::-1]</code> produces a reversed copy of string <code>s</code>?',
+      },
+      {
+        level: 3,
+        label: 'Show Me the Approach',
+        sublabel: 'Step-by-step solution.',
+        content: `<pre>def is_palindrome(s):
+    return s == s[::-1]</pre>
+
+Comparing <code>s</code> with <code>s[::-1]</code> directly returns <code>True</code> or <code>False</code>.`,
+      },
+    ],
+    initialCode: `def is_palindrome(s):
+    """Return True if s is a palindrome, False otherwise."""
+
+    # Write your solution here
+    pass
+`,
+  },
 ]
 
 // ----------------------------------------------------------------
@@ -466,6 +532,44 @@ export const TEST_CASES: Record<string, TestCase[]> = {
       input: '[42]',
       expectedOutput: '42',
       argsExpression: '([42],)',
+    },
+  ],
+  'is-palindrome': [
+    {
+      id: 'case-1',
+      label: 'Case 1',
+      inputLabel: 's =',
+      input: '"radar"',
+      expectedOutput: 'True',
+      explanation: '"radar" reversed is still "radar".',
+      argsExpression: '("radar",)',
+    },
+    {
+      id: 'case-2',
+      label: 'Case 2',
+      inputLabel: 's =',
+      input: '"hello"',
+      expectedOutput: 'False',
+      explanation: '"hello" reversed is "olleh", which is not equal to "hello".',
+      argsExpression: '("hello",)',
+    },
+    {
+      id: 'case-3',
+      label: 'Case 3',
+      inputLabel: 's =',
+      input: '"a"',
+      expectedOutput: 'True',
+      explanation: 'A single character string is always a palindrome.',
+      argsExpression: '("a",)',
+    },
+    {
+      id: 'case-4',
+      label: 'Case 4',
+      inputLabel: 's =',
+      input: '"racecar"',
+      expectedOutput: 'True',
+      explanation: '"racecar" reversed is "racecar".',
+      argsExpression: '("racecar",)',
     },
   ],
 }

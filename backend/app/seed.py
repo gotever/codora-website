@@ -4,6 +4,7 @@ from pathlib import Path
 from .db import connection, pool
 
 DATA = Path(__file__).resolve().parents[1] / "data" / "curriculum.json"
+HIDDEN_DATA = Path(__file__).resolve().parents[1] / "data" / "hidden_test_cases.json"
 
 
 def md_for_lesson(lesson: dict) -> str:
@@ -130,17 +131,23 @@ def main() -> None:
                     for source_id, _title, _course_id, content, _order_index in lesson_sources
                 ])
 
+                hidden_cases = {}
+                if HIDDEN_DATA.exists():
+                    hidden_cases = json.loads(HIDDEN_DATA.read_text(encoding="utf-8"))
+
                 exercise_rows = []
                 for exercise in data["exercises"]:
                     # No canonical exercise-to-lesson mapping exists in the source data. These
                     # assignments are provisional to satisfy the lesson FK; see backend/README.md.
-                    if exercise["functionName"] in ("reverse_string", "count_vowels"):
-                        lesson_id = lesson_ids["3"]
+                    if exercise["functionName"] in ("reverse_string", "count_vowels", "is_palindrome"):
+                        lesson_id = "3"
                     else:
                         lesson_id = lesson_ids["7"]
                     exercise_rows.append((lesson_id, exercise["title"], exercise["difficulty"],
                         exercise["description"], exercise["functionName"], exercise["initialCode"],
-                        json.dumps({"runner": data["testCases"][exercise["id"]], "examples": exercise["examples"],
+                        json.dumps({"runner": data["testCases"][exercise["id"]],
+                            "hidden": hidden_cases.get(exercise["id"], []),
+                            "examples": exercise["examples"],
                             "constraints": exercise["constraints"], "functionSignature": exercise["functionSignature"],
                             "number": exercise["number"], "total": exercise["total"], "filename": exercise["filename"],
                             "courseId": exercise["courseId"], "courseTitle": exercise["courseTitle"]}),

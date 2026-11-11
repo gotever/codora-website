@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-codora}
       POSTGRES_USER: ${POSTGRES_USER:-codora}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the root .env file}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-1234321}
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
@@ -14,6 +14,26 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-codora}:${POSTGRES_PASSWORD:-1234321}@postgres:5432/${POSTGRES_DB:-codora}
+      - API_HOST=0.0.0.0
+      - API_PORT=3001
+      - JWT_SECRET=${JWT_SECRET:-12345678901234567890123456789012}
+      - COOKIE_SECURE=false
+      - FRONTEND_ORIGIN=${FRONTEND_ORIGIN:-http://localhost:5173}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/data:/app/data
 
 volumes:
   codora-postgres:

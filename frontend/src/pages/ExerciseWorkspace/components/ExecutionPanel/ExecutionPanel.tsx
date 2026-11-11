@@ -42,7 +42,8 @@ export default function ExecutionPanel({
 
   const isCasePassed = currentCaseResult?.passed
 
-  const buttonsDisabled = isRunning || isSubmitting || !pyodideReady
+  const runDisabled = isRunning || isSubmitting || !pyodideReady
+  const submitDisabled = isRunning || isSubmitting
 
   return (
     <div className="exec-panel">
@@ -257,8 +258,11 @@ ${runResult.message || 'Execution finished.'}
         <button
           type="button"
           className="exec-panel__btn-run"
-          onClick={onRun}
-          disabled={buttonsDisabled}
+          onClick={() => {
+            setActiveTab('output')
+            onRun()
+          }}
+          disabled={runDisabled}
           title={!pyodideReady ? 'Waiting for Python runtime…' : 'Run code'}
         >
           <svg
@@ -276,9 +280,12 @@ ${runResult.message || 'Execution finished.'}
         <button
           type="button"
           className="exec-panel__btn-submit"
-          onClick={onSubmit}
-          disabled={buttonsDisabled}
-          title={!pyodideReady ? 'Waiting for Python runtime…' : 'Submit code'}
+          onClick={() => {
+            setActiveTab('output')
+            onSubmit()
+          }}
+          disabled={submitDisabled}
+          title={isSubmitting ? 'Submitting to judge…' : 'Submit solution to judge'}
         >
           <svg
             viewBox="0 0 24 24"

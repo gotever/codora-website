@@ -35,3 +35,14 @@ def current_user_id(codora_session: str | None = Cookie(default=None)) -> str:
         return str(UUID(payload["sub"]))
     except (jwt.PyJWTError, KeyError, ValueError):
         raise HTTPException(status_code=401, detail="Authentication required") from None
+
+
+def optional_user_id(codora_session: str | None = Cookie(default=None)) -> str | None:
+    if not codora_session:
+        return None
+    try:
+        payload = jwt.decode(codora_session, settings.jwt_secret, algorithms=["HS256"])
+        return str(UUID(payload["sub"]))
+    except (jwt.PyJWTError, KeyError, ValueError):
+        return None
+

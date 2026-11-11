@@ -1,7 +1,11 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { EXERCISES, TEST_CASES, type Exercise, type TestCase } from '../../data/exercises'
+<<<<<<< HEAD
 import { fetchExercise, fetchExercises, saveProgress, type ApiExercise } from '../../lib/api'
+=======
+import { fetchExercise, saveProgress, submitExercise, type ApiExercise, type SubmitResult } from '../../lib/api'
+>>>>>>> e031c30 (feat(runner): implement code execution runner with test cases and workspace integration)
 import { sanitizeHtml } from '../../lib/sanitizeHtml'
 import { usePyodide, type PyodideResult } from '../../hooks/usePyodide'
 import ProblemDescription from './components/ProblemDescription/ProblemDescription'
@@ -232,20 +236,110 @@ export default function ExerciseWorkspace() {
     setIsRunning(false)
   }
 
-  // Submit code — run all cases and record submission
+  // Submit code — send to backend judge (or fallback to Pyodide if backend offline)
   const handleSubmit = async () => {
-    if (!isReady) return
-
     setIsSubmitting(true)
-    setRunResult({ status: 'running' })
+    setRunResult({ status: 'running', message: 'Submitting solution to backend judge...' })
 
-    const startTime = performance.now()
-    const results = []
+    try {
+      const result: SubmitResult = await submitExercise(exercise.id, code)
 
-    for (const tc of testCases) {
-      const result = await executeTestCase(tc)
-      results.push(result)
+      const isAccepted = result.status === 'Accepted'
+      const statusText = isAccepted ? 'success' : 'error'
+
+      let details = `Status: ${result.status}\nPassed: ${result.passed_count}/${result.total_count} test cases (including hidden cases)\nRuntime: ${result.runtime_ms} ms`
+
+      if (result.failed_case) {
+        if (result.failed_case.is_hidden) {
+          details += `\nFailed on: Hidden Test Case (Corner Case)`
+        } else {
+          details += `\nFailed on: ${result.failed_case.label || result.failed_case.case_id}`
+          if (result.failed_case.expected !== undefined) {
+            details += `\nExpected: ${result.failed_case.expected}\nActual: ${result.failed_case.actual}`
+          }
+        }
+        if (result.failed_case.error) {
+          details += `\nError: ${result.failed_case.error}`
+        }
+      }
+
+      if (result.error && !result.failed_case?.error) {
+        details += `\nError: ${result.error}`
+      }
+
+      setRunResult({
+        status: statusText,
+        message: isAccepted
+          ? `🎉 Accepted! All ${result.total_count}/${result.total_count} test cases passed. Fantastic job!`
+          : `Submission result: ${result.status} (${result.passed_count}/${result.total_count} passed).`,
+        stdout: details,
+      })
+
+      setSubmissions((prev) => [
+        {
+          id: String(Date.now()),
+          time: 'Just now',
+          status: isAccepted ? 'Accepted' : 'Wrong Answer',
+          runtime: `${result.runtime_ms} ms`,
+          memory: 'Server Sandbox',
+        },
+        ...prev,
+      ])
+    } catch (err: any) {
+      console.warn('Backend submission unavailable, falling back to browser evaluation...', err)
+
+      if (!isReady) {
+        setRunResult({
+          status: 'error',
+          message: 'Backend server is not running and Python runtime is still loading. Please start backend or wait for Pyodide.',
+        })
+        setIsSubmitting(false)
+        return
+      }
+
+      const startTime = performance.now()
+      const results = []
+
+      for (const tc of testCases) {
+        const r = await executeTestCase(tc)
+        results.push(r)
+      }
+
+      const totalTime = Math.round(performance.now() - startTime)
+      const allPassed = results.every((r) => r.passed)
+      const passedCount = results.filter((r) => r.passed).length
+      const totalCount = results.length
+
+      setRunResult({
+        status: allPassed ? 'success' : 'error',
+        message: allPassed
+          ? `Accepted! (Browser-evaluated) All ${totalCount}/${totalCount} test cases passed.`
+          : `Submission failed: ${passedCount}/${totalCount} test cases passed.`,
+        stdout: results
+          .map((r) => {
+            const tc = testCases.find((t) => t.id === r.caseId)
+            return `${tc?.label}: ${r.passed ? '✓ PASS' : '✗ FAIL'} → ${r.actualOutput} (${r.executionTime}ms)`
+          })
+          .join('\n'),
+        results,
+      })
+
+      if (allPassed) void saveProgress(exercise.id, 'exercise', 'completed').catch(() => undefined)
+
+      setSubmissions((prev) => [
+        {
+          id: String(Date.now()),
+          time: 'Just now',
+          status: allPassed ? 'Accepted' : 'Wrong Answer',
+          runtime: `${totalTime} ms`,
+          memory: '~14 MB (Browser)',
+        },
+        ...prev,
+      ])
+    } finally {
+      setIsSubmitting(false)
     }
+<<<<<<< HEAD
 
     const totalTime = Math.round(performance.now() - startTime)
     const allPassed = results.every((r) => r.passed)
@@ -281,6 +375,8 @@ export default function ExerciseWorkspace() {
     ])
 
     setIsSubmitting(false)
+=======
+>>>>>>> e031c30 (feat(runner): implement code execution runner with test cases and workspace integration)
   }
 
   return (

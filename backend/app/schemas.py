@@ -21,6 +21,10 @@ class ProgressInput(BaseModel):
     status: Literal["not_started", "in_progress", "completed"]
 
 
+class SubmitInput(BaseModel):
+    code: str = Field(min_length=1, max_length=100_000)
+
+
 class ChatInput(BaseModel):
     exercise_id: int | None = Field(default=None, gt=0)
     role: Literal["user", "assistant"]
