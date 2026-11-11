@@ -7,13 +7,14 @@ MIGRATIONS = [
     Path(__file__).resolve().parents[1] / "migrations" / "002_numeric_course_ids.sql",
     Path(__file__).resolve().parents[1] / "migrations" / "003_drop_course_slug.sql",
     Path(__file__).resolve().parents[1] / "migrations" / "004_numeric_lesson_exercise_ids.sql",
+    Path(__file__).resolve().parents[1] / "migrations" / "005_learner_ability.sql",
 ]
 REQUIRED_COLUMNS = {
-    "users": {"id", "email", "username", "password_hash", "full_name", "created_at"},
+    "users": {"id", "email", "username", "password_hash", "full_name", "created_at", "level"},
     "courses": {"id", "title", "description", "order_index"},
     "lessons": {"id", "title", "course_id", "content_markdown", "order_index"},
     "exercises": {"id", "lesson_id", "title", "difficulty", "description", "function_name", "starter_code", "test_cases", "hints", "tags"},
-    "user_progress": {"id", "user_id", "item_type", "item_id", "status", "completed_at"},
+    "user_progress": {"id", "user_id", "item_type", "item_id", "status", "completed_at", "score", "last_attempt_at"},
     "ai_chats": {"id", "user_id", "exercise_id", "role", "message", "code_snapshot", "created_at"},
 }
 
@@ -49,7 +50,7 @@ def main() -> None:
             conn.execute("SELECT pg_advisory_xact_lock(73190421)")
             for migration in MIGRATIONS:
                 conn.execute(migration.read_text(encoding="utf-8"))
-        print("Applied idempotent migrations 001_initial_schema.sql through 004_numeric_lesson_exercise_ids.sql")
+        print("Applied idempotent migrations 001_initial_schema.sql through 005_learner_ability.sql")
     finally:
         pool.close()
 

@@ -2,6 +2,13 @@ import { useState, useMemo, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { EXERCISES, TEST_CASES, type Exercise, type TestCase } from '../../data/exercises'
 import { fetchExercise, fetchExercises, saveProgress, type ApiExercise } from '../../lib/api'
+
+const CONSECUTIVE_ERRORS_KEY = 'codora:consecutive-errors'
+
+function updateConsecutiveErrorSession(allPassed: boolean) {
+  const current = Number(sessionStorage.getItem(CONSECUTIVE_ERRORS_KEY) ?? 0)
+  sessionStorage.setItem(CONSECUTIVE_ERRORS_KEY, String(allPassed ? 0 : (Number.isFinite(current) ? current : 0) + 1))
+}
 import { sanitizeHtml } from '../../lib/sanitizeHtml'
 import { usePyodide, type PyodideResult } from '../../hooks/usePyodide'
 import ProblemDescription from './components/ProblemDescription/ProblemDescription'
@@ -212,6 +219,10 @@ export default function ExerciseWorkspace() {
     const allPassed = results.every((r) => r.passed)
     const passedCount = results.filter((r) => r.passed).length
     const totalCount = results.length
+    updateConsecutiveErrorSession(allPassed)
+    if (typeof exercise.id === 'number' && totalCount > 0) {
+      void saveProgress(exercise.id, 'exercise', allPassed ? 'completed' : 'in_progress', passedCount / totalCount * 10).catch(() => undefined)
+    }
 
     const firstError = results.find((r) => !r.passed)
 
@@ -264,9 +275,10 @@ export default function ExerciseWorkspace() {
       results,
     })
 
-    // This is learner-reported browser execution progress, not server-side grading.
-    if (allPassed && typeof exercise.id === 'number') {
-      void saveProgress(exercise.id, 'exercise', 'completed').catch(() => undefined)
+    // Browser-side test results personalize later lessons; the server does not grade submissions.
+    updateConsecutiveErrorSession(allPassed)
+    if (typeof exercise.id === 'number' && totalCount > 0) {
+      void saveProgress(exercise.id, 'exercise', allPassed ? 'completed' : 'in_progress', passedCount / totalCount * 10).catch(() => undefined)
     }
 
     setSubmissions((prev) => [

@@ -1,12 +1,21 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import type { CourseNavigation, LessonDetail as LessonDetailType } from '../../data/lessons'
-import { fetchCourseLessons, fetchCourses, fetchLesson } from '../../lib/api'
+import { fetchCourseLessons, fetchCourses, fetchLesson, personalizeLesson } from '../../lib/api'
 import { buildCourseNavigation, parseLessonDetail, resolveLessonNavigation } from '../../lib/lessonContent'
 import CourseSidebar from './components/CourseSidebar/CourseSidebar'
 import LessonContent from './components/LessonContent/LessonContent'
 import LessonAssistant from './components/LessonAssistant/LessonAssistant'
 import './LessonDetail.css'
+
+function getConsecutiveErrors() {
+  try {
+    const errors = Number(sessionStorage.getItem('codora:consecutive-errors') ?? 0)
+    return Number.isFinite(errors) && errors > 0 ? Math.floor(errors) : 0
+  } catch {
+    return 0
+  }
+}
 
 export default function LessonDetail() {
   const { id } = useParams<{ id: string }>()
@@ -14,6 +23,7 @@ export default function LessonDetail() {
     requestedId: string
     lesson: LessonDetailType | null
     courseNav: CourseNavigation | null
+    personalization: { adapted: boolean; level?: 'beginner' | 'intermediate' | 'advanced' }
     error: boolean
   } | null>(null)
 
@@ -25,20 +35,33 @@ export default function LessonDetail() {
     async function loadLesson() {
       try {
         const record = await fetchLesson(lessonId)
-        const [courses, courseLessons] = await Promise.all([
+        const [courses, courseLessons, personalization] = await Promise.all([
           fetchCourses(),
           fetchCourseLessons(record.course_id),
+          personalizeLesson(record.id, getConsecutiveErrors())
+            .then((value) => ({ value, adapted: true as const }))
+            .catch(() => ({ value: null, adapted: false as const })),
         ])
+        const contentMarkdown = personalization.value?.content_markdown ?? record.content_markdown
         const course = courses.find((item) => item.id === record.course_id)
-        const parsedLesson = parseLessonDetail(record.content_markdown, record.id)
+        const parsedLesson = parseLessonDetail(contentMarkdown, record.id)
         const lesson = parsedLesson ? resolveLessonNavigation(parsedLesson, record, courseLessons) : null
         const courseNav = course ? buildCourseNavigation(course, courseLessons) : null
 
         if (active) {
-          setLoadedLesson({ requestedId: lessonId, lesson, courseNav, error: false })
+          setLoadedLesson({
+            requestedId: lessonId,
+            lesson,
+            courseNav,
+            personalization: {
+              adapted: personalization.adapted,
+              level: personalization.value?.ability.level,
+            },
+            error: false,
+          })
         }
       } catch {
-        if (active) setLoadedLesson({ requestedId: lessonId, lesson: null, courseNav: null, error: true })
+        if (active) setLoadedLesson({ requestedId: lessonId, lesson: null, courseNav: null, personalization: { adapted: false }, error: true })
       }
     }
 
@@ -61,7 +84,7 @@ export default function LessonDetail() {
     return <main className="lesson-page-container" id="main-content" role="status">Loading lesson…</main>
   }
 
-  const { lesson, courseNav, error } = loadedLesson
+  const { lesson, courseNav, personalization, error } = loadedLesson
   if (error || !lesson || !courseNav) {
     return (
       <main className="lesson-page-container" id="main-content">
@@ -124,6 +147,11 @@ export default function LessonDetail() {
 
         {/* Center Column: Main Lesson Content Area */}
         <div className="lesson-center-column">
+          <p className={`lesson-personalization-status${personalization.adapted ? ' lesson-personalization-status--adapted' : ''}`} role="status">
+            {personalization.adapted
+              ? `Lesson adapted for your ${personalization.level} level.`
+              : 'Personalized lesson unavailable; showing the standard lesson.'}
+          </p>
           <LessonContent
             lesson={lesson}
             onAskAIHint={handleAskAIHint}

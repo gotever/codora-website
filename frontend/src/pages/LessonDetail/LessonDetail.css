@@ -22,6 +22,16 @@
   background-color: var(--color-surface);
 }
 
+.lesson-personalization-status {
+  margin: 12px 24px 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+}
+
+.lesson-personalization-status--adapted {
+  color: var(--color-accent, #32836d);
+}
+
 /* Mobile Top Action Bar */
 .lesson-mobile-bar {
   display: none;

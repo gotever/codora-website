@@ -6,9 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from psycopg import errors
 
-from .auth import current_user_id, hash_password, make_token, verify_password
+from .auth import current_user_id, hash_password, make_token, optional_current_user_id, verify_password
 from .db import connection, pool
-from .schemas import ChatInput, LoginInput, ProgressInput, RegisterInput
+from .personalization import personalize_lesson as create_personalized_lesson
+from .schemas import ChatInput, LoginInput, PersonalizeLessonInput, ProgressInput, RegisterInput, UserLevelInput
 from .settings import settings
 
 @asynccontextmanager
@@ -85,6 +86,24 @@ def get_lesson(lesson_id: int):
     return {"lesson": row}
 
 
+@app.post("/api/lessons/{lesson_id}/personalize")
+def adapt_lesson(
+    lesson_id: int,
+    body: PersonalizeLessonInput,
+    user_id: str | None = Depends(optional_current_user_id),
+):
+    with connection() as conn:
+        lesson = conn.execute(
+            "SELECT content_markdown FROM lessons WHERE id=%s", (lesson_id,)
+        ).fetchone()
+    if not lesson:
+        raise HTTPException(404, "Lesson not found")
+    content, ability = create_personalized_lesson(
+        lesson["content_markdown"], user_id, body.consecutive_errors
+    )
+    return {"content_markdown": content, "ability": ability.model_dump()}
+
+
 @app.get("/api/lessons/{lesson_id}/exercises")
 def lesson_exercises(lesson_id: int):
     with connection() as conn:
@@ -117,8 +136,8 @@ def get_exercise(exercise_id: int):
 def register(body: RegisterInput, response: Response):
     try:
         with connection() as conn:
-            user = conn.execute("""INSERT INTO users(email,username,password_hash,full_name) VALUES(%s,%s,%s,%s)
-                RETURNING id,email,username,full_name,created_at""", (str(body.email).lower(), body.username, hash_password(body.password), body.full_name)).fetchone()
+            user = conn.execute("""INSERT INTO users(email,username,password_hash,full_name,level) VALUES(%s,%s,%s,%s,%s)
+                RETURNING id,email,username,full_name,level,created_at""", (str(body.email).lower(), body.username, hash_password(body.password), body.full_name, body.level)).fetchone()
     except errors.UniqueViolation:
         raise HTTPException(409, "Email or username is already registered") from None
     set_session(response, str(user["id"]), user["email"])
@@ -130,7 +149,7 @@ def register(body: RegisterInput, response: Response):
 @app.post("/api/auth/login")
 def login(body: LoginInput, response: Response):
     with connection() as conn:
-        user = conn.execute("SELECT id,email,username,full_name,created_at,password_hash FROM users WHERE email=%s", (str(body.email).lower(),)).fetchone()
+        user = conn.execute("SELECT id,email,username,full_name,level,created_at,password_hash FROM users WHERE email=%s", (str(body.email).lower(),)).fetchone()
     if not user or not verify_password(body.password, user["password_hash"]):
         raise HTTPException(401, "Invalid email or password")
     set_session(response, str(user["id"]), user["email"])
@@ -149,12 +168,23 @@ def logout(response: Response):
 @app.get("/api/auth/me")
 def me(user_id: str = Depends(current_user_id)):
     with connection() as conn:
-        user = conn.execute("SELECT id,email,username,full_name,created_at FROM users WHERE id=%s", (user_id,)).fetchone()
+        user = conn.execute("SELECT id,email,username,full_name,level,created_at FROM users WHERE id=%s", (user_id,)).fetchone()
     if not user:
         raise HTTPException(401, "Authentication required")
     user["id"] = str(user["id"])
     user["created_at"] = user["created_at"].isoformat()
     return {"user": user}
+
+
+@app.put("/api/auth/level")
+def update_level(body: UserLevelInput, user_id: str = Depends(current_user_id)):
+    with connection() as conn:
+        user = conn.execute(
+            "UPDATE users SET level=%s WHERE id=%s RETURNING level", (body.level, user_id)
+        ).fetchone()
+    if not user:
+        raise HTTPException(401, "Authentication required")
+    return {"level": user["level"]}
 
 
 @app.get("/api/progress")
@@ -166,23 +196,31 @@ def get_progress(user_id: str = Depends(current_user_id)):
 
 @app.put("/api/progress")
 def put_progress(body: ProgressInput, user_id: str = Depends(current_user_id)):
+    if body.score is not None and body.item_type != "exercise":
+        raise HTTPException(422, "Scores can only be recorded for exercises")
     table = "lessons" if body.item_type == "lesson" else "exercises"
     with connection() as conn:
         if not conn.execute(f"SELECT 1 FROM {table} WHERE id=%s", (body.item_id,)).fetchone():
             raise HTTPException(404, "Progress item not found")
-        row = conn.execute("""INSERT INTO user_progress(user_id,item_type,item_id,status,completed_at)
-            VALUES(%s,%s,%s,%s,CASE WHEN %s='completed' THEN now() ELSE NULL END)
+        row = conn.execute("""INSERT INTO user_progress(user_id,item_type,item_id,status,completed_at,score,last_attempt_at)
+            VALUES(%s,%s,%s,%s,CASE WHEN %s='completed' THEN now() ELSE NULL END,%s,
+                CASE WHEN %s IS NOT NULL THEN now() ELSE NULL END)
             ON CONFLICT(user_id,item_type,item_id) DO UPDATE SET status=EXCLUDED.status,
-            completed_at=CASE WHEN EXCLUDED.status='completed' THEN COALESCE(user_progress.completed_at,now()) ELSE NULL END
-            RETURNING id,item_type,item_id,status,completed_at""", (user_id,body.item_type,body.item_id,body.status,body.status)).fetchone()
+            completed_at=CASE WHEN EXCLUDED.status='completed' THEN COALESCE(user_progress.completed_at,now()) ELSE NULL END,
+            score=COALESCE(EXCLUDED.score,user_progress.score),
+            last_attempt_at=COALESCE(EXCLUDED.last_attempt_at,user_progress.last_attempt_at)
+            RETURNING id,item_type,item_id,status,completed_at,score,last_attempt_at""",
+            (user_id,body.item_type,body.item_id,body.status,body.status,body.score,body.score)).fetchone()
     row["id"] = str(row["id"])
     return {"progress": row}
 
 
 @app.get("/api/chats")
-def get_chats(exercise_id: int | None = None, user_id: str = Depends(current_user_id)):
+def get_chats(exercise_id: int | None = None, user_id: str | None = Depends(optional_current_user_id)):
+    if user_id is None:
+        return {"messages": []}
     with connection() as conn:
-        if exercise_id:
+        if exercise_id is not None:
             rows = conn.execute("SELECT id,exercise_id,role,message,code_snapshot,created_at FROM ai_chats WHERE user_id=%s AND exercise_id=%s ORDER BY created_at", (user_id, exercise_id)).fetchall()
         else:
             rows = conn.execute("SELECT id,exercise_id,role,message,code_snapshot,created_at FROM ai_chats WHERE user_id=%s AND exercise_id IS NULL ORDER BY created_at", (user_id,)).fetchall()

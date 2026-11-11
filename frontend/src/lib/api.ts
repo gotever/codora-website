@@ -66,6 +66,23 @@ export async function fetchLesson(id: string | number): Promise<ApiLesson> {
   return result.lesson
 }
 
+export interface ApiPersonalizedLesson {
+  content_markdown: string
+  ability: {
+    level: 'beginner' | 'intermediate' | 'advanced'
+    mastered_topics: string[]
+    recent_quiz_avg: number
+    consecutive_errors: number
+  }
+}
+
+export async function personalizeLesson(id: string | number, consecutiveErrors = 0): Promise<ApiPersonalizedLesson> {
+  return request(`/api/lessons/${encodeURIComponent(id)}/personalize`, {
+    method: 'POST',
+    body: JSON.stringify({ consecutive_errors: consecutiveErrors }),
+  })
+}
+
 export async function fetchExercises(): Promise<ApiExercise[]> {
   const result = await request<{ exercises: ApiExercise[] }>('/api/exercises')
   return result.exercises
@@ -76,8 +93,8 @@ export async function fetchExercise(id: string | number): Promise<ApiExercise> {
   return result.exercise
 }
 
-export async function saveProgress(itemId: number, itemType: 'lesson' | 'exercise', status: 'not_started' | 'in_progress' | 'completed') {
-  return request('/api/progress', { method: 'PUT', body: JSON.stringify({ item_id: itemId, item_type: itemType, status }) })
+export async function saveProgress(itemId: number, itemType: 'lesson' | 'exercise', status: 'not_started' | 'in_progress' | 'completed', score?: number) {
+  return request('/api/progress', { method: 'PUT', body: JSON.stringify({ item_id: itemId, item_type: itemType, status, score }) })
 }
 
 export interface ApiChatMessage {
