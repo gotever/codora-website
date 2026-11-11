@@ -123,15 +123,27 @@ export default function LessonAssistant({
     }, 700)
   }, [inputValue, isTyping, currentLessonTopic])
 
-  // Handle external hint request (e.g. from "Ask AI for a hint ->" in the embedded challenge)
+  // Keep a stable ref to handleSend so the externalPrompt effect never
+  // needs handleSend as a dependency (avoids an infinite re-trigger loop
+  // caused by isTyping toggling → handleSend recreation → effect re-runs).
+  const handleSendRef = useRef(handleSend)
   useEffect(() => {
-    if (externalPrompt) {
+    handleSendRef.current = handleSend
+  })
+
+  // Handle external hint request (e.g. from "Ask AI for a hint →" in the embedded challenge).
+  // We track the last prompt we already sent so clicking the same challenge button
+  // twice in a row still only fires once.
+  const lastExternalPromptRef = useRef<string | undefined>(undefined)
+  useEffect(() => {
+    if (externalPrompt && externalPrompt !== lastExternalPromptRef.current) {
+      lastExternalPromptRef.current = externalPrompt
       const timer = setTimeout(() => {
-        handleSend(externalPrompt)
+        handleSendRef.current(externalPrompt)
       }, 0)
       return () => clearTimeout(timer)
     }
-  }, [externalPrompt, handleSend])
+  }, [externalPrompt])
 
   const handleFeedback = (messageId: string, feedback: 'yes' | 'no') => {
     setMessages((prev) =>
