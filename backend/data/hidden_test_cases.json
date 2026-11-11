@@ -1,0 +1,110 @@
+{
+  "is-palindrome": [
+    {
+      "id": "hidden-1",
+      "label": "Hidden 1: Odd length palindrome",
+      "argsExpression": "(\"racecar\",)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-2",
+      "label": "Hidden 2: Non-palindrome pair",
+      "argsExpression": "(\"ab\",)",
+      "expectedOutput": "False"
+    },
+    {
+      "id": "hidden-3",
+      "label": "Hidden 3: Multi-word palindrome without spaces",
+      "argsExpression": "(\"kayak\",)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-4",
+      "label": "Hidden 4: Long palindrome",
+      "argsExpression": "(\"abacaba\",)",
+      "expectedOutput": "True"
+    }
+  ],
+  "sum-of-even-numbers": [
+    {
+      "id": "hidden-1",
+      "label": "Hidden 1: All negative evens",
+      "argsExpression": "([-2, -4, -6],)",
+      "expectedOutput": "-12"
+    },
+    {
+      "id": "hidden-2",
+      "label": "Hidden 2: All zeros",
+      "argsExpression": "([0, 0, 0],)",
+      "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-3",
+      "label": "Hidden 3: Mixed large numbers",
+      "argsExpression": "([100, 201, 300],)",
+      "expectedOutput": "400"
+    }
+  ],
+  "reverse-a-string": [
+    {
+      "id": "hidden-1",
+      "label": "Hidden 1: Single char",
+      "argsExpression": "(\"a\",)",
+      "expectedOutput": "'a'"
+    },
+    {
+      "id": "hidden-2",
+      "label": "Hidden 2: Palindrome string",
+      "argsExpression": "(\"radar\",)",
+      "expectedOutput": "'radar'"
+    },
+    {
+      "id": "hidden-3",
+      "label": "Hidden 3: Numeric text",
+      "argsExpression": "(\"12345\",)",
+      "expectedOutput": "'54321'"
+    }
+  ],
+  "count-vowels": [
+    {
+      "id": "hidden-1",
+      "label": "Hidden 1: No vowels at all",
+      "argsExpression": "(\"rhythm\",)",
+      "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-2",
+      "label": "Hidden 2: All vowels uppercase and lowercase",
+      "argsExpression": "(\"aeiouAEIOU\",)",
+      "expectedOutput": "10"
+    },
+    {
+      "id": "hidden-3",
+      "label": "Hidden 3: Sentence with spaces",
+      "argsExpression": "(\"The quick brown fox\",)",
+      "expectedOutput": "5"
+    }
+  ],
+  "find-maximum": [
+    {
+      "id": "hidden-1",
+      "label": "Hidden 1: All negative numbers",
+      "argsExpression": "([-100, -50, -200],)",
+      "expectedOutput": "-50"
+    },
+    {
+      "id": "hidden-2",
+      "label": "Hidden 2: Duplicate max numbers",
+      "argsExpression": "([10, 10, 10],)",
+      "expectedOutput": "10"
+    },
+    {
+      "id": "hidden-3",
+      "label": "Hidden 3: Single element",
+      "argsExpression": "([999],)",
+      "expectedOutput": "999"
+    }
+  ]
+}
+
+\n

@@ -1,13 +1,17 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { EXERCISES, TEST_CASES, type Exercise, type TestCase } from '../../data/exercises'
-import { fetchExercise, fetchExercises, saveProgress, type ApiExercise } from '../../lib/api'
+import { fetchExercise, fetchExercises, saveProgress, submitExercise, type ApiExercise, type SubmitResult } from '../../lib/api'
 
 const CONSECUTIVE_ERRORS_KEY = 'codora:consecutive-errors'
 
 function updateConsecutiveErrorSession(allPassed: boolean) {
-  const current = Number(sessionStorage.getItem(CONSECUTIVE_ERRORS_KEY) ?? 0)
-  sessionStorage.setItem(CONSECUTIVE_ERRORS_KEY, String(allPassed ? 0 : (Number.isFinite(current) ? current : 0) + 1))
+  try {
+    const current = Number(sessionStorage.getItem(CONSECUTIVE_ERRORS_KEY) ?? 0)
+    sessionStorage.setItem(CONSECUTIVE_ERRORS_KEY, String(allPassed ? 0 : (Number.isFinite(current) ? current : 0) + 1))
+  } catch {
+    // Personalization state is optional when browser storage is unavailable.
+  }
 }
 import { sanitizeHtml } from '../../lib/sanitizeHtml'
 import { usePyodide, type PyodideResult } from '../../hooks/usePyodide'
@@ -243,56 +247,85 @@ export default function ExerciseWorkspace() {
     setIsRunning(false)
   }
 
-  // Submit code — run all cases and record submission
+  // Submit code to the backend runner; fall back to browser evaluation when it is unavailable.
   const handleSubmit = async () => {
-    if (!isReady) return
-
     setIsSubmitting(true)
-    setRunResult({ status: 'running' })
+    setRunResult({ status: 'running', message: 'Submitting solution to backend runner…' })
 
-    const startTime = performance.now()
-    const results = []
+    try {
+      const result: SubmitResult = await submitExercise(String(exercise.id), code)
+      const allPassed = result.status === 'Accepted'
+      updateConsecutiveErrorSession(allPassed)
+      const details = [`Status: ${result.status}`, `Passed: ${result.passed_count}/${result.total_count} test cases`, `Runtime: ${result.runtime_ms} ms`]
+      if (result.failed_case?.is_hidden) {
+        details.push('Failed on a hidden test case.')
+      } else if (result.failed_case) {
+        details.push(`Failed on: ${result.failed_case.label || result.failed_case.case_id || 'test case'}`)
+        if (result.failed_case.expected !== undefined) {
+          details.push(`Expected: ${result.failed_case.expected}`, `Actual: ${result.failed_case.actual ?? ''}`)
+        }
+      }
+      if (result.error) details.push(`Error: ${result.error}`)
 
-    for (const tc of testCases) {
-      const result = await executeTestCase(tc)
-      results.push(result)
-    }
+      setRunResult({
+        status: allPassed ? 'success' : 'error',
+        message: allPassed
+          ? `Accepted! All ${result.total_count}/${result.total_count} test cases passed.`
+          : `Submission result: ${result.status} (${result.passed_count}/${result.total_count} passed).`,
+        stdout: details.join('\n'),
+      })
+      setSubmissions((previous) => [{
+        id: String(Date.now()),
+        time: 'Just now',
+        status: allPassed ? 'Accepted' : 'Wrong Answer',
+        runtime: `${result.runtime_ms} ms`,
+        memory: 'Backend runner',
+      }, ...previous])
+      return
+    } catch (error) {
+      console.warn('Backend submission unavailable; falling back to browser evaluation.', error)
+      if (!isReady) {
+        setRunResult({
+          status: 'error',
+          message: 'Backend runner is unavailable and Python runtime is still loading. Please start the backend or wait for Pyodide.',
+        })
+        return
+      }
 
-    const totalTime = Math.round(performance.now() - startTime)
-    const allPassed = results.every((r) => r.passed)
-    const passedCount = results.filter((r) => r.passed).length
-    const totalCount = results.length
+      const startTime = performance.now()
+      const results = []
+      for (const testCase of testCases) results.push(await executeTestCase(testCase))
 
-    setRunResult({
-      status: allPassed ? 'success' : 'error',
-      message: allPassed
-        ? `Accepted! All ${totalCount}/${totalCount} test cases passed. Fantastic job! (${totalTime}ms)`
-        : `Submission failed: ${passedCount}/${totalCount} test cases passed.`,
-      stdout: results.map((r) => {
-        const tc = testCases.find((t) => t.id === r.caseId)
-        return `${tc?.label}: ${r.passed ? '✓ PASS' : '✗ FAIL'} → ${r.actualOutput} (${r.executionTime}ms)`
-      }).join('\n'),
-      results,
-    })
+      const totalTime = Math.round(performance.now() - startTime)
+      const allPassed = results.every((result) => result.passed)
+      const passedCount = results.filter((result) => result.passed).length
+      const totalCount = results.length
+      updateConsecutiveErrorSession(allPassed)
+      if (typeof exercise.id === 'number' && totalCount > 0) {
+        void saveProgress(exercise.id, 'exercise', allPassed ? 'completed' : 'in_progress', passedCount / totalCount * 10).catch(() => undefined)
+      }
 
-    // Browser-side test results personalize later lessons; the server does not grade submissions.
-    updateConsecutiveErrorSession(allPassed)
-    if (typeof exercise.id === 'number' && totalCount > 0) {
-      void saveProgress(exercise.id, 'exercise', allPassed ? 'completed' : 'in_progress', passedCount / totalCount * 10).catch(() => undefined)
-    }
-
-    setSubmissions((prev) => [
-      {
+      setRunResult({
+        status: allPassed ? 'success' : 'error',
+        message: allPassed
+          ? `Accepted! (Browser-evaluated) All ${totalCount}/${totalCount} test cases passed.`
+          : `Submission failed: ${passedCount}/${totalCount} test cases passed.`,
+        stdout: results.map((result) => {
+          const testCase = testCases.find((item) => item.id === result.caseId)
+          return `${testCase?.label}: ${result.passed ? '✓ PASS' : '✗ FAIL'} → ${result.actualOutput} (${result.executionTime}ms)`
+        }).join('\n'),
+        results,
+      })
+      setSubmissions((previous) => [{
         id: String(Date.now()),
         time: 'Just now',
         status: allPassed ? 'Accepted' : 'Wrong Answer',
         runtime: `${totalTime} ms`,
-        memory: '~14 MB',
-      },
-      ...prev,
-    ])
-
-    setIsSubmitting(false)
+        memory: '~14 MB (Browser)',
+      }, ...previous])
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (

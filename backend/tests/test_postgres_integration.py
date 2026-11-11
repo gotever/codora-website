@@ -19,6 +19,7 @@ MIGRATIONS = [
         "002_numeric_course_ids.sql",
         "003_drop_course_slug.sql",
         "004_numeric_lesson_exercise_ids.sql",
+        "005_learner_ability.sql",
     )
 ]
 

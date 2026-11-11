@@ -9,7 +9,8 @@ from psycopg import errors
 from .auth import current_user_id, hash_password, make_token, optional_current_user_id, verify_password
 from .db import connection, pool
 from .personalization import personalize_lesson as create_personalized_lesson
-from .schemas import ChatInput, LoginInput, PersonalizeLessonInput, ProgressInput, RegisterInput, UserLevelInput
+from .runner import run_code_sandbox
+from .schemas import ChatInput, LoginInput, PersonalizeLessonInput, ProgressInput, RegisterInput, SubmitInput, UserLevelInput
 from .settings import settings
 
 @asynccontextmanager
@@ -40,6 +41,12 @@ async def safe_validation_error(_request, _error):
 def set_session(response: Response, user_id: str, email: str) -> None:
     response.set_cookie("codora_session", make_token(user_id, email), httponly=True,
                         secure=settings.cookie_secure, samesite="lax", max_age=604800, path="/")
+
+
+def strip_hidden_test_cases(test_case_data):
+    if isinstance(test_case_data, dict):
+        return {key: value for key, value in test_case_data.items() if key != "hidden"}
+    return test_case_data
 
 
 @app.get("/api/health")
@@ -108,6 +115,8 @@ def adapt_lesson(
 def lesson_exercises(lesson_id: int):
     with connection() as conn:
         rows = conn.execute("SELECT id,lesson_id,title,difficulty,description,function_name,starter_code,test_cases,hints,tags FROM exercises WHERE lesson_id=%s ORDER BY title", (lesson_id,)).fetchall()
+    for row in rows:
+        row["test_cases"] = strip_hidden_test_cases(row["test_cases"])
     return {"exercises": rows}
 
 
@@ -118,6 +127,8 @@ def list_exercises():
             e.starter_code,e.test_cases,e.hints,e.tags,l.course_id,c.title AS course_title
             FROM exercises e JOIN lessons l ON l.id=e.lesson_id JOIN courses c ON c.id=l.course_id
             ORDER BY e.title""").fetchall()
+    for row in rows:
+        row["test_cases"] = strip_hidden_test_cases(row["test_cases"])
     return {"exercises": rows}
 
 
@@ -129,7 +140,52 @@ def get_exercise(exercise_id: int):
             FROM exercises e JOIN lessons l ON l.id=e.lesson_id JOIN courses c ON c.id=l.course_id WHERE e.id=%s""", (exercise_id,)).fetchone()
     if not row:
         raise HTTPException(404, "Exercise not found")
+    row["test_cases"] = strip_hidden_test_cases(row["test_cases"])
     return {"exercise": row}
+
+
+@app.post("/api/exercises/{exercise_id}/submit")
+def submit_exercise(
+    exercise_id: int,
+    body: SubmitInput,
+    user_id: str | None = Depends(optional_current_user_id),
+):
+    with connection() as conn:
+        row = conn.execute(
+            "SELECT id, function_name, test_cases FROM exercises WHERE id=%s", (exercise_id,)
+        ).fetchone()
+    if not row:
+        raise HTTPException(404, "Exercise not found")
+
+    test_case_data = row["test_cases"] or {}
+    if isinstance(test_case_data, dict):
+        visible_cases = test_case_data.get("runner") or []
+        hidden_cases = test_case_data.get("hidden") or []
+        all_cases = [
+            *({**case, "is_hidden": False} for case in visible_cases),
+            *({**case, "is_hidden": True} for case in hidden_cases),
+        ]
+    elif isinstance(test_case_data, list):
+        all_cases = test_case_data
+    else:
+        all_cases = []
+    if not all_cases:
+        raise HTTPException(400, "No test cases configured for this exercise")
+
+    result = run_code_sandbox(body.code, row["function_name"], all_cases, timeout_seconds=3.0)
+    if user_id:
+        score = result["passed_count"] / result["total_count"] * 10 if result["total_count"] else 0
+        status = "completed" if result["status"] == "Accepted" else "in_progress"
+        with connection() as conn:
+            conn.execute(
+                """INSERT INTO user_progress(user_id,item_type,item_id,status,completed_at,score,last_attempt_at)
+                    VALUES(%s,'exercise',%s,%s,CASE WHEN %s='completed' THEN now() ELSE NULL END,%s,now())
+                    ON CONFLICT(user_id,item_type,item_id) DO UPDATE SET status=EXCLUDED.status,
+                    completed_at=CASE WHEN EXCLUDED.status='completed' THEN COALESCE(user_progress.completed_at,now()) ELSE NULL END,
+                    score=EXCLUDED.score,last_attempt_at=now()""",
+                (user_id, exercise_id, status, status, score),
+            )
+    return result
 
 
 @app.post("/api/auth/register", status_code=201)

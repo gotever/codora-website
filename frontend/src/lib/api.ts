@@ -97,6 +97,29 @@ export async function saveProgress(itemId: number, itemType: 'lesson' | 'exercis
   return request('/api/progress', { method: 'PUT', body: JSON.stringify({ item_id: itemId, item_type: itemType, status, score }) })
 }
 
+export interface SubmitResult {
+  status: 'Accepted' | 'Wrong Answer' | 'Time Limit Exceeded' | 'Runtime Error' | 'Syntax Error'
+  passed_count: number
+  total_count: number
+  runtime_ms: number
+  error: string | null
+  failed_case: {
+    case_id?: string
+    label?: string
+    is_hidden: boolean
+    actual?: string
+    expected?: string
+    error?: string
+  } | null
+}
+
+export async function submitExercise(exerciseId: string, code: string): Promise<SubmitResult> {
+  return request<SubmitResult>(`/api/exercises/${encodeURIComponent(exerciseId)}/submit`, {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  })
+}
+
 export interface ApiChatMessage {
   id: string
   role: 'user' | 'assistant'
