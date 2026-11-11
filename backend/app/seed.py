@@ -81,13 +81,13 @@ def main() -> None:
                 ]
                 course_rows.append((navigation["id"], navigation["title"], navigation["description"], 3))
                 course_ids = {}
-                for slug, title, description, order_index in course_rows:
-                    row = cur.execute("""INSERT INTO courses(slug,title,description,order_index)
-                        VALUES(%s,%s,%s,%s)
-                        ON CONFLICT(slug) DO UPDATE SET title=EXCLUDED.title,
+                for source_key, title, description, order_index in course_rows:
+                    row = cur.execute("""INSERT INTO courses(title,description,order_index)
+                        VALUES(%s,%s,%s)
+                        ON CONFLICT(order_index) DO UPDATE SET title=EXCLUDED.title,
                           description=EXCLUDED.description,order_index=EXCLUDED.order_index
-                        RETURNING id""", (slug, title, description, order_index)).fetchone()
-                    course_ids[slug] = row["id"]
+                        RETURNING id""", (title, description, order_index)).fetchone()
+                    course_ids[source_key] = row["id"]
 
                 lesson_rows = []
                 for course in courses:

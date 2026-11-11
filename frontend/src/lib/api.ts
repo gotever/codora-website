@@ -2,7 +2,6 @@ const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
 export interface ApiCourse {
   id: number
-  slug: string
   title: string
   description: string
   order_index: number

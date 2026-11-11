@@ -39,7 +39,7 @@ export default function Learning() {
             id: course.id,
             title: course.title,
             lessonCount: lessons.length,
-            paceLabel: course.slug === 'python-fundamentals' ? 'Go at your own pace' : undefined,
+            paceLabel: course.order_index === 1 ? course.description : undefined,
             lessons: lessons.map((lesson) => {
               const detail = parseLessonDetail(lesson.content_markdown, lesson.id)
               return {
