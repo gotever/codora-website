@@ -53,8 +53,8 @@ def main() -> None:
 
                 exercise_rows = []
                 for exercise in data["exercises"]:
-                    # IDs in both local curriculum datasets overlap; choose the detailed 12-lesson
-                    # course as parent while preserving the original python-fundamentals course record.
+                    # No canonical exercise-to-lesson mapping exists in the source data. These
+                    # assignments are provisional to satisfy the lesson FK; see backend/README.md.
                     if exercise["functionName"] in ("reverse_string", "count_vowels"):
                         lesson_id = "3"
                     else:

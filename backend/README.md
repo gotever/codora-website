@@ -67,7 +67,7 @@ erDiagram
 
 `USER_PROGRESS.item_id` is polymorphic and validated in the service. Chat rows have no conversation ID or lesson ID; null exercise chat history therefore aggregates lesson chats. The six-table schema has no storage for drafts, bookmarks, submission history, or unlocked hints. JSONB exercise test cases are readable by browsers and are not authoritative grading secrets.
 
-The two source curricula use overlapping numeric lesson IDs for different titles. The export preserves both datasets; seeded route lessons use the 12-entry detailed curriculum, and the eight-lesson Learning card remains a client fallback. Existing exercises are attached to the topic-aligned detailed lesson IDs 3 or 7 because every exercise requires a lesson FK. Reconcile this source mapping before altering lesson IDs or navigation.
+The two source curricula use overlapping numeric lesson IDs for different titles. The export preserves both datasets; seeded route lessons use the 12-entry detailed curriculum, and the eight-lesson Learning card remains a client fallback. Exercise-to-lesson assignments are heuristic because `exercises.ts` has no canonical lesson IDs: `reverse-a-string` and `count-vowels` are currently assigned to detailed lesson `3` (`Operators & expressions`), while `sum-of-even-numbers` and `find-maximum` are assigned to lesson `7` (`Loops & iteration`). All four source exercises declare course `python-fundamentals`, while the seeded lessons belong to `python-foundations`. These relationships are not confirmed by the source data; get product-owner mapping approval before changing IDs, navigation, or the seed assignments.
 
 ## Tests
 
