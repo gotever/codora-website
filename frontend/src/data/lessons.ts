@@ -234,6 +234,80 @@ export const COURSE_NAV_DATA: CourseNavigation = {
 // ----------------------------------------------------------------
 
 export const LESSON_DETAILS: Record<string, LessonDetail> = {
+  '1': {
+    id: '1',
+    lessonNumber: 1,
+    moduleNumber: '01',
+    moduleName: 'GETTING STARTED',
+    topic: 'Welcome to Python',
+    title: 'Your first line of Python.',
+    description:
+      'Get to know Python, write your very first program, and see what happens when code runs.',
+    duration: '4 min lesson',
+    exerciseCount: 1,
+    language: 'Python',
+    status: 'completed',
+    nextLesson: {
+      id: '2',
+      title: 'Variables & data types',
+    },
+    sections: [
+      {
+        id: 'sec-1-1',
+        number: '01',
+        title: 'What is Python?',
+        paragraphs: [
+          'Python is a programming language — a way to give instructions to a computer. It was designed to be easy to read and write, so it looks almost like plain English.',
+          'You can use Python to build websites, analyse data, create games, automate repetitive tasks, and much more. It is one of the most popular languages in the world, and a great first language to learn.',
+        ],
+      },
+      {
+        id: 'sec-1-2',
+        number: '02',
+        title: 'Your first Python program',
+        paragraphs: [
+          'The classic first program in almost every language is one that prints the words "Hello, World!" to the screen. In Python, it takes exactly one line.',
+        ],
+        codeExample: {
+          filename: 'hello.py',
+          language: 'Python',
+          code: `print("Hello, World!")`,
+          caption: 'print() displays text on the screen.',
+        },
+        challenge: {
+          id: 'challenge-hello-world',
+          title: 'Try it: print Hello World',
+          description:
+            'Use the print() function to display the text Hello World on the screen. The output must match exactly — capitalisation counts!',
+          practiceLabel: 'PRACTICE 1 OF 1',
+          filename: 'hello.py',
+          language: 'Python 3',
+          initialCode: `# Write your code below\n`,
+          solutionCode: `print("Hello World")`,
+          testCases: [
+            {
+              id: 'tc-hw-1',
+              call: 'stdout',
+              expected: 'Hello World',
+            },
+          ],
+        },
+      },
+      {
+        id: 'sec-1-3',
+        number: '03',
+        title: 'What just happened?',
+        paragraphs: [
+          'print() is a built-in Python function. A function is a named action — you call it by writing its name followed by parentheses.',
+          'Whatever you put inside the parentheses gets displayed on the screen. The quotes tell Python that "Hello, World!" is a piece of text, not a command.',
+        ],
+        takeaway: {
+          label: 'THE TAKEAWAY',
+          text: 'print() is your first tool. Use it whenever you want to show something on the screen.',
+        },
+      },
+    ],
+  },
   '4': {
     id: '4',
     lessonNumber: 4,

@@ -247,6 +247,83 @@
   font-weight: 600;
 }
 
+/* Pyodide loading notice */
+.embedded-challenge__pyodide-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.embedded-challenge__pyodide-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  animation: pulse-dot 1.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.75); }
+}
+
+/* Console output */
+.embedded-challenge__console {
+  margin-top: var(--space-3);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.embedded-challenge__console-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background-color: rgba(22, 27, 51, 0.9);
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  font-family: var(--font-mono);
+}
+
+.embedded-challenge__console-prompt {
+  color: var(--color-accent);
+}
+
+.embedded-challenge__console-body {
+  margin: 0;
+  padding: 10px 14px;
+  background-color: #0f1424;
+  font-family: 'Fira Code', 'Cascadia Code', Consolas, ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #e2e8f0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  min-height: 36px;
+}
+
+.embedded-challenge__console-body--error {
+  color: #f87171;
+}
+
+/* Success banner */
+.embedded-challenge__success-banner {
+  margin-top: var(--space-3);
+  padding: 10px 14px;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-sm);
+  color: #15803d;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
 /* Actions bar */
 .embedded-challenge__actions {
   display: flex;
