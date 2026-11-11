@@ -1,5 +1,13 @@
 const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
+export interface ApiCourse {
+  id: string
+  title: string
+  description: string
+  order_index: number
+  lesson_count: number
+}
+
 export interface ApiExercise {
   id: string
   lesson_id: string
@@ -33,6 +41,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   })
   if (!response.ok) throw new Error(`API request failed (${response.status})`)
   return response.json() as Promise<T>
+}
+
+export async function fetchCourses(): Promise<ApiCourse[]> {
+  const result = await request<{ courses: ApiCourse[] }>('/api/courses')
+  return result.courses
 }
 
 export async function fetchExercises(): Promise<ApiExercise[]> {

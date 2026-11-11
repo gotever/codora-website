@@ -11,7 +11,11 @@ function CodeIcon() {
   )
 }
 
-export default function ExercisesCard() {
+interface ExercisesCardProps {
+  databaseCount: number | null | undefined
+}
+
+export default function ExercisesCard({ databaseCount }: ExercisesCardProps) {
   return (
     <article className="exercises-card" aria-labelledby="exercises-card-heading">
       {/* Top label row */}
@@ -37,8 +41,10 @@ export default function ExercisesCard() {
       {/* Code preview */}
       <div className="exercises-card__code-block" role="region" aria-label="Sample exercise preview">
         <div className="exercises-card__code-header">
-          <span className="exercises-card__filename">hello_world.py</span>
-          <span className="exercises-card__difficulty">Easy</span>
+          <span className="exercises-card__filename">Database exercises</span>
+          <span className="exercises-card__difficulty">
+            {databaseCount === undefined ? 'Loading…' : databaseCount === null ? 'Unavailable' : `${databaseCount} total`}
+          </span>
         </div>
         <div className="exercises-card__code-body">
           <span className="exercises-card__line-number" aria-hidden="true">1</span>

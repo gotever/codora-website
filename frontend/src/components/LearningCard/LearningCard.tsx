@@ -21,7 +21,11 @@ function DocIcon() {
   )
 }
 
-export default function LearningCard() {
+interface LearningCardProps {
+  databaseStats: { courses: number; lessons: number } | null | undefined
+}
+
+export default function LearningCard({ databaseStats }: LearningCardProps) {
   return (
     <article className="learning-card" aria-labelledby="learning-card-heading">
       {/* Top label row */}
@@ -47,12 +51,16 @@ export default function LearningCard() {
       {/* Lesson preview */}
       <div className="learning-card__preview">
         <div className="learning-card__preview-meta">
-          <span className="learning-card__preview-chapter">01 / Getting Started</span>
-          <span className="learning-card__preview-time">5 min read</span>
+          <span className="learning-card__preview-chapter">Curriculum</span>
+          <span className="learning-card__preview-time">PostgreSQL</span>
         </div>
         <div className="learning-card__preview-title">
           <DocIcon />
-          Your first <span>Python</span> program
+          {databaseStats === undefined
+            ? 'Loading database…'
+            : databaseStats === null
+              ? 'Database unavailable'
+              : <><span>{databaseStats.courses}</span> courses · <span>{databaseStats.lessons}</span> lessons</>}
         </div>
       </div>
 
