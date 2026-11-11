@@ -51,7 +51,7 @@ export default function Exercises() {
           title: record.title,
           difficulty: record.difficulty,
           tags: record.tags,
-          courseId: record.course_id,
+          courseId: record.test_cases.courseId ?? fallback?.courseId ?? String(record.course_id),
           courseTitle: record.course_title,
         }
       }))

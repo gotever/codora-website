@@ -80,19 +80,25 @@ def main() -> None:
                     for index, course in enumerate(courses, start=1)
                 ]
                 course_rows.append((navigation["id"], navigation["title"], navigation["description"], 3))
-                cur.executemany("""INSERT INTO courses(id,title,description,order_index) VALUES(%s,%s,%s,%s)
-                    ON CONFLICT(id) DO UPDATE SET title=EXCLUDED.title,description=EXCLUDED.description,order_index=EXCLUDED.order_index""", course_rows)
+                course_ids = {}
+                for slug, title, description, order_index in course_rows:
+                    row = cur.execute("""INSERT INTO courses(slug,title,description,order_index)
+                        VALUES(%s,%s,%s,%s)
+                        ON CONFLICT(slug) DO UPDATE SET title=EXCLUDED.title,
+                          description=EXCLUDED.description,order_index=EXCLUDED.order_index
+                        RETURNING id""", (slug, title, description, order_index)).fetchone()
+                    course_ids[slug] = row["id"]
 
                 lesson_rows = []
                 for course in courses:
                     for index, item in enumerate(course["lessons"], start=1):
                         lesson_id, content = md_for_course_preview(course, item, index)
-                        lesson_rows.append((lesson_id, item["title"], course["id"], content, index))
+                        lesson_rows.append((lesson_id, item["title"], course_ids[course["id"]], content, index))
 
                 for module in navigation["modules"]:
                     for item in module["lessons"]:
                         lesson = data["lessons"][item["id"]]
-                        lesson_rows.append((item["id"], item["title"], navigation["id"], md_for_lesson(lesson), int(item["id"])))
+                        lesson_rows.append((item["id"], item["title"], course_ids[navigation["id"]], md_for_lesson(lesson), int(item["id"])))
                 cur.executemany("""INSERT INTO lessons(id,title,course_id,content_markdown,order_index) VALUES(%s,%s,%s,%s,%s)
                     ON CONFLICT(id) DO UPDATE SET title=EXCLUDED.title,course_id=EXCLUDED.course_id,
                     content_markdown=EXCLUDED.content_markdown,order_index=EXCLUDED.order_index""", lesson_rows)

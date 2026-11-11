@@ -12,7 +12,10 @@ from fastapi.testclient import TestClient
 
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL")
 pytestmark = pytest.mark.skipif(not TEST_DATABASE_URL, reason="Set TEST_DATABASE_URL to an isolated local database ending in _test")
-MIGRATION = (Path(__file__).parents[1] / "migrations" / "001_initial_schema.sql").read_text(encoding="utf-8")
+MIGRATIONS = [
+    (Path(__file__).parents[1] / "migrations" / name).read_text(encoding="utf-8")
+    for name in ("001_initial_schema.sql", "002_numeric_course_ids.sql")
+]
 
 
 @pytest.fixture(scope="module")
@@ -23,7 +26,10 @@ def db():
         pytest.fail("Refusing to run destructive migration tests unless database name ends with _test")
     with psycopg.connect(TEST_DATABASE_URL) as conn:
         conn.execute("DROP TABLE IF EXISTS ai_chats,user_progress,exercises,lessons,courses,users CASCADE")
-        conn.execute(MIGRATION)
+        for migration in MIGRATIONS:
+            conn.execute(migration)
+        for migration in MIGRATIONS:
+            conn.execute(migration)
         conn.commit()
         yield conn
         conn.execute("DROP TABLE IF EXISTS ai_chats,user_progress,exercises,lessons,courses,users CASCADE")
@@ -65,15 +71,19 @@ def test_required_tables_columns_and_key_types(db):
     types = dict(db.execute("""SELECT table_name, data_type FROM information_schema.columns
       WHERE table_schema='public' AND column_name='id'"""))
     assert types["users"] == types["user_progress"] == types["ai_chats"] == "uuid"
-    assert types["courses"] == types["lessons"] == types["exercises"] == "character varying"
+    assert types["courses"] == "bigint"
+    assert types["lessons"] == types["exercises"] == "character varying"
+    course_id_type = db.execute("""SELECT data_type FROM information_schema.columns
+      WHERE table_schema='public' AND table_name='lessons' AND column_name='course_id'""").fetchone()[0]
+    assert course_id_type == "bigint"
 
 
 def test_unique_users_foreign_keys_jsonb_progress_upsert_and_deletion(db):
     user = db.execute("INSERT INTO users(email,username,password_hash,full_name) VALUES('db-test@example.com','db-test','hash','Test User') RETURNING id").fetchone()[0]
-    course = "db-test-course"
+    course_slug = "db-test-course"
     lesson = "db-test-lesson"
     exercise = "db-test-exercise"
-    db.execute("INSERT INTO courses(id,title,order_index) VALUES(%s,'Test Course',900)", (course,))
+    course = db.execute("INSERT INTO courses(slug,title,order_index) VALUES(%s,'Test Course',900) RETURNING id", (course_slug,)).fetchone()[0]
     db.execute("INSERT INTO lessons(id,title,course_id,order_index) VALUES(%s,'Test Lesson',%s,900)", (lesson,course))
     db.execute("""INSERT INTO exercises(id,lesson_id,title,difficulty,function_name,test_cases,hints,tags)
       VALUES(%s,%s,'Test Exercise','Easy','identity',%s,%s,%s)""", (exercise,lesson,'[{"input": 1}]','["hint"]','["test"]'))
@@ -96,8 +106,8 @@ def test_unique_users_foreign_keys_jsonb_progress_upsert_and_deletion(db):
 
 
 def test_api_auth_content_progress_chat_and_owner_isolation(db, isolated_api_pool):
-    course_id, lesson_id, exercise_id = "api-test-course", "api-test-lesson", "api-test-exercise"
-    db.execute("INSERT INTO courses(id,title,order_index) VALUES(%s,'API Test Course',901)", (course_id,))
+    course_slug, lesson_id, exercise_id = "api-test-course", "api-test-lesson", "api-test-exercise"
+    course_id = db.execute("INSERT INTO courses(slug,title,order_index) VALUES(%s,'API Test Course',901) RETURNING id", (course_slug,)).fetchone()[0]
     db.execute("INSERT INTO lessons(id,title,course_id,order_index) VALUES(%s,'API Test Lesson',%s,901)", (lesson_id,course_id))
     db.execute("INSERT INTO exercises(id,lesson_id,title,difficulty,function_name) VALUES(%s,%s,'API Test Exercise','Easy','identity')", (exercise_id,lesson_id))
     db.commit()
@@ -106,7 +116,11 @@ def test_api_auth_content_progress_chat_and_owner_isolation(db, isolated_api_poo
     user_body = {"email": f"{suffix}@example.com", "username": f"user_{suffix[:12]}", "password": "a-secure-test-password", "full_name": "API Test"}
     second_body = {"email": f"other-{suffix}@example.com", "username": f"other_{suffix[:12]}", "password": "a-secure-test-password", "full_name": "Other User"}
     with TestClient(__import__("app.main", fromlist=["app"]).app) as client:
-        assert client.get("/api/courses").status_code == 200
+        courses_response = client.get("/api/courses")
+        assert courses_response.status_code == 200
+        assert isinstance(courses_response.json()["courses"][0]["id"], int)
+        assert courses_response.json()["courses"][0]["slug"] == "api-test-course"
+        assert client.get(f"/api/courses/{course_id}/lessons").json()["lessons"][0]["course_id"] == course_id
         assert client.get(f"/api/lessons/{lesson_id}").json()["lesson"]["title"] == "API Test Lesson"
         assert client.get("/api/exercises").json()["exercises"][0]["id"] == exercise_id
 
@@ -168,10 +182,10 @@ def test_curriculum_seed_is_idempotent(db):
 
     assert first == second
     foundation_lessons = db.execute(
-        "SELECT count(*) FROM lessons WHERE course_id='python-foundations'"
+        "SELECT count(*) FROM lessons l JOIN courses c ON c.id=l.course_id WHERE c.slug='python-foundations'"
     ).fetchone()[0]
     fundamentals_lessons = db.execute(
-        "SELECT count(*) FROM lessons WHERE course_id='python-fundamentals'"
+        "SELECT count(*) FROM lessons l JOIN courses c ON c.id=l.course_id WHERE c.slug='python-fundamentals'"
     ).fetchone()[0]
     lesson_one = db.execute(
         "SELECT content_markdown FROM lessons WHERE id='1'"

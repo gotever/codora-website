@@ -59,7 +59,7 @@ export function buildCourseNavigation(course: ApiCourse, lessons: ApiLesson[]): 
 
   const lessonDetails = details.flatMap(({ detail }) => detail ? [detail] : [])
   return {
-    id: course.id,
+    id: String(course.id),
     title: course.title,
     description: course.description,
     totalLessons: lessonDetails.length,

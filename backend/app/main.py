@@ -54,23 +54,23 @@ def health():
 @app.get("/api/courses")
 def list_courses():
     with connection() as conn:
-        rows = conn.execute("""SELECT c.id, c.title, c.description, c.order_index,
+        rows = conn.execute("""SELECT c.id, c.slug, c.title, c.description, c.order_index,
             count(l.id)::int AS lesson_count FROM courses c LEFT JOIN lessons l ON l.course_id=c.id
             GROUP BY c.id ORDER BY c.order_index""").fetchall()
     return {"courses": rows}
 
 
 @app.get("/api/courses/{course_id}")
-def get_course(course_id: str):
+def get_course(course_id: int):
     with connection() as conn:
-        row = conn.execute("SELECT id,title,description,order_index FROM courses WHERE id=%s", (course_id,)).fetchone()
+        row = conn.execute("SELECT id,slug,title,description,order_index FROM courses WHERE id=%s", (course_id,)).fetchone()
     if not row:
         raise HTTPException(404, "Course not found")
     return {"course": row}
 
 
 @app.get("/api/courses/{course_id}/lessons")
-def course_lessons(course_id: str):
+def course_lessons(course_id: int):
     with connection() as conn:
         rows = conn.execute("SELECT id,title,course_id,content_markdown,order_index FROM lessons WHERE course_id=%s ORDER BY order_index", (course_id,)).fetchall()
     return {"lessons": rows}

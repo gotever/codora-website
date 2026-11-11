@@ -20,7 +20,7 @@ python -m app.seed
 uvicorn app.main:app --reload --host 0.0.0.0 --port 3001
 ```
 
-`python -m app.migrate --status` checks all six tables and required columns. Migration `001_initial_schema.sql` is idempotent and guarded with a PostgreSQL advisory transaction lock. No migration ledger table is created, preserving the six-table cap. Add future numbered, idempotent SQL files and extend the runner/status checks when the schema evolves.
+`python -m app.migrate --status` checks all six tables, required columns, and numeric course key types. Migrations `001_initial_schema.sql` and `002_numeric_course_ids.sql` are idempotent and run under a PostgreSQL advisory transaction lock. Migration 002 preserves existing course slugs, assigns numeric `courses.id` values, and backfills numeric `lessons.course_id` values without changing the six-table ERD. No migration ledger table is created. Add future numbered, idempotent SQL files and extend the runner/status checks when the schema evolves.
 
 ## Environment
 
@@ -60,8 +60,8 @@ erDiagram
   LESSONS ||--o{ EXERCISES : contains
   EXERCISES o|--o{ AI_CHATS : context
   USERS { uuid id PK }
-  COURSES { varchar id PK }
-  LESSONS { varchar id PK; varchar course_id FK; text content_markdown }
+  COURSES { bigint id PK; varchar slug UK }
+  LESSONS { varchar id PK; bigint course_id FK; text content_markdown }
   EXERCISES { varchar id PK; varchar lesson_id FK; jsonb test_cases; jsonb hints; jsonb tags }
   USER_PROGRESS { uuid id PK; uuid user_id FK; varchar item_type; varchar item_id }
   AI_CHATS { uuid id PK; uuid user_id FK; varchar exercise_id FK; text message }
@@ -69,7 +69,7 @@ erDiagram
 
 `USER_PROGRESS.item_id` is polymorphic and validated in the service. Chat rows have no conversation ID or lesson ID; null exercise chat history therefore aggregates lesson chats. The six-table schema has no storage for drafts, bookmarks, submission history, or unlocked hints. JSONB exercise test cases are readable by browsers and are not authoritative grading secrets.
 
-The source has two curricula with overlapping numeric lesson IDs and different titles. Both are imported: the 12-entry detailed course keeps numeric lesson IDs under `python-foundations`, while the eight-entry preview course uses namespaced IDs (`python-fundamentals-1` through `python-fundamentals-8`). `content_markdown` contains readable Markdown plus a versioned JSON comment with the original lesson presentation metadata, allowing the API client to render the existing lesson layout without adding tables or columns. Re-export the curriculum and run the idempotent seed after changing static source content. Exercise-to-lesson assignments remain as originally seeded: `reverse-a-string` and `count-vowels` attach to detailed lesson `3`, while `sum-of-even-numbers` and `find-maximum` attach to lesson `7`. The source exercises do not declare canonical lesson mappings, so these assignments remain provisional and were not changed here.
+The source has two curricula with overlapping numeric lesson IDs and different titles. Both are imported: the 12-entry detailed course keeps numeric lesson IDs under slug `python-foundations`, while the eight-entry preview course uses namespaced IDs (`python-fundamentals-1` through `python-fundamentals-8`). Course slugs stay human-readable and unique; `courses.id` and `lessons.course_id` are numeric primary/foreign keys. `content_markdown` contains readable Markdown plus a versioned JSON comment with the original lesson presentation metadata, allowing the API client to render the existing lesson layout without adding tables. Re-export the curriculum and run the idempotent seed after changing static source content. Exercise-to-lesson assignments remain as originally seeded: `reverse-a-string` and `count-vowels` attach to detailed lesson `3`, while `sum-of-even-numbers` and `find-maximum` attach to lesson `7`. The source exercises do not declare canonical lesson mappings, so these assignments remain provisional and were not changed here.
 
 ## Tests
 

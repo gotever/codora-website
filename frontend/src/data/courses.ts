@@ -8,7 +8,7 @@ export interface Lesson {
 }
 
 export interface Course {
-  id: string
+  id: number | string
   title: string
   lessonCount: number
   paceLabel?: string
