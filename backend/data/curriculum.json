@@ -1,0 +1,1107 @@
+{
+  "courses": [
+    {
+      "id": "python-fundamentals",
+      "title": "Python fundamentals",
+      "lessonCount": 8,
+      "paceLabel": "Go at your own pace",
+      "lessons": [
+        {
+          "id": 1,
+          "title": "Your first Python program",
+          "description": "Meet Python and write a simple \"Hello, world!\""
+        },
+        {
+          "id": 2,
+          "title": "Variables and data types",
+          "description": "Give your data a name and get to know the basics."
+        },
+        {
+          "id": 3,
+          "title": "Working with strings",
+          "description": "Create, combine, and work with text in Python."
+        },
+        {
+          "id": 4,
+          "title": "Numbers and operators",
+          "description": "Do calculations and explore everyday operations."
+        },
+        {
+          "id": 5,
+          "title": "Making decisions",
+          "description": "Choose what happens next with if, elif, and else."
+        },
+        {
+          "id": 6,
+          "title": "Repeating with loops",
+          "description": "Let for and while loops take care of repetition."
+        },
+        {
+          "id": 7,
+          "title": "Lists and collections",
+          "description": "Keep related values together and work with them."
+        },
+        {
+          "id": 8,
+          "title": "Writing your own functions",
+          "description": "Turn useful pieces of code into reusable building blocks."
+        }
+      ]
+    }
+  ],
+  "courseNavigation": {
+    "id": "python-foundations",
+    "title": "Python foundations",
+    "description": "Build a strong coding foundation.",
+    "totalLessons": 12,
+    "completedLessons": 3,
+    "modules": [
+      {
+        "id": "module-01",
+        "number": "01",
+        "title": "GETTING STARTED",
+        "lessons": [
+          {
+            "id": "1",
+            "number": "01",
+            "title": "Welcome to Python",
+            "duration": "4 min",
+            "status": "completed"
+          },
+          {
+            "id": "2",
+            "number": "02",
+            "title": "Variables & data types",
+            "duration": "12 min",
+            "status": "completed"
+          },
+          {
+            "id": "3",
+            "number": "03",
+            "title": "Operators & expressions",
+            "duration": "10 min",
+            "status": "completed"
+          }
+        ]
+      },
+      {
+        "id": "module-02",
+        "number": "02",
+        "title": "BUILDING BLOCKS",
+        "lessons": [
+          {
+            "id": "4",
+            "number": "04",
+            "title": "Functions",
+            "duration": "15 min",
+            "status": "in_progress"
+          },
+          {
+            "id": "5",
+            "number": "05",
+            "title": "Scope & closures",
+            "duration": "18 min",
+            "status": "upcoming"
+          },
+          {
+            "id": "6",
+            "number": "06",
+            "title": "Lists & dictionaries",
+            "duration": "20 min",
+            "status": "upcoming"
+          },
+          {
+            "id": "7",
+            "number": "07",
+            "title": "Loops & iteration",
+            "duration": "16 min",
+            "status": "upcoming"
+          }
+        ]
+      },
+      {
+        "id": "module-03",
+        "number": "03",
+        "title": "ADVANCED CONCEPTS",
+        "lessons": [
+          {
+            "id": "8",
+            "number": "08",
+            "title": "Conditionals & logic",
+            "duration": "14 min",
+            "status": "upcoming"
+          },
+          {
+            "id": "9",
+            "number": "09",
+            "title": "Working with modules",
+            "duration": "15 min",
+            "status": "upcoming"
+          },
+          {
+            "id": "10",
+            "number": "10",
+            "title": "Error handling & debug",
+            "duration": "22 min",
+            "status": "upcoming"
+          },
+          {
+            "id": "11",
+            "number": "11",
+            "title": "File I/O basics",
+            "duration": "18 min",
+            "status": "upcoming"
+          },
+          {
+            "id": "12",
+            "number": "12",
+            "title": "Final mini project",
+            "duration": "30 min",
+            "status": "upcoming"
+          }
+        ]
+      }
+    ]
+  },
+  "lessons": {
+    "1": {
+      "id": "1",
+      "lessonNumber": 1,
+      "moduleNumber": "01",
+      "moduleName": "GETTING STARTED",
+      "topic": "Welcome to Python",
+      "title": "Welcome to Python in practice",
+      "description": "Explore the fundamental concepts behind welcome to python and build hands-on intuition with interactive code examples.",
+      "duration": "4 min",
+      "exerciseCount": 1,
+      "language": "Python",
+      "status": "completed",
+      "nextLesson": {
+        "id": "2",
+        "title": "Lesson 02"
+      },
+      "sections": [
+        {
+          "id": "sec-1-1",
+          "number": "01",
+          "title": "Understanding Welcome to Python",
+          "paragraphs": [
+            "In this lesson, we explore how welcome to python functions in modern Python and why it is a critical building block for writing clean, efficient software."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "# Exploring Welcome to Python\nresult = \"Ready to code!\"\nprint(result)",
+            "caption": "Try running and experimenting with this example."
+          }
+        },
+        {
+          "id": "sec-1-2",
+          "number": "02",
+          "title": "Key Takeaways",
+          "paragraphs": [
+            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+          ],
+          "takeaway": {
+            "label": "THE TAKEAWAY",
+            "text": "Small, focused practice leads to deep programming intuition."
+          }
+        }
+      ]
+    },
+    "2": {
+      "id": "2",
+      "lessonNumber": 2,
+      "moduleNumber": "01",
+      "moduleName": "GETTING STARTED",
+      "topic": "Variables & data types",
+      "title": "Variables & data types in practice",
+      "description": "Explore the fundamental concepts behind variables & data types and build hands-on intuition with interactive code examples.",
+      "duration": "12 min",
+      "exerciseCount": 1,
+      "language": "Python",
+      "status": "completed",
+      "prevLesson": {
+        "id": "1",
+        "title": "Lesson 01"
+      },
+      "nextLesson": {
+        "id": "3",
+        "title": "Lesson 03"
+      },
+      "sections": [
+        {
+          "id": "sec-2-1",
+          "number": "01",
+          "title": "Understanding Variables & data types",
+          "paragraphs": [
+            "In this lesson, we explore how variables & data types functions in modern Python and why it is a critical building block for writing clean, efficient software."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "# Exploring Variables & data types\nresult = \"Ready to code!\"\nprint(result)",
+            "caption": "Try running and experimenting with this example."
+          }
+        },
+        {
+          "id": "sec-2-2",
+          "number": "02",
+          "title": "Key Takeaways",
+          "paragraphs": [
+            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+          ],
+          "takeaway": {
+            "label": "THE TAKEAWAY",
+            "text": "Small, focused practice leads to deep programming intuition."
+          }
+        }
+      ]
+    },
+    "3": {
+      "id": "3",
+      "lessonNumber": 3,
+      "moduleNumber": "01",
+      "moduleName": "GETTING STARTED",
+      "topic": "Operators & expressions",
+      "title": "Operators & expressions in practice",
+      "description": "Explore the fundamental concepts behind operators & expressions and build hands-on intuition with interactive code examples.",
+      "duration": "10 min",
+      "exerciseCount": 1,
+      "language": "Python",
+      "status": "completed",
+      "prevLesson": {
+        "id": "2",
+        "title": "Lesson 02"
+      },
+      "nextLesson": {
+        "id": "4",
+        "title": "Lesson 04"
+      },
+      "sections": [
+        {
+          "id": "sec-3-1",
+          "number": "01",
+          "title": "Understanding Operators & expressions",
+          "paragraphs": [
+            "In this lesson, we explore how operators & expressions functions in modern Python and why it is a critical building block for writing clean, efficient software."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "# Exploring Operators & expressions\nresult = \"Ready to code!\"\nprint(result)",
+            "caption": "Try running and experimenting with this example."
+          }
+        },
+        {
+          "id": "sec-3-2",
+          "number": "02",
+          "title": "Key Takeaways",
+          "paragraphs": [
+            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+          ],
+          "takeaway": {
+            "label": "THE TAKEAWAY",
+            "text": "Small, focused practice leads to deep programming intuition."
+          }
+        }
+      ]
+    },
+    "4": {
+      "id": "4",
+      "lessonNumber": 4,
+      "moduleNumber": "02",
+      "moduleName": "BUILDING BLOCKS",
+      "topic": "Functions",
+      "title": "Write once. Use it again.",
+      "description": "Learn how functions turn a set of instructions into reusable code. Then put your new skills to work with a quick challenge.",
+      "duration": "15 min lesson",
+      "exerciseCount": 2,
+      "language": "Python",
+      "status": "in_progress",
+      "prevLesson": {
+        "id": "3",
+        "title": "Operators & expressions"
+      },
+      "nextLesson": {
+        "id": "5",
+        "title": "Scope & closures"
+      },
+      "sections": [
+        {
+          "id": "sec-1",
+          "number": "01",
+          "title": "Meet your first function",
+          "paragraphs": [
+            "A function is a reusable block of code that performs a specific task. Give it a name, pass in some information, and let it do the work whenever you need it."
+          ],
+          "codeExample": {
+            "filename": "greeting.py",
+            "language": "Python",
+            "code": "def greet(name):\n    return \"Hello, \" + name + \"!\"\n\ngreet(\"Ada\")",
+            "caption": "A name is the input. A greeting is the output."
+          },
+          "challenge": {
+            "id": "challenge-double",
+            "title": "Your turn: double a number",
+            "description": "Complete double(number) so it returns the number multiplied by 2.",
+            "practiceLabel": "PRACTICE 1 OF 2",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "def double(number):\n    # Write your code here\n    pass",
+            "solutionCode": "def double(number):\n    return number * 2",
+            "testCases": [
+              {
+                "id": "tc-1",
+                "call": "double(4)",
+                "expected": "8"
+              },
+              {
+                "id": "tc-2",
+                "call": "double(-3)",
+                "expected": "-6"
+              }
+            ]
+          }
+        },
+        {
+          "id": "sec-2",
+          "number": "02",
+          "title": "Make it your own",
+          "paragraphs": [
+            "Parameters make functions flexible. Think of name as a placeholder: each time you call greet, you can pass in a different value."
+          ],
+          "takeaway": {
+            "label": "THE TAKEAWAY",
+            "text": "Define it once. Call it with different inputs. Get a new result."
+          }
+        }
+      ]
+    },
+    "5": {
+      "id": "5",
+      "lessonNumber": 5,
+      "moduleNumber": "02",
+      "moduleName": "BUILDING BLOCKS",
+      "topic": "Scope & closures",
+      "title": "Scope & closures in practice",
+      "description": "Explore the fundamental concepts behind scope & closures and build hands-on intuition with interactive code examples.",
+      "duration": "18 min",
+      "exerciseCount": 1,
+      "language": "Python",
+      "status": "upcoming",
+      "prevLesson": {
+        "id": "4",
+        "title": "Lesson 04"
+      },
+      "nextLesson": {
+        "id": "6",
+        "title": "Lesson 06"
+      },
+      "sections": [
+        {
+          "id": "sec-5-1",
+          "number": "01",
+          "title": "Understanding Scope & closures",
+          "paragraphs": [
+            "In this lesson, we explore how scope & closures functions in modern Python and why it is a critical building block for writing clean, efficient software."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "# Exploring Scope & closures\nresult = \"Ready to code!\"\nprint(result)",
+            "caption": "Try running and experimenting with this example."
+          }
+        },
+        {
+          "id": "sec-5-2",
+          "number": "02",
+          "title": "Key Takeaways",
+          "paragraphs": [
+            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+          ],
+          "takeaway": {
+            "label": "THE TAKEAWAY",
+            "text": "Small, focused practice leads to deep programming intuition."
+          }
+        }
+      ]
+    },
+    "6": {
+      "id": "6",
+      "lessonNumber": 6,
+      "moduleNumber": "02",
+      "moduleName": "BUILDING BLOCKS",
+      "topic": "Lists & dictionaries",
+      "title": "Lists & dictionaries in practice",
+      "description": "Explore the fundamental concepts behind lists & dictionaries and build hands-on intuition with interactive code examples.",
+      "duration": "20 min",
+      "exerciseCount": 1,
+      "language": "Python",
+      "status": "upcoming",
+      "prevLesson": {
+        "id": "5",
+        "title": "Lesson 05"
+      },
+      "nextLesson": {
+        "id": "7",
+        "title": "Lesson 07"
+      },
+      "sections": [
+        {
+          "id": "sec-6-1",
+          "number": "01",
+          "title": "Understanding Lists & dictionaries",
+          "paragraphs": [
+            "In this lesson, we explore how lists & dictionaries functions in modern Python and why it is a critical building block for writing clean, efficient software."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "# Exploring Lists & dictionaries\nresult = \"Ready to code!\"\nprint(result)",
+            "caption": "Try running and experimenting with this example."
+          }
+        },
+        {
+          "id": "sec-6-2",
+          "number": "02",
+          "title": "Key Takeaways",
+          "paragraphs": [
+            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+          ],
+          "takeaway": {
+            "label": "THE TAKEAWAY",
+            "text": "Small, focused practice leads to deep programming intuition."
+          }
+        }
+      ]
+    },
+    "7": {
+      "id": "7",
+      "lessonNumber": 7,
+      "moduleNumber": "02",
+      "moduleName": "BUILDING BLOCKS",
+      "topic": "Loops & iteration",
+      "title": "Loops & iteration in practice",
+      "description": "Explore the fundamental concepts behind loops & iteration and build hands-on intuition with interactive code examples.",
+      "duration": "16 min",
+      "exerciseCount": 1,
+      "language": "Python",
+      "status": "upcoming",
+      "prevLesson": {
+        "id": "6",
+        "title": "Lesson 06"
+      },
+      "nextLesson": {
+        "id": "8",
+        "title": "Lesson 08"
+      },
+      "sections": [
+        {
+          "id": "sec-7-1",
+          "number": "01",
+          "title": "Understanding Loops & iteration",
+          "paragraphs": [
+            "In this lesson, we explore how loops & iteration functions in modern Python and why it is a critical building block for writing clean, efficient software."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "# Exploring Loops & iteration\nresult = \"Ready to code!\"\nprint(result)",
+            "caption": "Try running and experimenting with this example."
+          }
+        },
+        {
+          "id": "sec-7-2",
+          "number": "02",
+          "title": "Key Takeaways",
+          "paragraphs": [
+            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+          ],
+          "takeaway": {
+            "label": "THE TAKEAWAY",
+            "text": "Small, focused practice leads to deep programming intuition."
+          }
+        }
+      ]
+    },
+    "8": {
+      "id": "8",
+      "lessonNumber": 8,
+      "moduleNumber": "03",
+      "moduleName": "ADVANCED CONCEPTS",
+      "topic": "Conditionals & logic",
+      "title": "Conditionals & logic in practice",
+      "description": "Explore the fundamental concepts behind conditionals & logic and build hands-on intuition with interactive code examples.",
+      "duration": "14 min",
+      "exerciseCount": 1,
+      "language": "Python",
+      "status": "upcoming",
+      "prevLesson": {
+        "id": "7",
+        "title": "Lesson 07"
+      },
+      "nextLesson": {
+        "id": "9",
+        "title": "Lesson 09"
+      },
+      "sections": [
+        {
+          "id": "sec-8-1",
+          "number": "01",
+          "title": "Understanding Conditionals & logic",
+          "paragraphs": [
+            "In this lesson, we explore how conditionals & logic functions in modern Python and why it is a critical building block for writing clean, efficient software."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "# Exploring Conditionals & logic\nresult = \"Ready to code!\"\nprint(result)",
+            "caption": "Try running and experimenting with this example."
+          }
+        },
+        {
+          "id": "sec-8-2",
+          "number": "02",
+          "title": "Key Takeaways",
+          "paragraphs": [
+            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+          ],
+          "takeaway": {
+            "label": "THE TAKEAWAY",
+            "text": "Small, focused practice leads to deep programming intuition."
+          }
+        }
+      ]
+    },
+    "9": {
+      "id": "9",
+      "lessonNumber": 9,
+      "moduleNumber": "03",
+      "moduleName": "ADVANCED CONCEPTS",
+      "topic": "Working with modules",
+      "title": "Working with modules in practice",
+      "description": "Explore the fundamental concepts behind working with modules and build hands-on intuition with interactive code examples.",
+      "duration": "15 min",
+      "exerciseCount": 1,
+      "language": "Python",
+      "status": "upcoming",
+      "prevLesson": {
+        "id": "8",
+        "title": "Lesson 08"
+      },
+      "nextLesson": {
+        "id": "10",
+        "title": "Lesson 10"
+      },
+      "sections": [
+        {
+          "id": "sec-9-1",
+          "number": "01",
+          "title": "Understanding Working with modules",
+          "paragraphs": [
+            "In this lesson, we explore how working with modules functions in modern Python and why it is a critical building block for writing clean, efficient software."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "# Exploring Working with modules\nresult = \"Ready to code!\"\nprint(result)",
+            "caption": "Try running and experimenting with this example."
+          }
+        },
+        {
+          "id": "sec-9-2",
+          "number": "02",
+          "title": "Key Takeaways",
+          "paragraphs": [
+            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+          ],
+          "takeaway": {
+            "label": "THE TAKEAWAY",
+            "text": "Small, focused practice leads to deep programming intuition."
+          }
+        }
+      ]
+    },
+    "10": {
+      "id": "10",
+      "lessonNumber": 10,
+      "moduleNumber": "03",
+      "moduleName": "ADVANCED CONCEPTS",
+      "topic": "Error handling & debug",
+      "title": "Error handling & debug in practice",
+      "description": "Explore the fundamental concepts behind error handling & debug and build hands-on intuition with interactive code examples.",
+      "duration": "22 min",
+      "exerciseCount": 1,
+      "language": "Python",
+      "status": "upcoming",
+      "prevLesson": {
+        "id": "9",
+        "title": "Lesson 09"
+      },
+      "nextLesson": {
+        "id": "11",
+        "title": "Lesson 11"
+      },
+      "sections": [
+        {
+          "id": "sec-10-1",
+          "number": "01",
+          "title": "Understanding Error handling & debug",
+          "paragraphs": [
+            "In this lesson, we explore how error handling & debug functions in modern Python and why it is a critical building block for writing clean, efficient software."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "# Exploring Error handling & debug\nresult = \"Ready to code!\"\nprint(result)",
+            "caption": "Try running and experimenting with this example."
+          }
+        },
+        {
+          "id": "sec-10-2",
+          "number": "02",
+          "title": "Key Takeaways",
+          "paragraphs": [
+            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+          ],
+          "takeaway": {
+            "label": "THE TAKEAWAY",
+            "text": "Small, focused practice leads to deep programming intuition."
+          }
+        }
+      ]
+    },
+    "11": {
+      "id": "11",
+      "lessonNumber": 11,
+      "moduleNumber": "03",
+      "moduleName": "ADVANCED CONCEPTS",
+      "topic": "File I/O basics",
+      "title": "File I/O basics in practice",
+      "description": "Explore the fundamental concepts behind file i/o basics and build hands-on intuition with interactive code examples.",
+      "duration": "18 min",
+      "exerciseCount": 1,
+      "language": "Python",
+      "status": "upcoming",
+      "prevLesson": {
+        "id": "10",
+        "title": "Lesson 10"
+      },
+      "nextLesson": {
+        "id": "12",
+        "title": "Lesson 12"
+      },
+      "sections": [
+        {
+          "id": "sec-11-1",
+          "number": "01",
+          "title": "Understanding File I/O basics",
+          "paragraphs": [
+            "In this lesson, we explore how file i/o basics functions in modern Python and why it is a critical building block for writing clean, efficient software."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "# Exploring File I/O basics\nresult = \"Ready to code!\"\nprint(result)",
+            "caption": "Try running and experimenting with this example."
+          }
+        },
+        {
+          "id": "sec-11-2",
+          "number": "02",
+          "title": "Key Takeaways",
+          "paragraphs": [
+            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+          ],
+          "takeaway": {
+            "label": "THE TAKEAWAY",
+            "text": "Small, focused practice leads to deep programming intuition."
+          }
+        }
+      ]
+    },
+    "12": {
+      "id": "12",
+      "lessonNumber": 12,
+      "moduleNumber": "03",
+      "moduleName": "ADVANCED CONCEPTS",
+      "topic": "Final mini project",
+      "title": "Final mini project in practice",
+      "description": "Explore the fundamental concepts behind final mini project and build hands-on intuition with interactive code examples.",
+      "duration": "30 min",
+      "exerciseCount": 1,
+      "language": "Python",
+      "status": "upcoming",
+      "prevLesson": {
+        "id": "11",
+        "title": "Lesson 11"
+      },
+      "sections": [
+        {
+          "id": "sec-12-1",
+          "number": "01",
+          "title": "Understanding Final mini project",
+          "paragraphs": [
+            "In this lesson, we explore how final mini project functions in modern Python and why it is a critical building block for writing clean, efficient software."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "# Exploring Final mini project\nresult = \"Ready to code!\"\nprint(result)",
+            "caption": "Try running and experimenting with this example."
+          }
+        },
+        {
+          "id": "sec-12-2",
+          "number": "02",
+          "title": "Key Takeaways",
+          "paragraphs": [
+            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+          ],
+          "takeaway": {
+            "label": "THE TAKEAWAY",
+            "text": "Small, focused practice leads to deep programming intuition."
+          }
+        }
+      ]
+    }
+  },
+  "exercises": [
+    {
+      "id": "sum-of-even-numbers",
+      "number": 4,
+      "total": 12,
+      "title": "Sum of even numbers",
+      "difficulty": "Easy",
+      "tags": [
+        "Lists",
+        "Loops",
+        "Conditionals"
+      ],
+      "courseId": "python-fundamentals",
+      "courseTitle": "Python fundamentals",
+      "filename": "sum_even.py",
+      "functionName": "sum_even",
+      "description": "Given a list of integers <code>numbers</code>, return the sum of all even numbers in the list. An even number is divisible by 2 with no remainder.",
+      "functionSignature": "sum_even(numbers)",
+      "inputDescription": "A list of integers.",
+      "outputDescription": "An integer — the sum of all even numbers in the list.",
+      "examples": [
+        {
+          "id": 1,
+          "input": "numbers = [1, 2, 3, 4, 5, 6]",
+          "output": "12",
+          "explanation": "The even numbers are 2, 4, and 6. Their sum is 12."
+        },
+        {
+          "id": 2,
+          "input": "numbers = [1, 3, 5]",
+          "output": "0",
+          "explanation": "There are no even numbers, so the result is 0."
+        }
+      ],
+      "constraints": [
+        "0 ≤ len(numbers) ≤ 1,000",
+        "-1,000 ≤ numbers[i] ≤ 1,000"
+      ],
+      "hints": [
+        {
+          "level": 1,
+          "label": "A Little Nudge",
+          "sublabel": "Think about how to check if a number is even.",
+          "content": "An even number leaves no remainder when divided by 2. In Python, you can check this with the modulo operator: <code>number % 2 == 0</code>. How might you use this check as you go through the list?"
+        },
+        {
+          "level": 2,
+          "label": "Guide Me Further",
+          "sublabel": "Think about which tools to use.",
+          "content": "Consider using a <strong>for loop</strong> to iterate over each element in the list. Keep a running total (a variable that starts at 0 and grows). Inside the loop, only add to the total when the number is even. This is a classic accumulator pattern."
+        },
+        {
+          "level": 3,
+          "label": "Show Me the Approach",
+          "sublabel": "Here's a step-by-step walkthrough.",
+          "content": "Here's pseudocode for one clean approach:\n\n<pre>function sum_even(numbers):\n    total = 0\n    for each number in numbers:\n        if number % 2 == 0:\n            total = total + number\n    return total</pre>\n\nYou initialise a <code>total</code> variable to 0, loop through every element, and only add it when it passes the even-number check. No external libraries needed — just a loop, a condition, and an accumulator."
+        }
+      ],
+      "relatedLesson": {
+        "label": "Repeating with loops",
+        "to": "/learning"
+      },
+      "initialCode": "def sum_even(numbers):\n    \"\"\"Return the sum of all even numbers.\"\"\"\n\n    # Write your solution here\n    pass\n\n\n# Try your code with the test cases below.\n# Use return, not print, for your answer.\n"
+    },
+    {
+      "id": "reverse-a-string",
+      "number": 1,
+      "total": 12,
+      "title": "Reverse a string",
+      "difficulty": "Easy",
+      "tags": [
+        "Strings",
+        "Loops"
+      ],
+      "courseId": "python-fundamentals",
+      "courseTitle": "Python fundamentals",
+      "filename": "reverse_string.py",
+      "functionName": "reverse_string",
+      "description": "Given a string <code>s</code>, return it reversed.",
+      "functionSignature": "reverse_string(s)",
+      "examples": [
+        {
+          "id": 1,
+          "input": "s = \"hello\"",
+          "output": "\"olleh\""
+        },
+        {
+          "id": 2,
+          "input": "s = \"Python\"",
+          "output": "\"nohtyP\""
+        }
+      ],
+      "constraints": [
+        "0 ≤ len(s) ≤ 10,000"
+      ],
+      "hints": [
+        {
+          "level": 1,
+          "label": "A Little Nudge",
+          "sublabel": "Think about reading backwards.",
+          "content": "What if you built the result one character at a time, starting from the end of the string? In Python, you can access individual characters with their index."
+        },
+        {
+          "level": 2,
+          "label": "Guide Me Further",
+          "sublabel": "Consider Python's slicing syntax.",
+          "content": "Python strings support slicing with a step argument. The notation <code>s[start:stop:step]</code> lets you control direction. What step value would read a string backwards?"
+        },
+        {
+          "level": 3,
+          "label": "Show Me the Approach",
+          "sublabel": "Here's the simplest solution.",
+          "content": "Python's slice notation makes this a one-liner:\n\n<pre>def reverse_string(s):\n    return s[::-1]</pre>\n\n<code>s[::-1]</code> starts at the end, moves to the beginning, one character at a time — returning the reversed string."
+        }
+      ],
+      "initialCode": "def reverse_string(s):\n    \"\"\"Return the reversed version of s.\"\"\"\n\n    # Write your solution here\n    pass\n"
+    },
+    {
+      "id": "count-vowels",
+      "number": 2,
+      "total": 12,
+      "title": "Count vowels",
+      "difficulty": "Easy",
+      "tags": [
+        "Strings",
+        "Loops",
+        "Conditionals"
+      ],
+      "courseId": "python-fundamentals",
+      "courseTitle": "Python fundamentals",
+      "filename": "count_vowels.py",
+      "functionName": "count_vowels",
+      "description": "Given a string <code>s</code>, return the number of vowels (a, e, i, o, u) in the string. Treat uppercase and lowercase letters the same.",
+      "functionSignature": "count_vowels(s)",
+      "examples": [
+        {
+          "id": 1,
+          "input": "s = \"Hello World\"",
+          "output": "3",
+          "explanation": "The vowels are e, o, o."
+        },
+        {
+          "id": 2,
+          "input": "s = \"Python\"",
+          "output": "1",
+          "explanation": "The only vowel is o."
+        }
+      ],
+      "constraints": [
+        "0 ≤ len(s) ≤ 10,000"
+      ],
+      "hints": [
+        {
+          "level": 1,
+          "label": "A Little Nudge",
+          "sublabel": "Think about membership testing.",
+          "content": "You need to check each character in the string. How can you tell if a character is a vowel? Consider keeping a list (or string) of all vowels and checking if the character is in it."
+        },
+        {
+          "level": 2,
+          "label": "Guide Me Further",
+          "sublabel": "Consider case-insensitive comparison.",
+          "content": "Convert the whole string (or each character) to lowercase before checking. That way \"A\" and \"a\" are treated the same. The <code>in</code> operator checks membership: <code>\"a\" in \"aeiou\"</code> returns <code>True</code>."
+        },
+        {
+          "level": 3,
+          "label": "Show Me the Approach",
+          "sublabel": "Here's one clean approach.",
+          "content": "<pre>def count_vowels(s):\n    count = 0\n    for char in s.lower():\n        if char in \"aeiou\":\n            count += 1\n    return count</pre>\n\nYou can also do this in one line with a generator expression: <code>sum(1 for c in s.lower() if c in \"aeiou\")</code>."
+        }
+      ],
+      "initialCode": "def count_vowels(s):\n    \"\"\"Return the number of vowels in s.\"\"\"\n\n    # Write your solution here\n    pass\n"
+    },
+    {
+      "id": "find-maximum",
+      "number": 3,
+      "total": 12,
+      "title": "Find maximum",
+      "difficulty": "Easy",
+      "tags": [
+        "Lists",
+        "Loops"
+      ],
+      "courseId": "python-fundamentals",
+      "courseTitle": "Python fundamentals",
+      "filename": "find_maximum.py",
+      "functionName": "find_maximum",
+      "description": "Given a non-empty list of integers <code>numbers</code>, return the largest number in the list without using the built-in <code>max()</code> function.",
+      "functionSignature": "find_maximum(numbers)",
+      "examples": [
+        {
+          "id": 1,
+          "input": "numbers = [3, 1, 7, 2, 5]",
+          "output": "7"
+        },
+        {
+          "id": 2,
+          "input": "numbers = [-5, -1, -3]",
+          "output": "-1"
+        }
+      ],
+      "constraints": [
+        "1 ≤ len(numbers) ≤ 10,000",
+        "-10,000 ≤ numbers[i] ≤ 10,000"
+      ],
+      "hints": [
+        {
+          "level": 1,
+          "label": "A Little Nudge",
+          "sublabel": "Think about how you'd do this by hand.",
+          "content": "If you were scanning a list of numbers by hand, you'd probably keep track of the biggest one you've seen so far. How could you replicate that in code?"
+        },
+        {
+          "level": 2,
+          "label": "Guide Me Further",
+          "sublabel": "Think about initialisation.",
+          "content": "Start with <code>current_max</code> set to the first element. Then loop through the rest. If you find something bigger, update <code>current_max</code>. What should happen at the end of the loop?"
+        },
+        {
+          "level": 3,
+          "label": "Show Me the Approach",
+          "sublabel": "Here's the step-by-step.",
+          "content": "<pre>def find_maximum(numbers):\n    current_max = numbers[0]\n    for num in numbers[1:]:\n        if num > current_max:\n            current_max = num\n    return current_max</pre>\n\nStarting with the first element avoids issues with negative numbers (unlike starting with 0)."
+        }
+      ],
+      "initialCode": "def find_maximum(numbers):\n    \"\"\"Return the largest number in the list (without using max()).\"\"\"\n\n    # Write your solution here\n    pass\n"
+    }
+  ],
+  "testCases": {
+    "sum-of-even-numbers": [
+      {
+        "id": "case-1",
+        "label": "Case 1",
+        "inputLabel": "numbers =",
+        "input": "[1, 2, 3, 4, 5, 6]",
+        "expectedOutput": "12",
+        "explanation": "The even numbers are 2, 4, and 6. Their sum is 12.",
+        "argsExpression": "([1, 2, 3, 4, 5, 6],)"
+      },
+      {
+        "id": "case-2",
+        "label": "Case 2",
+        "inputLabel": "numbers =",
+        "input": "[1, 3, 5]",
+        "expectedOutput": "0",
+        "explanation": "There are no even numbers, so the result is 0.",
+        "argsExpression": "([1, 3, 5],)"
+      },
+      {
+        "id": "case-3",
+        "label": "Case 3",
+        "inputLabel": "numbers =",
+        "input": "[]",
+        "expectedOutput": "0",
+        "explanation": "An empty list has no even numbers.",
+        "argsExpression": "([],)"
+      }
+    ],
+    "reverse-a-string": [
+      {
+        "id": "case-1",
+        "label": "Case 1",
+        "inputLabel": "s =",
+        "input": "\"hello\"",
+        "expectedOutput": "'olleh'",
+        "argsExpression": "(\"hello\",)"
+      },
+      {
+        "id": "case-2",
+        "label": "Case 2",
+        "inputLabel": "s =",
+        "input": "\"Python\"",
+        "expectedOutput": "'nohtyP'",
+        "argsExpression": "(\"Python\",)"
+      },
+      {
+        "id": "case-3",
+        "label": "Case 3",
+        "inputLabel": "s =",
+        "input": "\"\"",
+        "expectedOutput": "''",
+        "argsExpression": "(\"\",)"
+      }
+    ],
+    "count-vowels": [
+      {
+        "id": "case-1",
+        "label": "Case 1",
+        "inputLabel": "s =",
+        "input": "\"Hello World\"",
+        "expectedOutput": "3",
+        "argsExpression": "(\"Hello World\",)"
+      },
+      {
+        "id": "case-2",
+        "label": "Case 2",
+        "inputLabel": "s =",
+        "input": "\"Python\"",
+        "expectedOutput": "1",
+        "argsExpression": "(\"Python\",)"
+      },
+      {
+        "id": "case-3",
+        "label": "Case 3",
+        "inputLabel": "s =",
+        "input": "\"aeiou\"",
+        "expectedOutput": "5",
+        "argsExpression": "(\"aeiou\",)"
+      }
+    ],
+    "find-maximum": [
+      {
+        "id": "case-1",
+        "label": "Case 1",
+        "inputLabel": "numbers =",
+        "input": "[3, 1, 7, 2, 5]",
+        "expectedOutput": "7",
+        "argsExpression": "([3, 1, 7, 2, 5],)"
+      },
+      {
+        "id": "case-2",
+        "label": "Case 2",
+        "inputLabel": "numbers =",
+        "input": "[-5, -1, -3]",
+        "expectedOutput": "-1",
+        "argsExpression": "([-5, -1, -3],)"
+      },
+      {
+        "id": "case-3",
+        "label": "Case 3",
+        "inputLabel": "numbers =",
+        "input": "[42]",
+        "expectedOutput": "42",
+        "argsExpression": "([42],)"
+      }
+    ]
+  }
+}
