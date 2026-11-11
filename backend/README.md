@@ -2,6 +2,8 @@
 
 The API is Python 3.10+ / FastAPI with psycopg 3 connection pooling. PostgreSQL 16 is the supported local version. Use parameterized SQL; there is no ORM and no extra database table beyond the requested six.
 
+Use a PostgreSQL database with `UTF8` server encoding. Curriculum markdown contains Unicode characters that cannot be stored in legacy encodings such as `WIN1252`; the seed checks the encoding before writing.
+
 ## Setup
 
 From the repository root, copy `.env.example` to `.env` and set local values. Copy this directory's `.env.example` to `backend/.env`; set `DATABASE_URL` and `JWT_SECRET` to match the root environment. Never use a production database for development or tests.

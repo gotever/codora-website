@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+import subprocess
+import sys
 from uuid import uuid4
 
 import psycopg
@@ -102,3 +104,39 @@ def test_api_auth_content_progress_chat_and_owner_isolation(db):
         assert client.get(f"/api/chats?exercise_id={exercise_id}").json()["messages"] == []
         assert client.get("/api/progress").json()["progress"] == []
         assert client.post("/api/auth/logout").status_code == 200
+
+
+def test_curriculum_seed_is_idempotent(db):
+    backend = Path(__file__).parents[1]
+    env = os.environ.copy()
+
+    def run_seed():
+        result = subprocess.run(
+            [sys.executable, "-m", "app.seed"],
+            cwd=backend,
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        assert "Seeded 2 courses, 12 lessons, and 4 exercises." in result.stdout
+
+    def snapshot():
+        return {
+            table: db.execute(f"SELECT to_jsonb(row_data) FROM {table} AS row_data ORDER BY id").fetchall()
+            for table in ("courses", "lessons", "exercises")
+        }
+
+    run_seed()
+    first = snapshot()
+    run_seed()
+    second = snapshot()
+
+    assert first == second
+    assert {
+        "sum-of-even-numbers",
+        "reverse-a-string",
+        "count-vowels",
+        "find-maximum",
+    } <= {row[0]["id"] for row in second["exercises"]}

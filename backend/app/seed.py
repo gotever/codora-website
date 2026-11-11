@@ -31,7 +31,11 @@ def main() -> None:
     pool.open()
     try:
         with connection() as conn:
-            with conn.transaction():
+            with conn.transaction(), conn.cursor() as cur:
+                cur.execute("SELECT current_setting('server_encoding') AS server_encoding")
+                if cur.fetchone()["server_encoding"].upper() != "UTF8":
+                    raise RuntimeError("Curriculum seed requires a UTF8 PostgreSQL database to preserve source content.")
+
                 courses = data["courses"]
                 navigation = data["courseNavigation"]
                 course_rows = [
@@ -39,7 +43,7 @@ def main() -> None:
                     for index, course in enumerate(courses, start=1)
                 ]
                 course_rows.append((navigation["id"], navigation["title"], navigation["description"], 3))
-                conn.executemany("""INSERT INTO courses(id,title,description,order_index) VALUES(%s,%s,%s,%s)
+                cur.executemany("""INSERT INTO courses(id,title,description,order_index) VALUES(%s,%s,%s,%s)
                     ON CONFLICT(id) DO UPDATE SET title=EXCLUDED.title,description=EXCLUDED.description,order_index=EXCLUDED.order_index""", course_rows)
 
                 lesson_rows = []
@@ -47,7 +51,7 @@ def main() -> None:
                     for item in module["lessons"]:
                         lesson = data["lessons"][item["id"]]
                         lesson_rows.append((item["id"], item["title"], navigation["id"], md_for_lesson(lesson), int(item["id"])))
-                conn.executemany("""INSERT INTO lessons(id,title,course_id,content_markdown,order_index) VALUES(%s,%s,%s,%s,%s)
+                cur.executemany("""INSERT INTO lessons(id,title,course_id,content_markdown,order_index) VALUES(%s,%s,%s,%s,%s)
                     ON CONFLICT(id) DO UPDATE SET title=EXCLUDED.title,course_id=EXCLUDED.course_id,
                     content_markdown=EXCLUDED.content_markdown,order_index=EXCLUDED.order_index""", lesson_rows)
 
@@ -66,7 +70,7 @@ def main() -> None:
                             "number": exercise["number"], "total": exercise["total"], "filename": exercise["filename"],
                             "courseId": exercise["courseId"], "courseTitle": exercise["courseTitle"]}),
                         json.dumps(exercise["hints"]), json.dumps(exercise["tags"])))
-                conn.executemany("""INSERT INTO exercises(id,lesson_id,title,difficulty,description,function_name,starter_code,test_cases,hints,tags)
+                cur.executemany("""INSERT INTO exercises(id,lesson_id,title,difficulty,description,function_name,starter_code,test_cases,hints,tags)
                     VALUES(%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s::jsonb)
                     ON CONFLICT(id) DO UPDATE SET lesson_id=EXCLUDED.lesson_id,title=EXCLUDED.title,
                     difficulty=EXCLUDED.difficulty,description=EXCLUDED.description,function_name=EXCLUDED.function_name,
