@@ -240,9 +240,9 @@ export const LESSON_DETAILS: Record<string, LessonDetail> = {
     moduleNumber: '01',
     moduleName: 'GETTING STARTED',
     topic: 'Welcome to Python',
-    title: 'Your first line of Python.',
+    title: 'Your very first Python program.',
     description:
-      'Get to know Python, write your very first program, and see what happens when code runs.',
+      'Discover what Python is, why millions of developers love it, and write your first working line of code.',
     duration: '4 min lesson',
     exerciseCount: 1,
     language: 'Python',
@@ -257,32 +257,68 @@ export const LESSON_DETAILS: Record<string, LessonDetail> = {
         number: '01',
         title: 'What is Python?',
         paragraphs: [
-          'Python is a programming language — a way to give instructions to a computer. It was designed to be easy to read and write, so it looks almost like plain English.',
-          'You can use Python to build websites, analyse data, create games, automate repetitive tasks, and much more. It is one of the most popular languages in the world, and a great first language to learn.',
+          'Python is a general-purpose programming language created by Guido van Rossum and released in 1991. Its design philosophy puts readability first — Python code is meant to look almost like plain English, so you spend less time deciphering syntax and more time solving real problems.',
+          'Because of that simplicity, Python has become one of the most popular languages on the planet. You will find it everywhere: data scientists use it to analyse millions of rows, web engineers build backends with it, game developers script logic in it, and AI researchers train models with it.',
+          'Most importantly for you right now: Python is a fantastic first language. If you can describe an idea in plain words, you are already halfway to writing Python.',
         ],
+        takeaway: {
+          label: 'WHY PYTHON?',
+          text: 'Easy to read, powerful enough for professionals, and in demand everywhere from startups to NASA.',
+        },
       },
       {
         id: 'sec-1-2',
         number: '02',
-        title: 'Your first Python program',
+        title: 'The print() function',
         paragraphs: [
-          'The classic first program in almost every language is one that prints the words "Hello, World!" to the screen. In Python, it takes exactly one line.',
+          'The very first thing most programmers learn is how to make a program say something. In Python, you do that with the built-in print() function.',
+          'A function is a reusable action with a name. You call it by writing its name followed by parentheses. Whatever you place inside the parentheses is called an argument — the value you hand to the function so it can do its job.',
+          'Wrapping text in quotes (" " or \' \') tells Python you mean a literal piece of text, not a variable or command. That piece of text is called a string.',
         ],
         codeExample: {
           filename: 'hello.py',
           language: 'Python',
           code: `print("Hello, World!")`,
-          caption: 'print() displays text on the screen.',
+          caption: 'One function call. One string argument. One line of output.',
         },
+      },
+      {
+        id: 'sec-1-3',
+        number: '03',
+        title: 'print() can do more than greet the world',
+        paragraphs: [
+          'You are not limited to one message per program. You can call print() as many times as you like — each call prints on its own line.',
+          'You can also print numbers directly without quotes. Python knows 42 is a number, not text, so no quotes are needed.',
+        ],
+        codeExample: {
+          filename: 'multiprint.py',
+          language: 'Python',
+          code: `print("I am learning Python!")
+print("One line at a time.")
+print(2025)`,
+          caption: 'Three calls, three lines of output — in order, top to bottom.',
+        },
+        takeaway: {
+          label: 'THE TAKEAWAY',
+          text: 'Python runs your code line by line, from top to bottom. Each print() call adds one new line to the output.',
+        },
+      },
+      {
+        id: 'sec-1-4',
+        number: '04',
+        title: 'Your turn',
+        paragraphs: [
+          'Now it is your turn to write a real Python program. The editor below works exactly like a professional code editor — type your code and hit Run to see the output instantly.',
+        ],
         challenge: {
           id: 'challenge-hello-world',
-          title: 'Try it: print Hello World',
+          title: 'Try it: say Hello World',
           description:
-            'Use the print() function to display the text Hello World on the screen. The output must match exactly — capitalisation counts!',
+            'Use print() to display the message Hello World on the screen. Spelling and capitalisation must match exactly.',
           practiceLabel: 'PRACTICE 1 OF 1',
           filename: 'hello.py',
           language: 'Python 3',
-          initialCode: `# Write your code below\n`,
+          initialCode: `# Type your code below and click Run\n`,
           solutionCode: `print("Hello World")`,
           testCases: [
             {
@@ -291,19 +327,6 @@ export const LESSON_DETAILS: Record<string, LessonDetail> = {
               expected: 'Hello World',
             },
           ],
-        },
-      },
-      {
-        id: 'sec-1-3',
-        number: '03',
-        title: 'What just happened?',
-        paragraphs: [
-          'print() is a built-in Python function. A function is a named action — you call it by writing its name followed by parentheses.',
-          'Whatever you put inside the parentheses gets displayed on the screen. The quotes tell Python that "Hello, World!" is a piece of text, not a command.',
-        ],
-        takeaway: {
-          label: 'THE TAKEAWAY',
-          text: 'print() is your first tool. Use it whenever you want to show something on the screen.',
         },
       },
     ],
