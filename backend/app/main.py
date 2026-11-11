@@ -77,7 +77,7 @@ def course_lessons(course_id: int):
 
 
 @app.get("/api/lessons/{lesson_id}")
-def get_lesson(lesson_id: str):
+def get_lesson(lesson_id: int):
     with connection() as conn:
         row = conn.execute("SELECT id,title,course_id,content_markdown,order_index FROM lessons WHERE id=%s", (lesson_id,)).fetchone()
     if not row:
@@ -86,7 +86,7 @@ def get_lesson(lesson_id: str):
 
 
 @app.get("/api/lessons/{lesson_id}/exercises")
-def lesson_exercises(lesson_id: str):
+def lesson_exercises(lesson_id: int):
     with connection() as conn:
         rows = conn.execute("SELECT id,lesson_id,title,difficulty,description,function_name,starter_code,test_cases,hints,tags FROM exercises WHERE lesson_id=%s ORDER BY title", (lesson_id,)).fetchall()
     return {"exercises": rows}
@@ -103,7 +103,7 @@ def list_exercises():
 
 
 @app.get("/api/exercises/{exercise_id}")
-def get_exercise(exercise_id: str):
+def get_exercise(exercise_id: int):
     with connection() as conn:
         row = conn.execute("""SELECT e.id,e.lesson_id,e.title,e.difficulty,e.description,e.function_name,
             e.starter_code,e.test_cases,e.hints,e.tags,l.course_id,c.title AS course_title
@@ -180,7 +180,7 @@ def put_progress(body: ProgressInput, user_id: str = Depends(current_user_id)):
 
 
 @app.get("/api/chats")
-def get_chats(exercise_id: str | None = None, user_id: str = Depends(current_user_id)):
+def get_chats(exercise_id: int | None = None, user_id: str = Depends(current_user_id)):
     with connection() as conn:
         if exercise_id:
             rows = conn.execute("SELECT id,exercise_id,role,message,code_snapshot,created_at FROM ai_chats WHERE user_id=%s AND exercise_id=%s ORDER BY created_at", (user_id, exercise_id)).fetchall()

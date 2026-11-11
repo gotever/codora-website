@@ -109,6 +109,7 @@ export default function AITutorPanel({
   }, [messages, isOpen, isTyping])
 
   useEffect(() => {
+    if (typeof exercise.id !== 'number') return
     let active = true
     fetchChats(exercise.id).then((saved) => {
       if (active && saved.length) {
@@ -135,7 +136,9 @@ export default function AITutorPanel({
     }
 
     setMessages((prev) => [...prev, userMsg])
-    void saveChat(text, 'user', exercise.id, currentCode).catch(() => undefined)
+    if (typeof exercise.id === 'number') {
+      void saveChat(text, 'user', exercise.id, currentCode).catch(() => undefined)
+    }
     if (!textToSend) setInputValue('')
     setIsTyping(true)
 
@@ -148,7 +151,9 @@ export default function AITutorPanel({
         timestamp: getCurrentTimeStr(),
       }
       setMessages((prev) => [...prev, tutorReply])
-      void saveChat(tutorReply.text, 'assistant', exercise.id, currentCode).catch(() => undefined)
+      if (typeof exercise.id === 'number') {
+        void saveChat(tutorReply.text, 'assistant', exercise.id, currentCode).catch(() => undefined)
+      }
       setIsTyping(false)
     }, 800)
   }

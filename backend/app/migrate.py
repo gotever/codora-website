@@ -6,6 +6,7 @@ MIGRATIONS = [
     Path(__file__).resolve().parents[1] / "migrations" / "001_initial_schema.sql",
     Path(__file__).resolve().parents[1] / "migrations" / "002_numeric_course_ids.sql",
     Path(__file__).resolve().parents[1] / "migrations" / "003_drop_course_slug.sql",
+    Path(__file__).resolve().parents[1] / "migrations" / "004_numeric_lesson_exercise_ids.sql",
 ]
 REQUIRED_COLUMNS = {
     "users": {"id", "email", "username", "password_hash", "full_name", "created_at"},
@@ -35,9 +36,12 @@ def main() -> None:
             if missing:
                 print("Pending schema; missing: " + "; ".join(missing))
                 raise SystemExit(1)
-            if (actual_types.get(("courses", "id")) != "bigint"
-                    or actual_types.get(("lessons", "course_id")) != "bigint"):
-                print("Pending schema; courses.id and lessons.course_id must be bigint.")
+            if any(actual_types.get((table, column)) != "bigint" for table, column in (
+                ("courses", "id"), ("lessons", "id"), ("lessons", "course_id"),
+                ("exercises", "id"), ("exercises", "lesson_id"),
+                ("user_progress", "item_id"), ("ai_chats", "exercise_id"),
+            )):
+                print("Pending schema; all curriculum IDs and references must be bigint.")
                 raise SystemExit(1)
             print("Schema is up to date (six tables and required columns present).")
             return
@@ -45,7 +49,7 @@ def main() -> None:
             conn.execute("SELECT pg_advisory_xact_lock(73190421)")
             for migration in MIGRATIONS:
                 conn.execute(migration.read_text(encoding="utf-8"))
-        print("Applied idempotent migrations 001_initial_schema.sql through 003_drop_course_slug.sql")
+        print("Applied idempotent migrations 001_initial_schema.sql through 004_numeric_lesson_exercise_ids.sql")
     finally:
         pool.close()
 

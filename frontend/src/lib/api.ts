@@ -9,7 +9,7 @@ export interface ApiCourse {
 }
 
 export interface ApiLesson {
-  id: string
+  id: number
   title: string
   course_id: number
   content_markdown: string
@@ -17,8 +17,8 @@ export interface ApiLesson {
 }
 
 export interface ApiExercise {
-  id: string
-  lesson_id: string
+  id: number
+  lesson_id: number
   title: string
   difficulty: 'Easy' | 'Medium' | 'Hard'
   description: string
@@ -61,7 +61,7 @@ export async function fetchCourseLessons(courseId: number): Promise<ApiLesson[]>
   return result.lessons
 }
 
-export async function fetchLesson(id: string): Promise<ApiLesson> {
+export async function fetchLesson(id: string | number): Promise<ApiLesson> {
   const result = await request<{ lesson: ApiLesson }>(`/api/lessons/${encodeURIComponent(id)}`)
   return result.lesson
 }
@@ -71,12 +71,12 @@ export async function fetchExercises(): Promise<ApiExercise[]> {
   return result.exercises
 }
 
-export async function fetchExercise(id: string): Promise<ApiExercise> {
+export async function fetchExercise(id: string | number): Promise<ApiExercise> {
   const result = await request<{ exercise: ApiExercise }>(`/api/exercises/${encodeURIComponent(id)}`)
   return result.exercise
 }
 
-export async function saveProgress(itemId: string, itemType: 'lesson' | 'exercise', status: 'not_started' | 'in_progress' | 'completed') {
+export async function saveProgress(itemId: number, itemType: 'lesson' | 'exercise', status: 'not_started' | 'in_progress' | 'completed') {
   return request('/api/progress', { method: 'PUT', body: JSON.stringify({ item_id: itemId, item_type: itemType, status }) })
 }
 
@@ -85,17 +85,17 @@ export interface ApiChatMessage {
   role: 'user' | 'assistant'
   message: string
   created_at: string
-  exercise_id: string | null
+  exercise_id: number | null
   code_snapshot: string | null
 }
 
-export async function fetchChats(exerciseId?: string): Promise<ApiChatMessage[]> {
-  const query = exerciseId ? `?exercise_id=${encodeURIComponent(exerciseId)}` : ''
+export async function fetchChats(exerciseId?: number): Promise<ApiChatMessage[]> {
+  const query = exerciseId === undefined ? '' : `?exercise_id=${encodeURIComponent(exerciseId)}`
   const result = await request<{ messages: ApiChatMessage[] }>(`/api/chats${query}`)
   return result.messages
 }
 
-export async function saveChat(message: string, role: 'user' | 'assistant', exerciseId: string | null, codeSnapshot?: string) {
+export async function saveChat(message: string, role: 'user' | 'assistant', exerciseId: number | null, codeSnapshot?: string) {
   return request('/api/chats', {
     method: 'POST',
     body: JSON.stringify({ message, role, exercise_id: exerciseId, code_snapshot: codeSnapshot ?? null }),

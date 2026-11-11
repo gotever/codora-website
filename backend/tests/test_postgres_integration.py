@@ -18,6 +18,7 @@ MIGRATIONS = [
         "001_initial_schema.sql",
         "002_numeric_course_ids.sql",
         "003_drop_course_slug.sql",
+        "004_numeric_lesson_exercise_ids.sql",
     )
 ]
 
@@ -30,8 +31,28 @@ def db():
         pytest.fail("Refusing to run destructive migration tests unless database name ends with _test")
     with psycopg.connect(TEST_DATABASE_URL) as conn:
         conn.execute("DROP TABLE IF EXISTS ai_chats,user_progress,exercises,lessons,courses,users CASCADE")
-        for migration in MIGRATIONS:
+        for migration in MIGRATIONS[:3]:
             conn.execute(migration)
+
+        course_id = conn.execute("INSERT INTO courses(title,order_index) VALUES('Migration fixture',9000) RETURNING id").fetchone()[0]
+        lesson_id = "legacy-lesson-key"
+        exercise_id = "legacy-exercise-key"
+        conn.execute("INSERT INTO lessons(id,title,course_id,order_index) VALUES(%s,'Migration fixture lesson',%s,9000)", (lesson_id, course_id))
+        conn.execute("INSERT INTO exercises(id,lesson_id,title,difficulty,function_name) VALUES(%s,%s,'Migration fixture exercise','Easy','legacy_fixture')", (exercise_id, lesson_id))
+        user_id = conn.execute("INSERT INTO users(email,username,password_hash,full_name) VALUES('migration@example.com','migration-fixture','hash','Migration') RETURNING id").fetchone()[0]
+        conn.execute("INSERT INTO user_progress(user_id,item_type,item_id,status) VALUES(%s,'lesson',%s,'in_progress'),(%s,'exercise',%s,'in_progress')", (user_id, lesson_id, user_id, exercise_id))
+        conn.execute("INSERT INTO ai_chats(user_id,exercise_id,role,message) VALUES(%s,%s,'user','migration fixture')", (user_id, exercise_id))
+        conn.execute(MIGRATIONS[3])
+
+        numeric_lesson_id = conn.execute("SELECT id FROM lessons WHERE title='Migration fixture lesson'").fetchone()[0]
+        numeric_exercise_id = conn.execute("SELECT id FROM exercises WHERE title='Migration fixture exercise'").fetchone()[0]
+        assert conn.execute("SELECT lesson_id FROM exercises WHERE id=%s", (numeric_exercise_id,)).fetchone()[0] == numeric_lesson_id
+        assert conn.execute("SELECT exercise_id FROM ai_chats WHERE user_id=%s", (user_id,)).fetchone()[0] == numeric_exercise_id
+        assert conn.execute("SELECT item_id FROM user_progress WHERE user_id=%s AND item_type='lesson'", (user_id,)).fetchone()[0] == numeric_lesson_id
+        assert conn.execute("SELECT item_id FROM user_progress WHERE user_id=%s AND item_type='exercise'", (user_id,)).fetchone()[0] == numeric_exercise_id
+
+        conn.execute("DELETE FROM users WHERE id=%s", (user_id,))
+        conn.execute("DELETE FROM courses WHERE id=%s", (course_id,))
         for migration in MIGRATIONS:
             conn.execute(migration)
         conn.commit()
@@ -76,22 +97,26 @@ def test_required_tables_columns_and_key_types(db):
       WHERE table_schema='public' AND column_name='id'"""))
     assert types["users"] == types["user_progress"] == types["ai_chats"] == "uuid"
     assert types["courses"] == "bigint"
-    assert types["lessons"] == types["exercises"] == "character varying"
+    assert types["lessons"] == types["exercises"] == "bigint"
     course_id_type = db.execute("""SELECT data_type FROM information_schema.columns
       WHERE table_schema='public' AND table_name='lessons' AND column_name='course_id'""").fetchone()[0]
     assert course_id_type == "bigint"
+    for table, column in (("exercises", "lesson_id"), ("user_progress", "item_id"), ("ai_chats", "exercise_id")):
+        actual = db.execute("""SELECT data_type FROM information_schema.columns
+          WHERE table_schema='public' AND table_name=%s AND column_name=%s""", (table, column)).fetchone()[0]
+        assert actual == "bigint"
     assert db.execute("""SELECT count(*) FROM information_schema.columns
       WHERE table_schema='public' AND table_name='courses' AND column_name='slug'""").fetchone()[0] == 0
 
 
 def test_unique_users_foreign_keys_jsonb_progress_upsert_and_deletion(db):
     user = db.execute("INSERT INTO users(email,username,password_hash,full_name) VALUES('db-test@example.com','db-test','hash','Test User') RETURNING id").fetchone()[0]
-    lesson = "db-test-lesson"
-    exercise = "db-test-exercise"
+    lesson = 9001
+    exercise = 9001
     course = db.execute("INSERT INTO courses(title,order_index) VALUES('Test Course',900) RETURNING id").fetchone()[0]
-    db.execute("INSERT INTO lessons(id,title,course_id,order_index) VALUES(%s,'Test Lesson',%s,900)", (lesson,course))
-    db.execute("""INSERT INTO exercises(id,lesson_id,title,difficulty,function_name,test_cases,hints,tags)
-      VALUES(%s,%s,'Test Exercise','Easy','identity',%s,%s,%s)""", (exercise,lesson,'[{"input": 1}]','["hint"]','["test"]'))
+    lesson = db.execute("INSERT INTO lessons(id,title,course_id,order_index) VALUES(%s,'Test Lesson',%s,900) RETURNING id", (lesson,course)).fetchone()[0]
+    exercise = db.execute("""INSERT INTO exercises(id,lesson_id,title,difficulty,function_name,test_cases,hints,tags)
+      VALUES(%s,%s,'Test Exercise','Easy','identity',%s,%s,%s) RETURNING id""", (exercise,lesson,'[{"input": 1}]','["hint"]','["test"]')).fetchone()[0]
     assert db.execute("SELECT test_cases->0->>'input' FROM exercises WHERE id=%s", (exercise,)).fetchone()[0] == "1"
     with pytest.raises(psycopg.errors.UniqueViolation):
         with db.transaction():
@@ -111,10 +136,10 @@ def test_unique_users_foreign_keys_jsonb_progress_upsert_and_deletion(db):
 
 
 def test_api_auth_content_progress_chat_and_owner_isolation(db, isolated_api_pool):
-    lesson_id, exercise_id = "api-test-lesson", "api-test-exercise"
+    lesson_id, exercise_id = 9101, 9101
     course_id = db.execute("INSERT INTO courses(title,order_index) VALUES('API Test Course',901) RETURNING id").fetchone()[0]
-    db.execute("INSERT INTO lessons(id,title,course_id,order_index) VALUES(%s,'API Test Lesson',%s,901)", (lesson_id,course_id))
-    db.execute("INSERT INTO exercises(id,lesson_id,title,difficulty,function_name) VALUES(%s,%s,'API Test Exercise','Easy','identity')", (exercise_id,lesson_id))
+    lesson_id = db.execute("INSERT INTO lessons(id,title,course_id,order_index) VALUES(%s,'API Test Lesson',%s,901) RETURNING id", (lesson_id,course_id)).fetchone()[0]
+    exercise_id = db.execute("INSERT INTO exercises(id,lesson_id,title,difficulty,function_name) VALUES(%s,%s,'API Test Exercise','Easy','identity') RETURNING id", (exercise_id,lesson_id)).fetchone()[0]
     db.commit()
 
     suffix = uuid4().hex
@@ -139,7 +164,7 @@ def test_api_auth_content_progress_chat_and_owner_isolation(db, isolated_api_poo
         assert client.post("/api/auth/login", json={"email": user_body["email"], "password": user_body["password"]}).status_code == 200
 
         assert client.put("/api/progress", json={"item_type": "bookmark", "item_id": lesson_id, "status": "completed"}).status_code == 422
-        assert client.put("/api/progress", json={"item_type": "lesson", "item_id": "missing", "status": "completed"}).status_code == 404
+        assert client.put("/api/progress", json={"item_type": "lesson", "item_id": 999999, "status": "completed"}).status_code == 404
         first = client.put("/api/progress", json={"item_type": "exercise", "item_id": exercise_id, "status": "in_progress"}).json()["progress"]
         updated = client.put("/api/progress", json={"item_type": "exercise", "item_id": exercise_id, "status": "completed"}).json()["progress"]
         assert first["id"] == updated["id"] and updated["completed_at"]
@@ -148,7 +173,7 @@ def test_api_auth_content_progress_chat_and_owner_isolation(db, isolated_api_poo
         chat = client.post("/api/chats", json={"exercise_id": exercise_id, "role": "user", "message": "help", "code_snapshot": "print(1)"})
         assert chat.status_code == 201
         assert client.get(f"/api/chats?exercise_id={exercise_id}").json()["messages"][0]["code_snapshot"] == "print(1)"
-        assert client.post("/api/chats", json={"exercise_id": "missing", "role": "user", "message": "help"}).status_code == 404
+        assert client.post("/api/chats", json={"exercise_id": 999999, "role": "user", "message": "help"}).status_code == 404
 
         other = client.post("/api/auth/register", json=second_body)
         assert other.status_code == 201
@@ -193,15 +218,14 @@ def test_curriculum_seed_is_idempotent(db):
         "SELECT count(*) FROM lessons l JOIN courses c ON c.id=l.course_id WHERE c.order_index=1"
     ).fetchone()[0]
     lesson_one = db.execute(
-        "SELECT content_markdown FROM lessons WHERE id='1'"
+        "SELECT content_markdown FROM lessons WHERE course_id=(SELECT id FROM courses WHERE order_index=3) ORDER BY order_index LIMIT 1"
     ).fetchone()[0]
     assert foundation_lessons == 12
     assert fundamentals_lessons == 8
     assert "Your very first Python program." in lesson_one
     assert "<!-- codora-lesson:v1" in lesson_one
-    assert {
-        "sum-of-even-numbers",
-        "reverse-a-string",
-        "count-vowels",
-        "find-maximum",
-    } <= {row[0]["id"] for row in second["exercises"]}
+    exercise_ids = [row[0]["id"] for row in second["exercises"]]
+    assert all(isinstance(exercise_id, int) for exercise_id in exercise_ids)
+    seeded_exercises = db.execute("""SELECT count(*) FROM exercises
+      WHERE function_name IN ('sum_even','reverse_string','count_vowels','find_maximum')""").fetchone()[0]
+    assert seeded_exercises == 4

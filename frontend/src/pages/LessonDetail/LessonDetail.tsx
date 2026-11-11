@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import type { CourseNavigation, LessonDetail as LessonDetailType } from '../../data/lessons'
 import { fetchCourseLessons, fetchCourses, fetchLesson } from '../../lib/api'
-import { buildCourseNavigation, parseLessonDetail } from '../../lib/lessonContent'
+import { buildCourseNavigation, parseLessonDetail, resolveLessonNavigation } from '../../lib/lessonContent'
 import CourseSidebar from './components/CourseSidebar/CourseSidebar'
 import LessonContent from './components/LessonContent/LessonContent'
 import LessonAssistant from './components/LessonAssistant/LessonAssistant'
@@ -30,7 +30,8 @@ export default function LessonDetail() {
           fetchCourseLessons(record.course_id),
         ])
         const course = courses.find((item) => item.id === record.course_id)
-        const lesson = parseLessonDetail(record.content_markdown, record.id)
+        const parsedLesson = parseLessonDetail(record.content_markdown, record.id)
+        const lesson = parsedLesson ? resolveLessonNavigation(parsedLesson, record, courseLessons) : null
         const courseNav = course ? buildCourseNavigation(course, courseLessons) : null
 
         if (active) {

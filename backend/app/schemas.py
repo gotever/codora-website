@@ -17,12 +17,12 @@ class LoginInput(BaseModel):
 
 class ProgressInput(BaseModel):
     item_type: Literal["lesson", "exercise"]
-    item_id: str = Field(min_length=1, max_length=160)
+    item_id: int = Field(gt=0)
     status: Literal["not_started", "in_progress", "completed"]
 
 
 class ChatInput(BaseModel):
-    exercise_id: str | None = Field(default=None, max_length=160)
+    exercise_id: int | None = Field(default=None, gt=0)
     role: Literal["user", "assistant"]
     message: str = Field(min_length=1, max_length=20_000)
     code_snapshot: str | None = Field(default=None, max_length=100_000)

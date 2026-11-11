@@ -27,6 +27,21 @@ def md_for_lesson(lesson: dict) -> str:
     return "\n".join(lines).strip()
 
 
+def remap_lesson_navigation(content: str, lesson_id: int, lesson_ids: dict[str, int]) -> str:
+    marker = "<!-- codora-lesson:v1\n"
+    metadata_end = content.find("\n-->\n", len(marker))
+    if not content.startswith(marker) or metadata_end < 0:
+        raise ValueError("Seeded lesson content is missing its versioned metadata block.")
+
+    detail = json.loads(content[len(marker):metadata_end])
+    detail["id"] = str(lesson_id)
+    for key in ("prevLesson", "nextLesson"):
+        navigation = detail.get(key)
+        if navigation and navigation.get("id") in lesson_ids:
+            navigation["id"] = str(lesson_ids[navigation["id"]])
+    return marker + json.dumps(detail, ensure_ascii=False, separators=(",", ":")) + content[metadata_end:]
+
+
 def md_for_course_preview(course: dict, item: dict, number: int) -> tuple[str, str]:
     lesson_id = f"{course['id']}-{number}"
     detail = {
@@ -69,6 +84,7 @@ def main() -> None:
     try:
         with connection() as conn:
             with conn.transaction(), conn.cursor() as cur:
+                cur.execute("SELECT pg_advisory_xact_lock(73190422)")
                 cur.execute("SELECT current_setting('server_encoding') AS server_encoding")
                 if cur.fetchone()["server_encoding"].upper() != "UTF8":
                     raise RuntimeError("Curriculum seed requires a UTF8 PostgreSQL database to preserve source content.")
@@ -89,41 +105,64 @@ def main() -> None:
                         RETURNING id""", (title, description, order_index)).fetchone()
                     course_ids[source_key] = row["id"]
 
-                lesson_rows = []
+                lesson_sources = []
                 for course in courses:
                     for index, item in enumerate(course["lessons"], start=1):
-                        lesson_id, content = md_for_course_preview(course, item, index)
-                        lesson_rows.append((lesson_id, item["title"], course_ids[course["id"]], content, index))
+                        source_id, content = md_for_course_preview(course, item, index)
+                        lesson_sources.append((source_id, item["title"], course_ids[course["id"]], content, index))
 
                 for module in navigation["modules"]:
                     for item in module["lessons"]:
                         lesson = data["lessons"][item["id"]]
-                        lesson_rows.append((item["id"], item["title"], course_ids[navigation["id"]], md_for_lesson(lesson), int(item["id"])))
-                cur.executemany("""INSERT INTO lessons(id,title,course_id,content_markdown,order_index) VALUES(%s,%s,%s,%s,%s)
-                    ON CONFLICT(id) DO UPDATE SET title=EXCLUDED.title,course_id=EXCLUDED.course_id,
-                    content_markdown=EXCLUDED.content_markdown,order_index=EXCLUDED.order_index""", lesson_rows)
+                        lesson_sources.append((item["id"], item["title"], course_ids[navigation["id"]], md_for_lesson(lesson), int(item["id"])))
+
+                lesson_ids = {}
+                for source_id, title, course_id, content, order_index in lesson_sources:
+                    row = cur.execute("""INSERT INTO lessons(title,course_id,content_markdown,order_index)
+                        VALUES(%s,%s,%s,%s)
+                        ON CONFLICT(course_id,order_index) DO UPDATE SET title=EXCLUDED.title,
+                          content_markdown=EXCLUDED.content_markdown
+                        RETURNING id""", (title, course_id, content, order_index)).fetchone()
+                    lesson_ids[source_id] = row["id"]
+
+                cur.executemany("UPDATE lessons SET content_markdown=%s WHERE id=%s", [
+                    (remap_lesson_navigation(content, lesson_ids[source_id], lesson_ids), lesson_ids[source_id])
+                    for source_id, _title, _course_id, content, _order_index in lesson_sources
+                ])
 
                 exercise_rows = []
                 for exercise in data["exercises"]:
                     # No canonical exercise-to-lesson mapping exists in the source data. These
                     # assignments are provisional to satisfy the lesson FK; see backend/README.md.
                     if exercise["functionName"] in ("reverse_string", "count_vowels"):
-                        lesson_id = "3"
+                        lesson_id = lesson_ids["3"]
                     else:
-                        lesson_id = "7"
-                    exercise_rows.append((exercise["id"], lesson_id, exercise["title"], exercise["difficulty"],
+                        lesson_id = lesson_ids["7"]
+                    exercise_rows.append((lesson_id, exercise["title"], exercise["difficulty"],
                         exercise["description"], exercise["functionName"], exercise["initialCode"],
                         json.dumps({"runner": data["testCases"][exercise["id"]], "examples": exercise["examples"],
                             "constraints": exercise["constraints"], "functionSignature": exercise["functionSignature"],
                             "number": exercise["number"], "total": exercise["total"], "filename": exercise["filename"],
                             "courseId": exercise["courseId"], "courseTitle": exercise["courseTitle"]}),
                         json.dumps(exercise["hints"]), json.dumps(exercise["tags"])))
-                cur.executemany("""INSERT INTO exercises(id,lesson_id,title,difficulty,description,function_name,starter_code,test_cases,hints,tags)
-                    VALUES(%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s::jsonb)
-                    ON CONFLICT(id) DO UPDATE SET lesson_id=EXCLUDED.lesson_id,title=EXCLUDED.title,
-                    difficulty=EXCLUDED.difficulty,description=EXCLUDED.description,function_name=EXCLUDED.function_name,
-                    starter_code=EXCLUDED.starter_code,test_cases=EXCLUDED.test_cases,hints=EXCLUDED.hints,tags=EXCLUDED.tags""", exercise_rows)
-        print(f"Seeded {len(course_rows)} courses, {len(lesson_rows)} lessons, and {len(exercise_rows)} exercises.")
+                for row in exercise_rows:
+                    (lesson_id, title, difficulty, description, function_name, starter_code,
+                     test_cases, hints, tags) = row
+                    matches = cur.execute("SELECT id FROM exercises WHERE title=%s AND function_name=%s", (title, function_name)).fetchall()
+                    if len(matches) > 1:
+                        raise RuntimeError(f"Multiple exercise rows match seeded exercise {title!r}.")
+                    if matches:
+                        cur.execute("""UPDATE exercises SET lesson_id=%s,title=%s,difficulty=%s,description=%s,
+                            function_name=%s,starter_code=%s,test_cases=%s::jsonb,hints=%s::jsonb,tags=%s::jsonb
+                            WHERE id=%s""", (lesson_id, title, difficulty, description, function_name,
+                            starter_code, test_cases, hints, tags, matches[0]["id"]))
+                    else:
+                        cur.execute("""INSERT INTO exercises(lesson_id,title,difficulty,description,function_name,
+                            starter_code,test_cases,hints,tags)
+                            VALUES(%s,%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s::jsonb)""",
+                            (lesson_id, title, difficulty, description, function_name,
+                             starter_code, test_cases, hints, tags))
+        print(f"Seeded {len(course_rows)} courses, {len(lesson_sources)} lessons, and {len(exercise_rows)} exercises.")
     finally:
         pool.close()
 

@@ -32,8 +32,13 @@ def test_user_routes_require_authentication():
 
 def test_request_schemas_reject_invalid_progress_and_chat_roles():
     try:
-        ProgressInput(item_type="bookmark", item_id="lesson-1", status="completed")
+        ProgressInput(item_type="bookmark", item_id=1, status="completed")
         assert False, "invalid item_type should be rejected"
+    except ValueError:
+        pass
+    try:
+        ProgressInput(item_type="lesson", item_id="lesson-1", status="completed")
+        assert False, "non-numeric item_id should be rejected"
     except ValueError:
         pass
     try:
@@ -48,8 +53,9 @@ def test_schema_has_exactly_six_application_tables_and_original_keys():
     tables = [line.split()[5] for line in sql.splitlines() if line.strip().startswith("CREATE TABLE IF NOT EXISTS")]
     assert set(tables) == {"users", "courses", "lessons", "exercises", "user_progress", "ai_chats"}
     assert "id UUID PRIMARY KEY" in sql
-    assert "id VARCHAR(120) PRIMARY KEY" in sql
     assert "test_cases JSONB" in sql and "hints JSONB" in sql and "tags JSONB" in sql
+    numeric_ids_migration = (Path(__file__).parents[1] / "migrations" / "004_numeric_lesson_exercise_ids.sql").read_text(encoding="utf-8")
+    assert "id_numeric BIGINT" in numeric_ids_migration and "item_id_numeric BIGINT" in numeric_ids_migration
     assert "conversation_id" not in sql and "lesson_id VARCHAR(120) REFERENCES exercises" not in sql
 
 

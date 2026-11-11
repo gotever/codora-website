@@ -3,7 +3,7 @@ import type { ApiCourse, ApiLesson } from './api'
 
 const DETAIL_MARKER = /^<!-- codora-lesson:v1\r?\n([\s\S]*?)\r?\n-->\r?\n?/
 
-export function parseLessonDetail(contentMarkdown: string, lessonId: string): LessonDetail | null {
+export function parseLessonDetail(contentMarkdown: string, lessonId: string | number): LessonDetail | null {
   const match = contentMarkdown.match(DETAIL_MARKER)
   if (!match) return null
 
@@ -13,17 +13,28 @@ export function parseLessonDetail(contentMarkdown: string, lessonId: string): Le
 
     const detail = value as LessonDetail
     if (
-      detail.id !== lessonId ||
       typeof detail.title !== 'string' ||
       typeof detail.description !== 'string' ||
       !Array.isArray(detail.sections) ||
       !['completed', 'in_progress', 'upcoming'].includes(detail.status)
     ) return null
 
+    detail.id = String(lessonId)
     return detail
   } catch {
     return null
   }
+}
+
+export function resolveLessonNavigation(detail: LessonDetail, lesson: ApiLesson, lessons: ApiLesson[]): LessonDetail {
+  const ordered = lessons.slice().sort((left, right) => left.order_index - right.order_index)
+  const index = ordered.findIndex((item) => item.id === lesson.id)
+  const previous = ordered[index - 1]
+  const next = ordered[index + 1]
+
+  if (detail.prevLesson && previous) detail.prevLesson.id = String(previous.id)
+  if (detail.nextLesson && next) detail.nextLesson.id = String(next.id)
+  return detail
 }
 
 export function buildCourseNavigation(course: ApiCourse, lessons: ApiLesson[]): CourseNavigation | null {
@@ -33,6 +44,11 @@ export function buildCourseNavigation(course: ApiCourse, lessons: ApiLesson[]): 
     .map((lesson) => ({ lesson, detail: parseLessonDetail(lesson.content_markdown, lesson.id) }))
 
   if (details.some(({ detail }) => detail === null)) return null
+
+  details.forEach(({ lesson, detail }) => {
+    if (!detail) return
+    resolveLessonNavigation(detail, lesson, lessons)
+  })
 
   const modules = new Map<string, CourseNavigation['modules'][number]>()
   for (const { detail } of details) {

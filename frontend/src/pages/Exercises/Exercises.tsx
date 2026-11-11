@@ -44,7 +44,7 @@ export default function Exercises() {
     fetchExercises().then((records) => {
       if (!active) return
       setExercises(records.map((record, index) => {
-        const fallback = EXERCISE_LIST.find((item) => item.id === record.id)
+        const fallback = EXERCISE_LIST.find((item) => item.id === record.id || item.title === record.title)
         return {
           id: record.id,
           number: record.test_cases.number ?? fallback?.number ?? index + 1,

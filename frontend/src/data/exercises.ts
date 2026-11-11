@@ -23,7 +23,7 @@ export interface HintLevel {
 }
 
 export interface Exercise {
-  id: string
+  id: number | string
   number: number
   total: number
   title: string
@@ -54,7 +54,7 @@ export interface Exercise {
 }
 
 export interface ExerciseListItem {
-  id: string
+  id: number | string
   number: number
   title: string
   difficulty: Difficulty
