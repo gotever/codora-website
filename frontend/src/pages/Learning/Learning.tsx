@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react'
 import CourseCard from '../../components/CourseCard/CourseCard'
-import { COURSES } from '../../data/courses'
+import type { Course } from '../../data/courses'
+import { fetchCourseLessons, fetchCourses } from '../../lib/api'
+import { parseLessonDetail } from '../../lib/lessonContent'
 import './Learning.css'
 
 function BookIcon() {
@@ -21,6 +24,44 @@ function BookIcon() {
 }
 
 export default function Learning() {
+  const [courses, setCourses] = useState<Course[] | null>(null)
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    let active = true
+
+    async function loadCurriculum() {
+      try {
+        const records = await fetchCourses()
+        const coursesFromDatabase = await Promise.all(records.map(async (course) => {
+          const lessons = await fetchCourseLessons(course.id)
+          return {
+            id: course.id,
+            title: course.title,
+            lessonCount: lessons.length,
+            paceLabel: course.id === 'python-fundamentals' ? course.description : undefined,
+            lessons: lessons.map((lesson) => {
+              const detail = parseLessonDetail(lesson.content_markdown, lesson.id)
+              return {
+                id: lesson.id,
+                number: detail?.lessonNumber,
+                title: detail?.topic ?? lesson.title,
+                description: detail?.description ?? '',
+              }
+            }),
+          }
+        }))
+
+        if (active) setCourses(coursesFromDatabase)
+      } catch {
+        if (active) setError(true)
+      }
+    }
+
+    void loadCurriculum()
+    return () => { active = false }
+  }, [])
+
   return (
     <main className="learning-page" id="main-content">
       <div className="learning-page__content">
@@ -38,9 +79,10 @@ export default function Learning() {
 
         {/* Course cards */}
         <div className="learning-page__courses">
-          {COURSES.map((course) => (
-            <CourseCard key={course.id} course={course} />
-          ))}
+          {courses === null && !error && <p role="status">Loading courses…</p>}
+          {error && <p role="alert">Could not load courses from the database. Check that the API is running and try again.</p>}
+          {courses?.length === 0 && <p>No courses are available in the database yet.</p>}
+          {courses?.map((course) => <CourseCard key={course.id} course={course} />)}
         </div>
       </div>
     </main>

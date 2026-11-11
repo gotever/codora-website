@@ -8,6 +8,14 @@ export interface ApiCourse {
   lesson_count: number
 }
 
+export interface ApiLesson {
+  id: string
+  title: string
+  course_id: string
+  content_markdown: string
+  order_index: number
+}
+
 export interface ApiExercise {
   id: string
   lesson_id: string
@@ -46,6 +54,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export async function fetchCourses(): Promise<ApiCourse[]> {
   const result = await request<{ courses: ApiCourse[] }>('/api/courses')
   return result.courses
+}
+
+export async function fetchCourseLessons(courseId: string): Promise<ApiLesson[]> {
+  const result = await request<{ lessons: ApiLesson[] }>(`/api/courses/${encodeURIComponent(courseId)}/lessons`)
+  return result.lessons
+}
+
+export async function fetchLesson(id: string): Promise<ApiLesson> {
+  const result = await request<{ lesson: ApiLesson }>(`/api/lessons/${encodeURIComponent(id)}`)
+  return result.lesson
 }
 
 export async function fetchExercises(): Promise<ApiExercise[]> {

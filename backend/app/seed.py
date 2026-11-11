@@ -7,7 +7,8 @@ DATA = Path(__file__).resolve().parents[1] / "data" / "curriculum.json"
 
 
 def md_for_lesson(lesson: dict) -> str:
-    lines = [f"# {lesson['title']}", "", lesson["description"], ""]
+    metadata = json.dumps(lesson, ensure_ascii=False, separators=(",", ":"))
+    lines = ["<!-- codora-lesson:v1", metadata, "-->", "", f"# {lesson['title']}", "", lesson["description"], ""]
     for section in lesson["sections"]:
         lines.extend([f"## {section['title']}", ""])
         lines.extend([paragraph for paragraph in section["paragraphs"]])
@@ -26,6 +27,42 @@ def md_for_lesson(lesson: dict) -> str:
     return "\n".join(lines).strip()
 
 
+def md_for_course_preview(course: dict, item: dict, number: int) -> tuple[str, str]:
+    lesson_id = f"{course['id']}-{number}"
+    detail = {
+        "id": lesson_id,
+        "lessonNumber": number,
+        "moduleNumber": "01",
+        "moduleName": course["title"].upper(),
+        "topic": item["title"],
+        "title": item["title"],
+        "description": item["description"],
+        "duration": "Self-paced",
+        "exerciseCount": 0,
+        "language": "Python",
+        "status": "upcoming",
+        "sections": [{
+            "id": f"{lesson_id}-overview",
+            "number": "01",
+            "title": item["title"],
+            "paragraphs": [item["description"]],
+        }],
+    }
+    if number > 1:
+        previous = course["lessons"][number - 2]
+        detail["prevLesson"] = {
+            "id": f"{course['id']}-{number - 1}",
+            "title": previous["title"],
+        }
+    if number < len(course["lessons"]):
+        following = course["lessons"][number]
+        detail["nextLesson"] = {
+            "id": f"{course['id']}-{number + 1}",
+            "title": following["title"],
+        }
+    return lesson_id, md_for_lesson(detail)
+
+
 def main() -> None:
     data = json.loads(DATA.read_text(encoding="utf-8"))
     pool.open()
@@ -39,7 +76,7 @@ def main() -> None:
                 courses = data["courses"]
                 navigation = data["courseNavigation"]
                 course_rows = [
-                    (course["id"], course["title"], "Python lessons from the existing Codora curriculum.", index)
+                    (course["id"], course["title"], course.get("description", course["paceLabel"]), index)
                     for index, course in enumerate(courses, start=1)
                 ]
                 course_rows.append((navigation["id"], navigation["title"], navigation["description"], 3))
@@ -47,6 +84,11 @@ def main() -> None:
                     ON CONFLICT(id) DO UPDATE SET title=EXCLUDED.title,description=EXCLUDED.description,order_index=EXCLUDED.order_index""", course_rows)
 
                 lesson_rows = []
+                for course in courses:
+                    for index, item in enumerate(course["lessons"], start=1):
+                        lesson_id, content = md_for_course_preview(course, item, index)
+                        lesson_rows.append((lesson_id, item["title"], course["id"], content, index))
+
                 for module in navigation["modules"]:
                     for item in module["lessons"]:
                         lesson = data["lessons"][item["id"]]

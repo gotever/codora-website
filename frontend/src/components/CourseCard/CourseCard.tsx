@@ -16,8 +16,12 @@ export default function CourseCard({ course }: CourseCardProps) {
         </h2>
         <p className="course-card__meta">
           {course.lessonCount} lessons
-          <span className="course-card__meta-dot">·</span>
-          {course.paceLabel}
+          {course.paceLabel && (
+            <>
+              <span className="course-card__meta-dot">·</span>
+              {course.paceLabel}
+            </>
+          )}
         </p>
       </div>
 

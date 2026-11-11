@@ -6,6 +6,8 @@ from uuid import uuid4
 
 import psycopg
 import pytest
+from psycopg.rows import dict_row
+from psycopg_pool import ConnectionPool
 from fastapi.testclient import TestClient
 
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL")
@@ -25,6 +27,36 @@ def db():
         conn.commit()
         yield conn
         conn.execute("DROP TABLE IF EXISTS ai_chats,user_progress,exercises,lessons,courses,users CASCADE")
+
+
+@pytest.fixture
+def isolated_api_pool(db):
+    previous_database_url = os.environ.get("DATABASE_URL")
+    os.environ["DATABASE_URL"] = TEST_DATABASE_URL
+    from app import db as app_database
+    from app import main as app_main
+
+    previous_pool = app_database.pool
+    previous_main_pool = app_main.pool
+    test_pool = ConnectionPool(
+        TEST_DATABASE_URL,
+        min_size=1,
+        max_size=10,
+        kwargs={"row_factory": dict_row},
+        open=False,
+    )
+    app_database.pool = test_pool
+    app_main.pool = test_pool
+    try:
+        yield
+    finally:
+        test_pool.close()
+        app_database.pool = previous_pool
+        app_main.pool = previous_main_pool
+        if previous_database_url is None:
+            os.environ.pop("DATABASE_URL", None)
+        else:
+            os.environ["DATABASE_URL"] = previous_database_url
 
 
 def test_required_tables_columns_and_key_types(db):
@@ -63,7 +95,7 @@ def test_unique_users_foreign_keys_jsonb_progress_upsert_and_deletion(db):
     assert db.execute("SELECT count(*) FROM lessons WHERE id=%s", (lesson,)).fetchone()[0] == 0
 
 
-def test_api_auth_content_progress_chat_and_owner_isolation(db):
+def test_api_auth_content_progress_chat_and_owner_isolation(db, isolated_api_pool):
     course_id, lesson_id, exercise_id = "api-test-course", "api-test-lesson", "api-test-exercise"
     db.execute("INSERT INTO courses(id,title,order_index) VALUES(%s,'API Test Course',901)", (course_id,))
     db.execute("INSERT INTO lessons(id,title,course_id,order_index) VALUES(%s,'API Test Lesson',%s,901)", (lesson_id,course_id))
@@ -109,6 +141,7 @@ def test_api_auth_content_progress_chat_and_owner_isolation(db):
 def test_curriculum_seed_is_idempotent(db):
     backend = Path(__file__).parents[1]
     env = os.environ.copy()
+    env["DATABASE_URL"] = TEST_DATABASE_URL
 
     def run_seed():
         result = subprocess.run(
@@ -120,7 +153,7 @@ def test_curriculum_seed_is_idempotent(db):
             check=False,
         )
         assert result.returncode == 0, result.stderr
-        assert "Seeded 2 courses, 12 lessons, and 4 exercises." in result.stdout
+        assert "Seeded 2 courses, 20 lessons, and 4 exercises." in result.stdout
 
     def snapshot():
         return {
@@ -134,6 +167,19 @@ def test_curriculum_seed_is_idempotent(db):
     second = snapshot()
 
     assert first == second
+    foundation_lessons = db.execute(
+        "SELECT count(*) FROM lessons WHERE course_id='python-foundations'"
+    ).fetchone()[0]
+    fundamentals_lessons = db.execute(
+        "SELECT count(*) FROM lessons WHERE course_id='python-fundamentals'"
+    ).fetchone()[0]
+    lesson_one = db.execute(
+        "SELECT content_markdown FROM lessons WHERE id='1'"
+    ).fetchone()[0]
+    assert foundation_lessons == 12
+    assert fundamentals_lessons == 8
+    assert "Your very first Python program." in lesson_one
+    assert "<!-- codora-lesson:v1" in lesson_one
     assert {
         "sum-of-even-numbers",
         "reverse-a-string",

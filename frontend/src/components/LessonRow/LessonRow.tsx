@@ -24,7 +24,10 @@ function ArrowIcon() {
 }
 
 export default function LessonRow({ lesson }: LessonRowProps) {
-  const padded = String(lesson.id).padStart(2, '0')
+  const lessonNumber = lesson.number ?? Number(lesson.id)
+  const padded = Number.isFinite(lessonNumber)
+    ? String(lessonNumber).padStart(2, '0')
+    : String(lesson.id)
 
   return (
     <li role="listitem">

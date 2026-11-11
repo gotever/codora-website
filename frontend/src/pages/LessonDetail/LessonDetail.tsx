@@ -1,6 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { COURSE_NAV_DATA, LESSON_DETAILS, type LessonDetail as LessonDetailType } from '../../data/lessons'
+import type { CourseNavigation, LessonDetail as LessonDetailType } from '../../data/lessons'
+import { fetchCourseLessons, fetchCourses, fetchLesson } from '../../lib/api'
+import { buildCourseNavigation, parseLessonDetail } from '../../lib/lessonContent'
 import CourseSidebar from './components/CourseSidebar/CourseSidebar'
 import LessonContent from './components/LessonContent/LessonContent'
 import LessonAssistant from './components/LessonAssistant/LessonAssistant'
@@ -8,13 +10,39 @@ import './LessonDetail.css'
 
 export default function LessonDetail() {
   const { id } = useParams<{ id: string }>()
+  const [loadedLesson, setLoadedLesson] = useState<{
+    requestedId: string
+    lesson: LessonDetailType | null
+    courseNav: CourseNavigation | null
+    error: boolean
+  } | null>(null)
 
-  // Find lesson by id, fallback to Lesson 4 (Functions)
-  const lesson: LessonDetailType = useMemo(() => {
-    if (id && LESSON_DETAILS[id]) {
-      return LESSON_DETAILS[id]
+  useEffect(() => {
+    if (!id) return
+    const lessonId = id
+    let active = true
+
+    async function loadLesson() {
+      try {
+        const record = await fetchLesson(lessonId)
+        const [courses, courseLessons] = await Promise.all([
+          fetchCourses(),
+          fetchCourseLessons(record.course_id),
+        ])
+        const course = courses.find((item) => item.id === record.course_id)
+        const lesson = parseLessonDetail(record.content_markdown, record.id)
+        const courseNav = course ? buildCourseNavigation(course, courseLessons) : null
+
+        if (active) {
+          setLoadedLesson({ requestedId: lessonId, lesson, courseNav, error: false })
+        }
+      } catch {
+        if (active) setLoadedLesson({ requestedId: lessonId, lesson: null, courseNav: null, error: true })
+      }
     }
-    return LESSON_DETAILS['4']
+
+    void loadLesson()
+    return () => { active = false }
   }, [id])
 
   // Mobile drawer states
@@ -26,6 +54,19 @@ export default function LessonDetail() {
   const handleAskAIHint = (challengeTitle: string) => {
     setExternalPrompt(`Give me a hint for: ${challengeTitle}`)
     setIsAssistantOpen(true)
+  }
+
+  if (!id || loadedLesson?.requestedId !== id) {
+    return <main className="lesson-page-container" id="main-content" role="status">Loading lesson…</main>
+  }
+
+  const { lesson, courseNav, error } = loadedLesson
+  if (error || !lesson || !courseNav) {
+    return (
+      <main className="lesson-page-container" id="main-content">
+        <p role="alert">Could not load this lesson from the database. Check that the API is running and try again.</p>
+      </main>
+    )
   }
 
   return (
@@ -74,7 +115,7 @@ export default function LessonDetail() {
       <div className="lesson-layout">
         {/* Left Column: Course Sidebar Navigation */}
         <CourseSidebar
-          courseNav={COURSE_NAV_DATA}
+          courseNav={courseNav}
           activeLessonId={lesson.id}
           isOpenOnMobile={isSidebarOpen}
           onCloseMobile={() => setIsSidebarOpen(false)}

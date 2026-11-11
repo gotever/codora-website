@@ -170,41 +170,89 @@
       "moduleNumber": "01",
       "moduleName": "GETTING STARTED",
       "topic": "Welcome to Python",
-      "title": "Welcome to Python in practice",
-      "description": "Explore the fundamental concepts behind welcome to python and build hands-on intuition with interactive code examples.",
-      "duration": "4 min",
+      "title": "Your very first Python program.",
+      "description": "Discover what Python is, why millions of developers love it, and write your first working line of code.",
+      "duration": "4 min lesson",
       "exerciseCount": 1,
       "language": "Python",
       "status": "completed",
       "nextLesson": {
         "id": "2",
-        "title": "Lesson 02"
+        "title": "Variables & data types"
       },
       "sections": [
         {
           "id": "sec-1-1",
           "number": "01",
-          "title": "Understanding Welcome to Python",
+          "title": "What is Python?",
           "paragraphs": [
-            "In this lesson, we explore how welcome to python functions in modern Python and why it is a critical building block for writing clean, efficient software."
+            "Python is a general-purpose programming language created by Guido van Rossum and released in 1991. Its design philosophy puts readability first — Python code is meant to look almost like plain English, so you spend less time deciphering syntax and more time solving real problems.",
+            "Because of that simplicity, Python has become one of the most popular languages on the planet. You will find it everywhere: data scientists use it to analyse millions of rows, web engineers build backends with it, game developers script logic in it, and AI researchers train models with it.",
+            "Most importantly for you right now: Python is a fantastic first language. If you can describe an idea in plain words, you are already halfway to writing Python."
           ],
-          "codeExample": {
-            "filename": "example.py",
-            "language": "Python",
-            "code": "# Exploring Welcome to Python\nresult = \"Ready to code!\"\nprint(result)",
-            "caption": "Try running and experimenting with this example."
+          "takeaway": {
+            "label": "WHY PYTHON?",
+            "text": "Easy to read, powerful enough for professionals, and in demand everywhere from startups to NASA."
           }
         },
         {
           "id": "sec-1-2",
           "number": "02",
-          "title": "Key Takeaways",
+          "title": "The print() function",
           "paragraphs": [
-            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+            "The very first thing most programmers learn is how to make a program say something. In Python, you do that with the built-in print() function.",
+            "A function is a reusable action with a name. You call it by writing its name followed by parentheses. Whatever you place inside the parentheses is called an argument — the value you hand to the function so it can do its job.",
+            "Wrapping text in quotes (\" \" or ' ') tells Python you mean a literal piece of text, not a variable or command. That piece of text is called a string."
           ],
+          "codeExample": {
+            "filename": "hello.py",
+            "language": "Python",
+            "code": "print(\"Hello, World!\")",
+            "caption": "One function call. One string argument. One line of output."
+          }
+        },
+        {
+          "id": "sec-1-3",
+          "number": "03",
+          "title": "print() can do more than greet the world",
+          "paragraphs": [
+            "You are not limited to one message per program. You can call print() as many times as you like — each call prints on its own line.",
+            "You can also print numbers directly without quotes. Python knows 42 is a number, not text, so no quotes are needed."
+          ],
+          "codeExample": {
+            "filename": "multiprint.py",
+            "language": "Python",
+            "code": "print(\"I am learning Python!\")\nprint(\"One line at a time.\")\nprint(2025)",
+            "caption": "Three calls, three lines of output — in order, top to bottom."
+          },
           "takeaway": {
             "label": "THE TAKEAWAY",
-            "text": "Small, focused practice leads to deep programming intuition."
+            "text": "Python runs your code line by line, from top to bottom. Each print() call adds one new line to the output."
+          }
+        },
+        {
+          "id": "sec-1-4",
+          "number": "04",
+          "title": "Your turn",
+          "paragraphs": [
+            "Now it is your turn to write a real Python program. The editor below works exactly like a professional code editor — type your code and hit Run to see the output instantly."
+          ],
+          "challenge": {
+            "id": "challenge-hello-world",
+            "title": "Try it: say Hello World",
+            "description": "Use print() to display the message Hello World on the screen. Spelling and capitalisation must match exactly.",
+            "practiceLabel": "PRACTICE 1 OF 1",
+            "filename": "hello.py",
+            "language": "Python 3",
+            "initialCode": "# Type your code below and click Run\n",
+            "solutionCode": "print(\"Hello World\")",
+            "testCases": [
+              {
+                "id": "tc-hw-1",
+                "call": "stdout",
+                "expected": "Hello World"
+              }
+            ]
           }
         }
       ]

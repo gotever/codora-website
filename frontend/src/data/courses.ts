@@ -1,7 +1,8 @@
 // Mock data for the Learning / Courses page
 
 export interface Lesson {
-  id: number
+  id: number | string
+  number?: number
   title: string
   description: string
 }
@@ -10,7 +11,7 @@ export interface Course {
   id: string
   title: string
   lessonCount: number
-  paceLabel: string
+  paceLabel?: string
   lessons: Lesson[]
 }
 
