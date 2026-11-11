@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { fetchChats, saveChat } from '../../../../lib/api'
 import type { Exercise } from '../../../../data/exercises'
 import './AITutorPanel.css'
 
@@ -107,6 +108,21 @@ export default function AITutorPanel({
     }
   }, [messages, isOpen, isTyping])
 
+  useEffect(() => {
+    let active = true
+    fetchChats(exercise.id).then((saved) => {
+      if (active && saved.length) {
+        setMessages(saved.map((item) => ({
+          id: item.id,
+          sender: item.role === 'assistant' ? 'tutor' : 'user',
+          text: item.message,
+          timestamp: new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        })))
+      }
+    }).catch(() => undefined)
+    return () => { active = false }
+  }, [exercise.id])
+
   const handleSend = (textToSend?: string) => {
     const text = (textToSend ?? inputValue).trim()
     if (!text || isTyping) return
@@ -119,6 +135,7 @@ export default function AITutorPanel({
     }
 
     setMessages((prev) => [...prev, userMsg])
+    void saveChat(text, 'user', exercise.id, currentCode).catch(() => undefined)
     if (!textToSend) setInputValue('')
     setIsTyping(true)
 
@@ -131,6 +148,7 @@ export default function AITutorPanel({
         timestamp: getCurrentTimeStr(),
       }
       setMessages((prev) => [...prev, tutorReply])
+      void saveChat(tutorReply.text, 'assistant', exercise.id, currentCode).catch(() => undefined)
       setIsTyping(false)
     }, 800)
   }

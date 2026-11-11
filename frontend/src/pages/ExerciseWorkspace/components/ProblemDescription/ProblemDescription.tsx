@@ -1,4 +1,5 @@
 import type { Exercise } from '../../../../data/exercises'
+import { sanitizeHtml } from '../../../../lib/sanitizeHtml'
 import './ProblemDescription.css'
 
 interface ProblemDescriptionProps {
@@ -64,7 +65,7 @@ export default function ProblemDescription({ exercise }: ProblemDescriptionProps
       {/* Description */}
       <p
         className="prob-desc__body"
-        dangerouslySetInnerHTML={{ __html: exercise.description }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(exercise.description) }}
       />
 
       {/* Function signature call-out */}

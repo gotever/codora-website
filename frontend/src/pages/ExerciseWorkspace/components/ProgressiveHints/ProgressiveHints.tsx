@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { HintLevel } from '../../../../data/exercises'
 import './ProgressiveHints.css'
+import { sanitizeHtml } from '../../../../lib/sanitizeHtml'
 
 interface ProgressiveHintsProps {
   hints: HintLevel[]
@@ -154,7 +155,7 @@ export default function ProgressiveHints({ hints }: ProgressiveHintsProps) {
               {isUnlocked && isOpen && (
                 <div
                   className="prog-hints__content"
-                  dangerouslySetInnerHTML={{ __html: hint.content }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(hint.content) }}
                 />
               )}
             </div>

@@ -7,4 +7,9 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['pyodide'],
   },
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3001',
+    },
+  },
 })

@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { EXERCISE_LIST } from '../../data/exercises'
+import { EXERCISE_LIST, type ExerciseListItem } from '../../data/exercises'
+import { fetchExercises } from '../../lib/api'
 import './Exercises.css'
 
 type Difficulty = 'Easy' | 'Medium' | 'Hard'
@@ -35,6 +37,30 @@ function CodeBracketsIcon() {
 }
 
 export default function Exercises() {
+  const [exercises, setExercises] = useState<ExerciseListItem[]>(EXERCISE_LIST)
+
+  useEffect(() => {
+    let active = true
+    fetchExercises().then((records) => {
+      if (!active) return
+      setExercises(records.map((record, index) => {
+        const fallback = EXERCISE_LIST.find((item) => item.id === record.id)
+        return {
+          id: record.id,
+          number: record.test_cases.number ?? fallback?.number ?? index + 1,
+          title: record.title,
+          difficulty: record.difficulty,
+          tags: record.tags,
+          courseId: record.course_id,
+          courseTitle: record.course_title,
+        }
+      }))
+    }).catch(() => {
+      // The local curriculum remains usable while the optional API is offline.
+    })
+    return () => { active = false }
+  }, [])
+
   return (
     <main className="exercises-page" id="main-content">
       <div className="exercises-page__content">
@@ -52,7 +78,7 @@ export default function Exercises() {
 
         {/* Exercise list */}
         <div className="exercises-page__list">
-          {EXERCISE_LIST.map((exercise) => (
+          {exercises.map((exercise) => (
             <Link
               key={exercise.id}
               to={`/exercises/${exercise.id}`}

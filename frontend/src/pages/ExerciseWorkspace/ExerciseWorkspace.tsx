@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { EXERCISES, TEST_CASES, type Exercise, type TestCase } from '../../data/exercises'
+import { fetchExercise, saveProgress, type ApiExercise } from '../../lib/api'
+import { sanitizeHtml } from '../../lib/sanitizeHtml'
 import { usePyodide, type PyodideResult } from '../../hooks/usePyodide'
 import ProblemDescription from './components/ProblemDescription/ProblemDescription'
 import ProgressiveHints from './components/ProgressiveHints/ProgressiveHints'
@@ -13,12 +15,43 @@ export default function ExerciseWorkspace() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { isLoading: pyodideLoading, loadError: pyodideError, runTestCase, isReady } = usePyodide()
+  const [apiExercise, setApiExercise] = useState<ApiExercise | null>(null)
+
+  useEffect(() => {
+    if (!id) return
+    let active = true
+    fetchExercise(id).then((record) => {
+      if (active) setApiExercise(record)
+    }).catch(() => {
+      if (active) setApiExercise(null)
+    })
+    return () => { active = false }
+  }, [id])
 
   // Find current exercise by id or fallback to default
   const exercise: Exercise = useMemo(() => {
     const found = EXERCISES.find((e) => e.id === id)
-    return found || EXERCISES[0]
-  }, [id])
+    const fallback = found || EXERCISES[0]
+    if (!apiExercise) return fallback
+    return {
+      ...fallback,
+      title: apiExercise.title,
+      difficulty: apiExercise.difficulty,
+      tags: apiExercise.tags,
+      description: sanitizeHtml(apiExercise.description),
+      functionName: apiExercise.function_name,
+      functionSignature: apiExercise.test_cases.functionSignature ?? fallback.functionSignature,
+      examples: apiExercise.test_cases.examples ?? fallback.examples,
+      constraints: apiExercise.test_cases.constraints ?? fallback.constraints,
+      hints: apiExercise.hints ?? fallback.hints,
+      initialCode: apiExercise.starter_code,
+      number: apiExercise.test_cases.number ?? fallback.number,
+      total: apiExercise.test_cases.total ?? fallback.total,
+      filename: apiExercise.test_cases.filename ?? fallback.filename,
+      courseId: apiExercise.test_cases.courseId ?? fallback.courseId,
+      courseTitle: apiExercise.test_cases.courseTitle ?? fallback.courseTitle,
+    }
+  }, [id, apiExercise])
 
   const currentIndex = EXERCISES.findIndex((e) => e.id === exercise.id)
   const prevExercise = currentIndex > 0 ? EXERCISES[currentIndex - 1] : null
@@ -40,7 +73,7 @@ export default function ExerciseWorkspace() {
   }, [exercise.id, exercise.initialCode])
 
   // Test cases for this exercise
-  const testCases = TEST_CASES[exercise.id] || TEST_CASES['sum-of-even-numbers']
+  const testCases: TestCase[] = apiExercise?.test_cases.runner ?? TEST_CASES[exercise.id] ?? TEST_CASES['sum-of-even-numbers']
 
   // Execution result state
   const [runResult, setRunResult] = useState<{
@@ -211,6 +244,9 @@ export default function ExerciseWorkspace() {
       }).join('\n'),
       results,
     })
+
+    // This is learner-reported browser execution progress, not server-side grading.
+    if (allPassed) void saveProgress(exercise.id, 'exercise', 'completed').catch(() => undefined)
 
     setSubmissions((prev) => [
       {

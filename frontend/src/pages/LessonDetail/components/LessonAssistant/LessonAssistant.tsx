@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import type { ChatMessage } from '../../../../data/lessons'
 import { INITIAL_ASSISTANT_MESSAGES } from '../../../../data/lessons'
+import { fetchChats, saveChat } from '../../../../lib/api'
 import './LessonAssistant.css'
 
 interface LessonAssistantProps {
@@ -29,6 +30,22 @@ export default function LessonAssistant({
     scrollToBottom()
   }, [messages, isTyping])
 
+  useEffect(() => {
+    let active = true
+    fetchChats().then((saved) => {
+      if (active && saved.length) {
+        setMessages(saved.map((item) => ({
+          id: item.id,
+          sender: item.role,
+          paragraphs: item.role === 'assistant' ? [item.message] : undefined,
+          text: item.role === 'user' ? item.message : undefined,
+          timestamp: new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        })))
+      }
+    }).catch(() => undefined)
+    return () => { active = false }
+  }, [])
+
   const handleSend = useCallback((textToSend?: string) => {
     const text = (textToSend ?? inputValue).trim()
     if (!text || isTyping) return
@@ -41,6 +58,7 @@ export default function LessonAssistant({
     }
 
     setMessages((prev) => [...prev, userMessage])
+    void saveChat(text, 'user', null).catch(() => undefined)
     if (!textToSend) setInputValue('')
     setIsTyping(true)
 
@@ -99,6 +117,8 @@ export default function LessonAssistant({
       }
 
       setMessages((prev) => [...prev, response])
+      const responseText = [response.title, ...(response.paragraphs ?? []), response.closing].filter(Boolean).join('\n\n')
+      void saveChat(responseText, 'assistant', null).catch(() => undefined)
       setIsTyping(false)
     }, 700)
   }, [inputValue, isTyping, currentLessonTopic])

@@ -18,7 +18,6 @@ export default function WorkspaceCodeEditor({
 }: WorkspaceCodeEditorProps) {
   const [copied, setCopied] = useState(false)
   const [cursorPos, setCursorPos] = useState({ line: 1, col: 1 })
-  const [editorReady, setEditorReady] = useState(false)
   const editorRef = useRef<any>(null)
 
   const handleBeforeMount: BeforeMount = useCallback((monaco) => {
@@ -60,8 +59,6 @@ export default function WorkspaceCodeEditor({
 
   const handleEditorMount: OnMount = useCallback((editor) => {
     editorRef.current = editor
-    setEditorReady(true)
-
     // Track cursor position
     editor.onDidChangeCursorPosition((e: any) => {
       setCursorPos({ line: e.position.lineNumber, col: e.position.column })
