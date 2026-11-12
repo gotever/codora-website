@@ -127,6 +127,9 @@
   background-color: var(--color-border-light);
 }
 
+.navbar__btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.navbar__user { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-text-secondary); font-size: 14px; }
+
 /* Responsive */
 @media (max-width: 640px) {
   .navbar__nav {

@@ -1,0 +1,13 @@
+import { createContext } from 'react'
+import type { AuthUser } from '../lib/api'
+
+export interface AuthContextValue {
+  user: AuthUser | null
+  loading: boolean
+  login: (email: string, password: string) => Promise<void>
+  register: (input: { email: string; username: string; password: string; full_name: string }) => Promise<void>
+  logout: () => Promise<void>
+  refresh: () => Promise<void>
+}
+
+export const AuthContext = createContext<AuthContextValue | null>(null)

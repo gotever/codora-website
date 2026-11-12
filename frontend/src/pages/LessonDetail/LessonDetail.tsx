@@ -160,7 +160,10 @@ export default function LessonDetail() {
 
         {/* Right Column: AI Lesson Assistant */}
         <LessonAssistant
+          key={lesson.id}
           currentLessonTopic={lesson.topic}
+          lessonId={Number(lesson.id)}
+          lessonDescription={lesson.description}
           isOpenOnMobile={isAssistantOpen}
           onCloseMobile={() => setIsAssistantOpen(false)}
           externalPrompt={externalPrompt}

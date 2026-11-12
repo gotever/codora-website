@@ -59,6 +59,14 @@ def test_schema_has_exactly_six_application_tables_and_original_keys():
     assert "conversation_id" not in sql and "lesson_id VARCHAR(120) REFERENCES exercises" not in sql
 
 
+def test_tutor_memory_migration_adds_context_scoped_storage_without_new_tables():
+    sql = (Path(__file__).parents[1] / "migrations" / "006_ai_tutor_memory.sql").read_text(encoding="utf-8")
+    assert "ai_tutor_memory JSONB NOT NULL DEFAULT '{}'::jsonb" in sql
+    assert "context_key VARCHAR(64)" in sql
+    assert "event_type VARCHAR(16) NOT NULL DEFAULT 'chat'" in sql
+    assert "CREATE TABLE" not in sql
+
+
 def test_session_token_contains_user_id():
     user_id = "c5232f9b-4efe-44a5-8a27-a5d3c5f875f5"
     token = make_token(user_id, "learner@example.com")

@@ -20,7 +20,7 @@ export interface CodingChallenge {
   filename: string
   language: string
   initialCode: string
-  solutionCode: string
+  solutionCode?: string
   testCases: TestCase[]
 }
 

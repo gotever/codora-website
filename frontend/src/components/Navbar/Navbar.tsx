@@ -1,4 +1,5 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../auth/useAuth'
 import './Navbar.css'
 
 const NAV_LINKS = [
@@ -8,6 +9,17 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const { user, loading, logout } = useAuth()
+
+  async function handleLogout() {
+    try {
+      await logout()
+      navigate('/', { replace: true })
+    } catch {
+      // Keep the user state when the server could not confirm session invalidation.
+    }
+  }
 
   return (
     <header className="navbar" role="banner">
@@ -46,14 +58,12 @@ export default function Navbar() {
         </nav>
 
         {/* Auth actions */}
-        <div className="navbar__actions">
-          <button type="button" className="navbar__btn navbar__btn--signup" id="btn-signup">
-            Sign up
-          </button>
-          <button type="button" className="navbar__btn navbar__btn--login" id="btn-login">
-            Log in
-          </button>
-        </div>
+        {!loading && <div className="navbar__actions">
+          {user ? <><span className="navbar__user">{user.full_name}</span><button type="button" className="navbar__btn navbar__btn--login" onClick={handleLogout}>Log out</button></> : <>
+            <Link to="/register" className="navbar__btn navbar__btn--signup">Sign up</Link>
+            <Link to="/login" state={{ from: { pathname: location.pathname, search: location.search } }} className="navbar__btn navbar__btn--login">Log in</Link>
+          </>}
+        </div>}
       </div>
     </header>
   )

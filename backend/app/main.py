@@ -1,3 +1,4 @@
+import json
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, Response
@@ -8,10 +9,12 @@ from psycopg import errors
 
 from .auth import current_user_id, hash_password, make_token, optional_current_user_id, verify_password
 from .db import connection, pool
+from .interaction_trace import write_interaction_trace
 from .personalization import personalize_lesson as create_personalized_lesson
 from .runner import run_code_sandbox
-from .schemas import ChatInput, LoginInput, PersonalizeLessonInput, ProgressInput, RegisterInput, SubmitInput, UserLevelInput
+from .schemas import ChatInput, LoginInput, PersonalizeLessonInput, ProgressInput, RegisterInput, SubmitInput, TutorChatInput, UserLevelInput
 from .settings import settings
+from .tutor import create_tutor_reply
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
@@ -172,7 +175,26 @@ def submit_exercise(
     if not all_cases:
         raise HTTPException(400, "No test cases configured for this exercise")
 
-    result = run_code_sandbox(body.code, row["function_name"], all_cases, timeout_seconds=3.0)
+    trace_context = {"exercise_id": exercise_id, "function_name": row["function_name"]}
+    trace_input = {"code": body.code, "test_case_count": len(all_cases)}
+    try:
+        result = run_code_sandbox(body.code, row["function_name"], all_cases, timeout_seconds=3.0)
+    except Exception as exc:
+        write_interaction_trace(
+            event="exercise_submission",
+            user_id=user_id,
+            context=trace_context,
+            input_data=trace_input,
+            error=f"{type(exc).__name__}: {str(exc)[:300]}",
+        )
+        raise
+    write_interaction_trace(
+        event="exercise_submission",
+        user_id=user_id,
+        context=trace_context,
+        input_data=trace_input,
+        output_data=result,
+    )
     if user_id:
         score = result["passed_count"] / result["total_count"] * 10 if result["total_count"] else 0
         status = "completed" if result["status"] == "Accepted" else "in_progress"
@@ -185,6 +207,21 @@ def submit_exercise(
                     score=EXCLUDED.score,last_attempt_at=now()""",
                 (user_id, exercise_id, status, status, score),
             )
+            failed_case = result.get("failed_case") or {}
+            submission = {
+                "status": result.get("status"),
+                "passed_count": result.get("passed_count"),
+                "total_count": result.get("total_count"),
+                "runtime_ms": result.get("runtime_ms"),
+                "failed_case": {
+                    key: failed_case[key] for key in ("label", "case_id", "is_hidden", "actual", "expected", "error")
+                    if key in failed_case
+                },
+                "error": result.get("error"),
+            }
+            conn.execute("""INSERT INTO ai_chats(user_id,exercise_id,context_key,event_type,role,message,code_snapshot)
+                VALUES(%s,%s,%s,'submission','user',%s,%s)""",
+                (user_id, exercise_id, f"exercise:{exercise_id}", json.dumps(submission, ensure_ascii=False), body.code))
     return result
 
 
@@ -272,17 +309,24 @@ def put_progress(body: ProgressInput, user_id: str = Depends(current_user_id)):
 
 
 @app.get("/api/chats")
-def get_chats(exercise_id: int | None = None, user_id: str | None = Depends(optional_current_user_id)):
+def get_chats(exercise_id: int | None = None, context_key: str | None = None, user_id: str | None = Depends(optional_current_user_id)):
     if user_id is None:
         return {"messages": []}
     with connection() as conn:
-        if exercise_id is not None:
+        if context_key is not None:
+            rows = conn.execute("SELECT id,exercise_id,context_key,event_type,role,message,code_snapshot,created_at FROM ai_chats WHERE user_id=%s AND context_key=%s AND event_type='chat' ORDER BY created_at,id", (user_id, context_key)).fetchall()
+        elif exercise_id is not None:
             rows = conn.execute("SELECT id,exercise_id,role,message,code_snapshot,created_at FROM ai_chats WHERE user_id=%s AND exercise_id=%s ORDER BY created_at", (user_id, exercise_id)).fetchall()
         else:
             rows = conn.execute("SELECT id,exercise_id,role,message,code_snapshot,created_at FROM ai_chats WHERE user_id=%s AND exercise_id IS NULL ORDER BY created_at", (user_id,)).fetchall()
     for row in rows:
         row["id"] = str(row["id"])
     return {"messages": rows}
+
+
+@app.post("/api/tutor/chat")
+def tutor_chat(body: TutorChatInput, user_id: str = Depends(current_user_id)):
+    return create_tutor_reply(user_id, body)
 
 
 @app.post("/api/chats", status_code=201)

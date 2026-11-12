@@ -633,8 +633,10 @@ export default function ExerciseWorkspace() {
 
       {/* 4. Collapsible AI Tutor Panel */}
       <AITutorPanel
+        key={exercise.id}
         exercise={exercise}
         currentCode={code}
+        currentActivity={`${runResult.status === 'idle' ? 'No code execution yet.' : runResult.message ?? runResult.status}${runResult.stdout ? `\n${runResult.stdout}` : ''}`}
         isOpen={isAITutorOpen}
         onToggle={() => setIsAITutorOpen((v) => !v)}
       />

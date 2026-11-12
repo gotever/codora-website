@@ -1,5 +1,23 @@
 const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
+export interface AuthUser {
+  id: string
+  email: string
+  username: string
+  full_name: string
+  level: 'beginner' | 'intermediate' | 'advanced'
+  created_at: string
+}
+
+export class ApiError extends Error {
+  status: number
+  constructor(status: number) {
+    super(`Yêu cầu thất bại (${status}). Vui lòng thử lại.`)
+    this.status = status
+    this.name = 'ApiError'
+  }
+}
+
 export interface ApiCourse {
   id: number
   title: string
@@ -47,8 +65,26 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...init?.headers },
   })
-  if (!response.ok) throw new Error(`API request failed (${response.status})`)
+  if (!response.ok) {
+    throw new ApiError(response.status)
+  }
   return response.json() as Promise<T>
+}
+
+export async function fetchCurrentUser(): Promise<AuthUser> {
+  return (await request<{ user: AuthUser }>('/api/auth/me')).user
+}
+
+export async function login(email: string, password: string): Promise<AuthUser> {
+  return (await request<{ user: AuthUser }>('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) })).user
+}
+
+export async function register(input: { email: string; username: string; password: string; full_name: string }): Promise<AuthUser> {
+  return (await request<{ user: AuthUser }>('/api/auth/register', { method: 'POST', body: JSON.stringify(input) })).user
+}
+
+export async function logout(): Promise<void> {
+  await request<{ success: boolean }>('/api/auth/logout', { method: 'POST' })
 }
 
 export async function fetchCourses(): Promise<ApiCourse[]> {
@@ -133,6 +169,21 @@ export async function fetchChats(exerciseId?: number): Promise<ApiChatMessage[]>
   const query = exerciseId === undefined ? '' : `?exercise_id=${encodeURIComponent(exerciseId)}`
   const result = await request<{ messages: ApiChatMessage[] }>(`/api/chats${query}`)
   return result.messages
+}
+
+export async function fetchContextChats(contextType: 'lesson' | 'exercise', contextId: number): Promise<ApiChatMessage[]> {
+  const result = await request<{ messages: ApiChatMessage[] }>(`/api/chats?context_key=${encodeURIComponent(`${contextType}:${contextId}`)}`)
+  return result.messages
+}
+
+export async function askTutor(input: {
+  context_type: 'lesson' | 'exercise'
+  context_id: number
+  message: string
+  code_snapshot?: string
+  activity?: string
+}): Promise<{ answer: string; memory_summary: string; structured_memory: Record<string, unknown> }> {
+  return request('/api/tutor/chat', { method: 'POST', body: JSON.stringify(input) })
 }
 
 export async function saveChat(message: string, role: 'user' | 'assistant', exerciseId: number | null, codeSnapshot?: string) {

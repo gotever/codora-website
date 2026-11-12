@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { fetchChats, saveChat } from '../../../../lib/api'
+import { askTutor, fetchContextChats } from '../../../../lib/api'
 import type { Exercise } from '../../../../data/exercises'
 import './AITutorPanel.css'
 
@@ -13,6 +13,7 @@ export interface ChatMessage {
 interface AITutorPanelProps {
   exercise: Exercise
   currentCode: string
+  currentActivity: string
   isOpen: boolean
   onToggle: () => void
 }
@@ -23,52 +24,6 @@ const SUGGESTED_PROMPTS = [
   'Explain this error',
   'Give me a tiny nudge',
 ]
-
-function getMockResponse(prompt: string, exerciseTitle: string, currentCode: string): string {
-  const lower = prompt.toLowerCase()
-  if (lower.includes('concept')) {
-    return `In **${exerciseTitle}**, the key concept is **filtering with the modulo operator** inside a loop.
-    
-When you evaluate \`number % 2 == 0\`, it checks if the remainder of dividing by 2 is zero. If it is, the number is even! Combining this with an accumulator variable lets you build up your answer step by step.`
-  }
-  if (lower.includes('approach') || lower.includes('review')) {
-    const hasPass = currentCode.includes('pass')
-    const hasLoop = currentCode.includes('for ')
-    const hasReturn = currentCode.includes('return ')
-
-    if (hasPass && !hasLoop) {
-      return `Looking at your code for **${exerciseTitle}**: You currently have the starter \`pass\` placeholder.
-
-To get started:
-1. Create a variable before the loop to accumulate the sum: \`total = 0\`
-2. Write a \`for\` loop over \`numbers\`
-3. Check each number with \`if number % 2 == 0:\`
-4. Add to \`total\` and \`return total\` at the end!`
-    }
-
-    if (hasLoop && !hasReturn) {
-      return `I see you've started looping! Don't forget that your function must explicitly \`return\` the calculated sum at the end, otherwise Python returns \`None\`.`
-    }
-
-    return `Great progress! Here is how to verify your approach:
-    
-1. **Accumulator**: Is your \`total = 0\` initialised outside the loop?
-2. **Modulo check**: Are you testing \`number % 2 == 0\`?
-3. **Return statement**: Is \`return total\` properly indented outside the \`for\` block?
-
-Try clicking **Run** to test it against Case 1!`
-  }
-  if (lower.includes('error')) {
-    return `Common errors on this problem include:
-- **Returning too early**: Make sure your \`return\` statement is outside the \`for\` loop, not inside!
-- **Using \`=\` instead of \`==\`**: Comparison requires two equals signs (\`==\`).
-- **Printing instead of returning**: The test cases check what your function returns, so use \`return total\` instead of \`print(total)\`.`
-  }
-  if (lower.includes('nudge') || lower.includes('hint')) {
-    return `Here's a nudge: Start with \`total = 0\` before your loop. Every time you find an even number, add it to \`total\`. What happens if the list has no even numbers? Because \`total\` started at 0, you'll naturally return 0 — exactly what the problem requires!`
-  }
-  return `I'm here to help you work through **${exerciseTitle}**! Try running your code with Case 1 first. If the output doesn't match, check how your condition evaluates each number.`
-}
 
 let messageCounter = 0
 function generateMessageId(): string {
@@ -83,6 +38,7 @@ function getCurrentTimeStr(): string {
 export default function AITutorPanel({
   exercise,
   currentCode,
+  currentActivity,
   isOpen,
   onToggle,
 }: AITutorPanelProps) {
@@ -111,7 +67,7 @@ export default function AITutorPanel({
   useEffect(() => {
     if (typeof exercise.id !== 'number') return
     let active = true
-    fetchChats(exercise.id).then((saved) => {
+    fetchContextChats('exercise', exercise.id).then((saved) => {
       if (active && saved.length) {
         setMessages(saved.map((item) => ({
           id: item.id,
@@ -122,7 +78,7 @@ export default function AITutorPanel({
       }
     }).catch(() => undefined)
     return () => { active = false }
-  }, [exercise.id])
+  }, [exercise.id, exercise.title])
 
   const handleSend = (textToSend?: string) => {
     const text = (textToSend ?? inputValue).trim()
@@ -136,26 +92,28 @@ export default function AITutorPanel({
     }
 
     setMessages((prev) => [...prev, userMsg])
-    if (typeof exercise.id === 'number') {
-      void saveChat(text, 'user', exercise.id, currentCode).catch(() => undefined)
-    }
     if (!textToSend) setInputValue('')
     setIsTyping(true)
 
-    // Simulate AI thinking and replying
-    setTimeout(() => {
-      const tutorReply: ChatMessage = {
-        id: generateMessageId(),
-        sender: 'tutor',
-        text: getMockResponse(text, exercise.title, currentCode),
-        timestamp: getCurrentTimeStr(),
-      }
-      setMessages((prev) => [...prev, tutorReply])
-      if (typeof exercise.id === 'number') {
-        void saveChat(tutorReply.text, 'assistant', exercise.id, currentCode).catch(() => undefined)
-      }
+    if (typeof exercise.id !== 'number') {
+      setMessages((prev) => [...prev, { id: generateMessageId(), sender: 'tutor', text: 'AI tutor is unavailable because this exercise is not connected to the backend.', timestamp: getCurrentTimeStr() }])
       setIsTyping(false)
-    }, 800)
+      return
+    }
+    void askTutor({
+      context_type: 'exercise',
+      context_id: exercise.id,
+      message: text,
+      code_snapshot: currentCode,
+      activity: currentActivity,
+    }).then(({ answer }) => {
+      setMessages((prev) => [...prev, { id: generateMessageId(), sender: 'tutor', text: answer, timestamp: getCurrentTimeStr() }])
+    }).catch((error: unknown) => {
+      const fallback = error instanceof Error && error.message.includes('(401)')
+        ? 'Please sign in to use the AI tutor and save conversation memory.'
+        : 'The tutor could not respond right now. Please try again.'
+      setMessages((prev) => [...prev, { id: generateMessageId(), sender: 'tutor', text: fallback, timestamp: getCurrentTimeStr() }])
+    }).finally(() => setIsTyping(false))
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

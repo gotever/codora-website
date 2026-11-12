@@ -49,6 +49,14 @@ class ChatInput(BaseModel):
     code_snapshot: str | None = Field(default=None, max_length=100_000)
 
 
+class TutorChatInput(BaseModel):
+    context_type: Literal["lesson", "exercise"]
+    context_id: int = Field(gt=0)
+    message: str = Field(min_length=1, max_length=20_000)
+    code_snapshot: str | None = Field(default=None, max_length=100_000)
+    activity: str | None = Field(default=None, max_length=8_000)
+
+
 class PublicUser(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: str

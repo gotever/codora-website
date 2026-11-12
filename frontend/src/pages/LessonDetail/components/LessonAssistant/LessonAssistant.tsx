@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import type { ChatMessage } from '../../../../data/lessons'
 import { INITIAL_ASSISTANT_MESSAGES } from '../../../../data/lessons'
-import { fetchChats, saveChat } from '../../../../lib/api'
+import { askTutor, fetchContextChats } from '../../../../lib/api'
 import './LessonAssistant.css'
 
 interface LessonAssistantProps {
   currentLessonTopic: string
+  lessonId: number
+  lessonDescription: string
   isOpenOnMobile?: boolean
   onCloseMobile?: () => void
   externalPrompt?: string
@@ -13,6 +15,8 @@ interface LessonAssistantProps {
 
 export default function LessonAssistant({
   currentLessonTopic,
+  lessonId,
+  lessonDescription,
   isOpenOnMobile = false,
   onCloseMobile,
   externalPrompt,
@@ -32,7 +36,7 @@ export default function LessonAssistant({
 
   useEffect(() => {
     let active = true
-    fetchChats().then((saved) => {
+    fetchContextChats('lesson', lessonId).then((saved) => {
       if (active && saved.length) {
         setMessages(saved.map((item) => ({
           id: item.id,
@@ -44,7 +48,7 @@ export default function LessonAssistant({
       }
     }).catch(() => undefined)
     return () => { active = false }
-  }, [])
+  }, [lessonId])
 
   const handleSend = useCallback((textToSend?: string) => {
     const text = (textToSend ?? inputValue).trim()
@@ -56,73 +60,30 @@ export default function LessonAssistant({
       text,
       timestamp: 'Just now',
     }
-
     setMessages((prev) => [...prev, userMessage])
-    void saveChat(text, 'user', null).catch(() => undefined)
     if (!textToSend) setInputValue('')
     setIsTyping(true)
 
-    // Generate smart mock assistant response based on prompt
-    setTimeout(() => {
-      let response: ChatMessage
-      const lower = text.toLowerCase()
-
-      if (lower.includes('hint') || lower.includes('double')) {
-        response = {
-          id: `asst-${Date.now()}`,
-          sender: 'assistant',
-          title: 'Here is a hint for your challenge',
-          paragraphs: [
-            'In Python, you multiply numbers using the asterisk (*) operator.',
-            'Inside your double(number) function, write: return number * 2.',
-            'Remember: replacing pass with return ensures the value gets sent back to the caller!',
-          ],
-          timestamp: 'Just now',
-          feedbackGiven: null,
-        }
-      } else if (lower.includes('another way') || lower.includes('explain')) {
-        response = {
-          id: `asst-${Date.now()}`,
-          sender: 'assistant',
-          title: 'Another way to think about return',
-          paragraphs: [
-            'Imagine ordering food at a restaurant.',
-            'When the chef makes your meal, they hand the plate back to the waiter (this is return).',
-            'If the chef simply shouted "Your food is ready!" but never handed the plate over, you would have nothing to eat (that would be print).',
-          ],
-          analogy: {
-            label: 'QUICK RULE OF THUMB',
-            lines: [
-              'Use print() when you want a human to see text on the screen.',
-              'Use return when you want another part of your code to use the result.',
-            ],
-          },
-          closing: 'Functions without return give back None by default in Python.',
-          timestamp: 'Just now',
-          feedbackGiven: null,
-        }
-      } else {
-        response = {
-          id: `asst-${Date.now()}`,
-          sender: 'assistant',
-          title: `Let's look at ${currentLessonTopic}`,
-          paragraphs: [
-            `That's a thoughtful question regarding ${currentLessonTopic.toLowerCase()}.`,
-            'Functions give your code structure and prevent repetition. When you define parameters like (number), you allow the same formula to run with whatever value you supply.',
-          ],
-          closing: 'Try tweaking the code in the challenge to see how the return value changes!',
-          timestamp: 'Just now',
-          feedbackGiven: null,
-        }
-      }
-
-      setMessages((prev) => [...prev, response])
-      const responseText = [response.title, ...(response.paragraphs ?? []), response.closing].filter(Boolean).join('\n\n')
-      void saveChat(responseText, 'assistant', null).catch(() => undefined)
-      setIsTyping(false)
-    }, 700)
-  }, [inputValue, isTyping, currentLessonTopic])
-
+    void askTutor({
+      context_type: 'lesson',
+      context_id: lessonId,
+      message: text,
+      activity: `Learner is reading ${currentLessonTopic}. ${lessonDescription}`,
+    }).then(({ answer }) => {
+      setMessages((prev) => [...prev, {
+        id: `asst-${Date.now()}`,
+        sender: 'assistant',
+        paragraphs: [answer],
+        timestamp: 'Just now',
+        feedbackGiven: null,
+      }])
+    }).catch((error: unknown) => {
+      const notice = error instanceof Error && error.message.includes('(401)')
+        ? 'Please sign in to use the AI tutor and save conversation memory.'
+        : 'The tutor could not respond right now. Please try again.'
+      setMessages((prev) => [...prev, { id: `asst-${Date.now()}`, sender: 'assistant', paragraphs: [notice], timestamp: 'Just now', feedbackGiven: null }])
+    }).finally(() => setIsTyping(false))
+  }, [inputValue, isTyping, currentLessonTopic, lessonDescription, lessonId])
   // Keep a stable ref to handleSend so the externalPrompt effect never
   // needs handleSend as a dependency (avoids an infinite re-trigger loop
   // caused by isTyping toggling → handleSend recreation → effect re-runs).
@@ -217,7 +178,7 @@ export default function LessonAssistant({
         <div className="lesson-assistant__context-card">
           <span className="lesson-assistant__context-label">Learning with you</span>
           <h3 className="lesson-assistant__context-title">
-            {currentLessonTopic} & return values
+            {currentLessonTopic}
           </h3>
           <p className="lesson-assistant__context-subtitle">
             I can see the lesson you're working on.

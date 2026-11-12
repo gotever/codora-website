@@ -20,6 +20,8 @@ MIGRATIONS = [
         "003_drop_course_slug.sql",
         "004_numeric_lesson_exercise_ids.sql",
         "005_learner_ability.sql",
+        "006_ai_tutor_memory.sql",
+        "006_ai_tutor_memory.sql",
     )
 ]
 

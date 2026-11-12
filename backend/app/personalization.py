@@ -80,12 +80,15 @@ def personalize_lesson(content_markdown: str, user_id: str | None, consecutive_e
             "paragraphs": section.get("paragraphs", []),
             "codeExample": section.get("codeExample"),
             "takeaway": section.get("takeaway"),
+            "has_challenge": isinstance(section.get("challenge"), dict),
         }
         for section in sections
     ]
-    instructions = """You rewrite programming lessons for one learner. Keep the lesson skeleton exactly the same: same number and order of sections, section IDs, section titles, and main learning objectives. Adapt only explanations, illustrative non-challenge examples, and takeaway text to the learner profile. Never include or alter challenge solutions or test answers. Do not add or remove sections. Keep all code examples valid Python and consistent with the lesson facts. Return JSON only with this shape: {"sections":[{"id":"existing section id","paragraphs":["..."],"visual_example":{"filename":"example.py","language":"Python","code":"...","caption":"..."} or null,"takeaway_text":"..." or null]}. Include one output item per input section in the same order. Use readable, direct language. For beginner, define terms and show small step-by-step examples; for intermediate, emphasize reasoning and practical use; for advanced, explain precise behavior, tradeoffs, and edge cases. Use mastered topics as known prerequisites and avoid reteaching them. A low recent quiz average or repeated errors means explain more gradually and choose simpler examples; strong results permit more concise, challenging explanations."""
+    has_challenge = any(item["has_challenge"] for item in section_source)
+    instructions = """You adapt programming lessons for one learner. Keep the lesson skeleton exactly the same: same number and order of sections, section IDs, section titles, and main learning objectives. Adapt explanations, illustrative non-challenge examples, and takeaway text to the learner profile. Keep all code examples valid Python and consistent with lesson facts. Include one output item per input section in the same order. Return JSON only with this shape: {"sections":[{"id":"existing section id","paragraphs":["..."],"visual_example":{"filename":"example.py","language":"Python","code":"...","caption":"..."} or null,"takeaway_text":"..." or null,"challenge":null or {"title":"...","description":"...","practiceLabel":"...","filename":"...","initialCode":"...","testCases":[{"expected":"exact stdout for a correct solution"}]}}]}. If the lesson already has any interactive challenge, set challenge to null for every output section; existing challenges must remain unchanged. If the lesson has no interactive challenge, create exactly one new challenge in the section where it best reinforces the taught concept, and set challenge to null in all other sections. Match the task difficulty to the learner profile and recent performance: beginner tasks should be small and guided, intermediate tasks should combine concepts, and advanced tasks can require edge-case reasoning. Low scores or repeated errors mean simpler scaffolding; strong results permit more demanding work. The challenge must run in the existing browser Python editor: use one deterministic stdout test case, provide starter code with a clearly editable input value and TODO, and make expected output the exact stdout of a correct solution. Do not use input() or depend on stdin, files, network, or extra packages. Starter code must not contain the completed solution. Do not include a solution in the generated challenge. Do not add or remove sections. Use readable, direct learner-facing language."""
     user_input = {
         "output_format": "Respond with valid JSON only, using a top-level sections array.",
+        "lesson_has_challenge": has_challenge,
         "learner_profile": ability.model_dump(),
         "lesson": {
             "title": lesson.get("title"),
@@ -153,6 +156,7 @@ def personalize_lesson(content_markdown: str, user_id: str | None, consecutive_e
     if not isinstance(rewritten_sections, list) or len(rewritten_sections) != len(sections):
         raise HTTPException(502, "The lesson model returned an invalid structure")
 
+    generated_challenge_count = 0
     for original, rewritten in zip(sections, rewritten_sections):
         if not isinstance(rewritten, dict) or rewritten.get("id") != original.get("id"):
             raise HTTPException(502, "The lesson model changed the section structure")
@@ -171,9 +175,43 @@ def personalize_lesson(content_markdown: str, user_id: str | None, consecutive_e
                 "code": example["code"], "caption": example["caption"],
             }
 
+        generated_challenge = rewritten.get("challenge")
+        if not has_challenge and isinstance(generated_challenge, dict):
+            required = ("title", "description", "practiceLabel", "filename", "initialCode")
+            if not all(isinstance(generated_challenge.get(key), str) and generated_challenge[key].strip() for key in required):
+                raise HTTPException(502, "The lesson model returned an invalid challenge")
+            test_cases = generated_challenge.get("testCases")
+            if (
+                not isinstance(test_cases, list)
+                or len(test_cases) != 1
+                or not isinstance(test_cases[0], dict)
+                or not isinstance(test_cases[0].get("expected"), str)
+                or not test_cases[0]["expected"].strip()
+            ):
+                raise HTTPException(502, "The lesson model returned invalid challenge output")
+            original["challenge"] = {
+                "id": f"ai-{original.get('id')}",
+                "title": generated_challenge["title"],
+                "description": generated_challenge["description"],
+                "practiceLabel": generated_challenge["practiceLabel"],
+                "filename": generated_challenge["filename"],
+                "language": "Python",
+                "initialCode": generated_challenge["initialCode"],
+                "testCases": [{"id": f"ai-case-{original.get('id')}", "call": "stdout", "expected": test_cases[0]["expected"]}],
+            }
+            generated_challenge_count += 1
+
         takeaway_text = rewritten.get("takeaway_text")
         if isinstance(original.get("takeaway"), dict) and isinstance(takeaway_text, str) and takeaway_text.strip():
             original["takeaway"]["text"] = takeaway_text
+
+    if not has_challenge and generated_challenge_count != 1:
+        raise HTTPException(502, "The lesson model did not return exactly one interactive challenge")
+    if generated_challenge_count:
+        try:
+            lesson["exerciseCount"] = int(lesson.get("exerciseCount", 0)) + generated_challenge_count
+        except (TypeError, ValueError):
+            lesson["exerciseCount"] = generated_challenge_count
 
     new_metadata = json.dumps(lesson, ensure_ascii=False, separators=(",", ":"))
     personalized = content_markdown[:match.start(1)] + new_metadata + content_markdown[match.end(1):]
