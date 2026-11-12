@@ -140,13 +140,14 @@ def main() -> None:
                     # No canonical exercise-to-lesson mapping exists in the source data. These
                     # assignments are provisional to satisfy the lesson FK; see backend/README.md.
                     if exercise["functionName"] in ("reverse_string", "count_vowels", "is_palindrome"):
-                        lesson_id = "3"
+                        lesson_id = lesson_ids["3"]
                     else:
                         lesson_id = lesson_ids["7"]
                     exercise_rows.append((lesson_id, exercise["title"], exercise["difficulty"],
                         exercise["description"], exercise["functionName"], exercise["initialCode"],
                         json.dumps({"runner": data["testCases"][exercise["id"]],
                             "hidden": hidden_cases.get(exercise["id"], []),
+                            "slug": exercise["id"],
                             "examples": exercise["examples"],
                             "constraints": exercise["constraints"], "functionSignature": exercise["functionSignature"],
                             "number": exercise["number"], "total": exercise["total"], "filename": exercise["filename"],

@@ -72,5 +72,3 @@ def test_sandbox_disallows_security_violation():
     res = run_code_sandbox(code, "is_palindrome", cases)
     assert res["status"] == "Runtime Error"
     assert "Security violation" in res["error"]
-
-\n

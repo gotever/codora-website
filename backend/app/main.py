@@ -135,12 +135,60 @@ def list_exercises():
     return {"exercises": rows}
 
 
-@app.get("/api/exercises/{exercise_id}")
-def get_exercise(exercise_id: int):
-    with connection() as conn:
-        row = conn.execute("""SELECT e.id,e.lesson_id,e.title,e.difficulty,e.description,e.function_name,
+def find_exercise_detail(conn, exercise_id: str):
+    if exercise_id.isdigit():
+        return conn.execute(
+            """SELECT e.id,e.lesson_id,e.title,e.difficulty,e.description,e.function_name,
+                e.starter_code,e.test_cases,e.hints,e.tags,l.course_id,c.title AS course_title
+                FROM exercises e
+                JOIN lessons l ON l.id=e.lesson_id
+                JOIN courses c ON c.id=l.course_id
+                WHERE e.id = %s
+                   OR e.test_cases->>'slug' = %s
+                   OR e.function_name = %s
+                   OR replace(e.function_name, '_', '-') = %s
+                LIMIT 1""",
+            (int(exercise_id), exercise_id, exercise_id, exercise_id),
+        ).fetchone()
+    return conn.execute(
+        """SELECT e.id,e.lesson_id,e.title,e.difficulty,e.description,e.function_name,
             e.starter_code,e.test_cases,e.hints,e.tags,l.course_id,c.title AS course_title
-            FROM exercises e JOIN lessons l ON l.id=e.lesson_id JOIN courses c ON c.id=l.course_id WHERE e.id=%s""", (exercise_id,)).fetchone()
+            FROM exercises e
+            JOIN lessons l ON l.id=e.lesson_id
+            JOIN courses c ON c.id=l.course_id
+            WHERE e.test_cases->>'slug' = %s
+               OR e.function_name = %s
+               OR replace(e.function_name, '_', '-') = %s
+            LIMIT 1""",
+        (exercise_id, exercise_id, exercise_id),
+    ).fetchone()
+
+
+def find_exercise_for_submit(conn, exercise_id: str):
+    if exercise_id.isdigit():
+        return conn.execute(
+            """SELECT id, function_name, test_cases FROM exercises
+            WHERE id = %s
+               OR test_cases->>'slug' = %s
+               OR function_name = %s
+               OR replace(function_name, '_', '-') = %s
+            LIMIT 1""",
+            (int(exercise_id), exercise_id, exercise_id, exercise_id),
+        ).fetchone()
+    return conn.execute(
+        """SELECT id, function_name, test_cases FROM exercises
+        WHERE test_cases->>'slug' = %s
+           OR function_name = %s
+           OR replace(function_name, '_', '-') = %s
+        LIMIT 1""",
+        (exercise_id, exercise_id, exercise_id),
+    ).fetchone()
+
+
+@app.get("/api/exercises/{exercise_id}")
+def get_exercise(exercise_id: str):
+    with connection() as conn:
+        row = find_exercise_detail(conn, exercise_id)
     if not row:
         raise HTTPException(404, "Exercise not found")
     row["test_cases"] = strip_hidden_test_cases(row["test_cases"])
@@ -149,14 +197,12 @@ def get_exercise(exercise_id: int):
 
 @app.post("/api/exercises/{exercise_id}/submit")
 def submit_exercise(
-    exercise_id: int,
+    exercise_id: str,
     body: SubmitInput,
     user_id: str | None = Depends(optional_current_user_id),
 ):
     with connection() as conn:
-        row = conn.execute(
-            "SELECT id, function_name, test_cases FROM exercises WHERE id=%s", (exercise_id,)
-        ).fetchone()
+        row = find_exercise_for_submit(conn, exercise_id)
     if not row:
         raise HTTPException(404, "Exercise not found")
 
@@ -205,7 +251,7 @@ def submit_exercise(
                     ON CONFLICT(user_id,item_type,item_id) DO UPDATE SET status=EXCLUDED.status,
                     completed_at=CASE WHEN EXCLUDED.status='completed' THEN COALESCE(user_progress.completed_at,now()) ELSE NULL END,
                     score=EXCLUDED.score,last_attempt_at=now()""",
-                (user_id, exercise_id, status, status, score),
+                (user_id, row["id"], status, status, score),
             )
             failed_case = result.get("failed_case") or {}
             submission = {

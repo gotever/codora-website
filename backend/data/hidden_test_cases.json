@@ -14,14 +14,38 @@
     },
     {
       "id": "hidden-3",
-      "label": "Hidden 3: Multi-word palindrome without spaces",
+      "label": "Hidden 3: Classic palindrome word",
       "argsExpression": "(\"kayak\",)",
       "expectedOutput": "True"
     },
     {
       "id": "hidden-4",
-      "label": "Hidden 4: Long palindrome",
+      "label": "Hidden 4: Long symmetric word",
       "argsExpression": "(\"abacaba\",)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-5",
+      "label": "Hidden 5: Even length palindrome",
+      "argsExpression": "(\"noon\",)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-6",
+      "label": "Hidden 6: Almost-palindrome (first & last match)",
+      "argsExpression": "(\"abca\",)",
+      "expectedOutput": "False"
+    },
+    {
+      "id": "hidden-7",
+      "label": "Hidden 7: Single character corner case",
+      "argsExpression": "(\"z\",)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-8",
+      "label": "Hidden 8: Long palindrome stress test",
+      "argsExpression": "(\"abcdefghijklmnopqrstuvwxyzyxwvutsrqponmlkjihgfedcba\",)",
       "expectedOutput": "True"
     }
   ],
@@ -43,6 +67,30 @@
       "label": "Hidden 3: Mixed large numbers",
       "argsExpression": "([100, 201, 300],)",
       "expectedOutput": "400"
+    },
+    {
+      "id": "hidden-4",
+      "label": "Hidden 4: All odd numbers",
+      "argsExpression": "([1, 3, 5, 7, 9, 11],)",
+      "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-5",
+      "label": "Hidden 5: Negative and positive cancellation",
+      "argsExpression": "([-10, 5, -20, 15, 30],)",
+      "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-6",
+      "label": "Hidden 6: Single even number",
+      "argsExpression": "([42],)",
+      "expectedOutput": "42"
+    },
+    {
+      "id": "hidden-7",
+      "label": "Hidden 7: Single odd number",
+      "argsExpression": "([13],)",
+      "expectedOutput": "0"
     }
   ],
   "reverse-a-string": [
@@ -106,5 +154,3 @@
     }
   ]
 }
-
-\n
