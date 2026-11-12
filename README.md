@@ -4,27 +4,57 @@ Codora is a React + TypeScript + Vite learning app with browser-based Python exe
 
 ## Local development
 
-Requirements: Node.js 22, Python 3.10+, and Docker Desktop with its Linux container engine running.
+Requirements: Node.js 20+, Python 3.10+, and Docker.
 
-1. Copy `.env.example` to `.env` in the repository root. Change the local database password and set `DATABASE_URL` to the same password. Copy `backend/.env.example` to `backend/.env` and set the same `DATABASE_URL` plus a private `JWT_SECRET` of at least 32 characters. Local env files are ignored by Git.
-2. Start PostgreSQL 16: `docker compose up -d`.
-3. In `backend/`, create and activate a virtual environment, install dependencies, run migrations and seed:
+### 1. Environment configuration
 
-   ```powershell
-   python -m venv .venv
-   .\.venv\Scripts\Activate.ps1
-   python -m pip install -r requirements.txt
-   python -m app.migrate
-   node --experimental-strip-types scripts/export_curriculum.mjs
-   python -m app.seed
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 3001
-   ```
+All configuration is consolidated into a **single `.env` file** at the repository root:
 
-4. In `frontend/`, run `npm ci` and `npm run dev`. Vite proxies `/api` requests to `localhost:3001`; set `VITE_API_URL` only when using a separately hosted API.
+```bash
+cp .env.example .env
+```
+*(Update passwords, JWT secrets, or API keys in `.env` if needed)*
+
+---
+
+### 2. Start Backend & Database
+
+You can run the backend in one of two ways:
+
+#### Option A: Docker Compose (Recommended)
+Starts PostgreSQL, builds the FastAPI backend, runs migrations, seeds curriculum data, and launches the API at `http://localhost:3001`:
+
+```bash
+docker compose up -d --build
+```
+
+#### Option B: Local Development Script
+If running PostgreSQL via Docker (`docker compose up -d postgres`) and Python natively:
+
+```bash
+./backend/dev.sh
+```
+*The script automatically sets up the `.venv`, installs requirements, applies migrations, seeds data, and starts Uvicorn with hot-reload.*
+
+---
+
+### 3. Start Frontend
+
+In a separate terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Visit the app at **`http://localhost:5173`**. Vite automatically proxies `/api` requests to `http://localhost:3001`.
+
+---
 
 Schema status: `python -m app.migrate --status` (run from `backend/`). API health: `http://localhost:3001/api/health`.
 
-Frontend build: `cd frontend; npm run build`. Backend tests: from `backend/`, run `pytest`. Database integration checks require the local PostgreSQL service.
+Frontend build: `cd frontend; npm run build`. Backend tests: from `backend/`, run `pytest`.
 
 ## Architecture and data
 

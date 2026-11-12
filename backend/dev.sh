@@ -42,5 +42,3 @@ python -m app.seed
 # 6. Start FastAPI with Hot-Reload
 echo "==> Starting Codora API server on http://localhost:3001 ..."
 exec uvicorn app.main:app --reload --host 0.0.0.0 --port 3001
-
-\n

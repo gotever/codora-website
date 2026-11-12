@@ -6,16 +6,36 @@ Use a PostgreSQL database with `UTF8` server encoding. Curriculum markdown conta
 
 ## Setup
 
-From the repository root, copy `.env.example` to `.env` and set local values. Copy this directory's `.env.example` to `backend/.env`; set `DATABASE_URL` and `JWT_SECRET` to match the root environment. Never use a production database for development or tests.
+All configuration is managed through a **single `.env` file at the repository root** (`/.env`). Copy `.env.example` to `.env` from the repository root:
 
-```powershell
-docker compose up -d
+```bash
+cp .env.example .env
+```
+
+### Option 1: Run with Docker Compose (Recommended)
+
+From the repository root, start PostgreSQL and the FastAPI backend in containers with automatic migrations and seeding:
+
+```bash
+docker compose up -d --build
+```
+
+### Option 2: Run with Local Development Script
+
+Start PostgreSQL via Docker (`docker compose up -d postgres`) and run the automated script from the root or `backend/`:
+
+```bash
+./backend/dev.sh
+```
+
+Or manually:
+
+```bash
 cd backend
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
+source .venv/bin/activate       # On Linux/macOS (.venv\Scripts\activate on Windows)
+pip install -r requirements.txt
 python -m app.migrate
-node --experimental-strip-types scripts/export_curriculum.mjs
 python -m app.seed
 uvicorn app.main:app --reload --host 0.0.0.0 --port 3001
 ```
@@ -24,12 +44,14 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 3001
 
 ## Environment
 
+Variables are loaded from the root `.env` file:
+
 | Variable | Purpose |
 | --- | --- |
 | `DATABASE_URL` | PostgreSQL connection string for this local database |
 | `API_HOST`, `API_PORT` | Uvicorn bind address and port |
 | `JWT_SECRET` | Private signing secret, at least 32 characters |
-| `OPENAI_API_KEY` | OpenAI API key used only by FastAPI; fill in the placeholder in `backend/.env` |
+| `OPENAI_API_KEY` | OpenAI API key used by FastAPI for AI assistance / personalization |
 | `OPENAI_MODEL` | OpenAI model for lesson rewrites; defaults to `gpt-6-luna` |
 | `COOKIE_SECURE` | Set `true` behind HTTPS; `false` for local HTTP |
 | `FRONTEND_ORIGIN` | Exact allowed browser origin for credentialed CORS |

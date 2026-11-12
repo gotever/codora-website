@@ -1,4 +1,8 @@
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_ROOT_ENV = Path(__file__).resolve().parents[2] / ".env"
+_BACKEND_ENV = Path(__file__).resolve().parents[1] / ".env"
 
 
 class Settings(BaseSettings):
@@ -11,7 +15,10 @@ class Settings(BaseSettings):
     cookie_secure: bool = False
     frontend_origin: str = "http://localhost:5173"
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=(_ROOT_ENV, _BACKEND_ENV, ".env", "../.env"),
+        extra="ignore",
+    )
 
 
 settings = Settings()
