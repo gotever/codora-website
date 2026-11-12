@@ -52,6 +52,10 @@ Visit the app at **`http://localhost:5173`**. Vite automatically proxies `/api` 
 
 ---
 
+Authentication pages are available at `/login` and `/register`. Registration requires a valid email, a 3–64 character username (`a-z`, `A-Z`, `0-9`, `_`, `.`, `-`), a 12–128 character password, and a 1–160 character full name. Registration creates a signed seven-day HTTP-only session cookie; the frontend sends credentialed requests and restores the session from `GET /api/auth/me`. Logout calls `POST /api/auth/logout`. Configure `FRONTEND_ORIGIN` in `backend/.env` to the exact frontend origin; `COOKIE_SECURE=false` is for local HTTP only. Set `VITE_API_URL` when the API is not reachable through the Vite `/api` proxy.
+
+The lesson and exercise tutors use the backend `OPENAI_API_KEY`; run migration `006_ai_tutor_memory.sql` before starting the updated API. Each tutor context keeps eight recent messages/events, summarizes older messages into at most 500 characters, and stores structured learning memory per user and context. Exercise tutor requests include the current code and the latest run/submission state. See [docs/ai-tutor-memory.md](docs/ai-tutor-memory.md) for the request flow and memory details.
+
 Schema status: `python -m app.migrate --status` (run from `backend/`). API health: `http://localhost:3001/api/health`.
 
 Frontend build: `cd frontend; npm run build`. Backend tests: from `backend/`, run `pytest`.
@@ -67,6 +71,6 @@ The source contains two overlapping but inconsistent curricula: `python-fundamen
 
 Lesson modules remain a frontend presentation concept because the six-table design has no module table. `USER_PROGRESS.item_id` stays polymorphic and the API verifies the target record before each write. A completion sent after local Pyodide tests is learner-reported progress; the server does not execute or grade code.
 
-`AI_CHATS` deliberately has no conversation or lesson identifier. Exercise messages are scoped by exercise; lesson messages use a null `exercise_id`, so lesson chats cannot be separated or retrieved per lesson. The current mock assistant response is retained and persisted only when authenticated.
+`AI_CHATS` stores tutor chat and authenticated exercise submission events, scoped with `context_key` by lesson or exercise. Lesson and exercise conversations can be retrieved independently. Tutor access and persistent chat memory require authentication.
 
 The browser can inspect JSONB test cases returned by the exercise API. This is not a hidden grading interface. The schema also cannot store drafts, bookmarks, submissions, or unlocked hint state, so those existing local behaviors are not represented as persistent database features.

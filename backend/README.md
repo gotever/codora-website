@@ -40,7 +40,7 @@ python -m app.seed
 uvicorn app.main:app --reload --host 0.0.0.0 --port 3001
 ```
 
-`python -m app.migrate --status` checks all six tables, required columns, and numeric curriculum identifiers. Migrations `001_initial_schema.sql` through `005_learner_ability.sql` are idempotent and run under a PostgreSQL advisory transaction lock. Migration 002 converts course keys, migration 004 converts lesson/exercise keys and references, and migration 005 adds learner level and latest exercise score fields without adding tables. Migration 003 removes the temporary course slug. No migration ledger table is created. Add future numbered, idempotent SQL files and extend the runner/status checks when the schema evolves.
+`python -m app.migrate --status` checks all six tables, required columns, and numeric curriculum identifiers. Migrations `001_initial_schema.sql` through `006_ai_tutor_memory.sql` are idempotent and run under a PostgreSQL advisory transaction lock. Migration 002 converts course keys, migration 004 converts lesson/exercise keys and references, migration 005 adds learner level and latest exercise score fields, and migration 006 adds structured AI tutor memory on `users` plus a conversation context key on `ai_chats`; no tables are added. Migration 003 removes the temporary course slug. No migration ledger table is created. Add future numbered, idempotent SQL files and extend the runner/status checks when the schema evolves.
 
 ## Environment
 
@@ -72,9 +72,14 @@ Authentication and owned data:
 - `POST /api/auth/login` (`email`, `password`), `POST /api/auth/logout`, `GET /api/auth/me`
 - `PUT /api/auth/level` (`level`: `beginner`, `intermediate`, or `advanced`)
 - `GET /api/progress`, `PUT /api/progress` (`item_type`, `item_id`, `status`, optional exercise `score` from 0 to 10)
-- `GET /api/chats?exercise_id=...`, `POST /api/chats` (`exercise_id`, `role`, `message`, `code_snapshot`)
+- `GET /api/chats?exercise_id=...` or `?context_key=...`, `POST /api/chats` (`exercise_id`, `role`, `message`, `code_snapshot`)
+- `POST /api/tutor/chat` (`context_type`, `context_id`, `message`, optional `code_snapshot`, `activity`); uses the server-side `OPENAI_API_KEY`, learner level/progress, lesson/exercise context, an eight-message recent window, a rolling summary capped at 500 characters, and context-scoped structured learner memory.
 
 Registration and login set a signed, seven-day, HTTP-only, SameSite=Lax cookie. The API never returns `password_hash`. Course and exercise browsing is public. Progress and chat writes require the cookie and scope data to its user ID. `GET /api/chats` returns an empty message list for anonymous visitors; it never exposes another user's history. Personalized lesson requests use the cookie when present; anonymous learners get a beginner profile with no mastered topics.
+
+AI tutor calls require an authenticated session. The API key stays on FastAPI and is never sent to the browser. Tutor memory is stored per user and lesson/exercise context: the latest eight messages are sent verbatim, older messages are folded into a summary limited to 500 characters, and structured memory tracks concepts understood/to practice, recurring errors, explanation preference, current goal, and next step. The tutor receives the current editor code and latest execution/submission result when working in the exercise workspace.
+
+The frontend provides `/login` and `/register`; registration creates the session immediately, so no separate login request is needed. Set `FRONTEND_ORIGIN` to the exact browser origin for credentialed CORS. For local HTTP development use `COOKIE_SECURE=false`; set it to `true` behind HTTPS. The frontend uses `VITE_API_URL` for a separately hosted API, or the Vite `/api` proxy by default. Username is 3–64 characters matching `[a-zA-Z0-9_.-]+`, password is 12–128 characters, full name is 1–160 characters, and email must be valid.
 
 ## Schema and limits
 
