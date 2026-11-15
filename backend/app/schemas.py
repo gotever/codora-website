@@ -23,8 +23,15 @@ class ProgressInput(BaseModel):
     score: float | None = Field(default=None, ge=0, le=10)
 
 
+class LearningPreferences(BaseModel):
+    explanation_style: Literal["step_by_step", "conceptual", "direct"] | None = None
+    detail_level: Literal["concise", "balanced", "detailed"] | None = None
+    hint_preference: Literal["progressive", "minimal", "direct"] | None = None
+
+
 class UserAbilitySchema(BaseModel):
     level: Literal["beginner", "intermediate", "advanced"]
+    learning_preferences: LearningPreferences = Field(default_factory=LearningPreferences)
     mastered_topics: list[str] = Field(default_factory=list)
     recent_quiz_avg: float = Field(ge=0.0, le=10.0)
     consecutive_errors: int = Field(default=0, ge=0)

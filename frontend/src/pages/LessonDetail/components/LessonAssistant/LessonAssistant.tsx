@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import type { ChatMessage } from '../../../../data/lessons'
 import { INITIAL_ASSISTANT_MESSAGES } from '../../../../data/lessons'
 import { askTutor, fetchContextChats } from '../../../../lib/api'
+import TutorMessage from '../../../../components/TutorMessage/TutorMessage'
 import './LessonAssistant.css'
 
 interface LessonAssistantProps {
@@ -213,9 +214,9 @@ export default function LessonAssistant({
                     <h4 className="lesson-assistant__asst-title">{msg.title}</h4>
                   )}
                   {msg.paragraphs?.map((p, idx) => (
-                    <p key={idx} className="lesson-assistant__asst-p">
-                      {p}
-                    </p>
+                    <div key={idx} className="lesson-assistant__asst-p">
+                      <TutorMessage text={p} />
+                    </div>
                   ))}
 
                   {/* Comparison blocks (return vs print) */}

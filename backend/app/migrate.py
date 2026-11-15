@@ -9,9 +9,10 @@ MIGRATIONS = [
     Path(__file__).resolve().parents[1] / "migrations" / "004_numeric_lesson_exercise_ids.sql",
     Path(__file__).resolve().parents[1] / "migrations" / "005_learner_ability.sql",
     Path(__file__).resolve().parents[1] / "migrations" / "006_ai_tutor_memory.sql",
+    Path(__file__).resolve().parents[1] / "migrations" / "007_learner_preferences.sql",
 ]
 REQUIRED_COLUMNS = {
-    "users": {"id", "email", "username", "password_hash", "full_name", "created_at", "level", "ai_tutor_memory"},
+    "users": {"id", "email", "username", "password_hash", "full_name", "created_at", "level", "ai_tutor_memory", "learning_preferences"},
     "courses": {"id", "title", "description", "order_index"},
     "lessons": {"id", "title", "course_id", "content_markdown", "order_index"},
     "exercises": {"id", "lesson_id", "title", "difficulty", "description", "function_name", "starter_code", "test_cases", "hints", "tags"},
@@ -51,7 +52,7 @@ def main() -> None:
             conn.execute("SELECT pg_advisory_xact_lock(73190421)")
             for migration in MIGRATIONS:
                 conn.execute(migration.read_text(encoding="utf-8"))
-        print("Applied idempotent migrations 001_initial_schema.sql through 006_ai_tutor_memory.sql")
+        print("Applied idempotent migrations 001_initial_schema.sql through 007_learner_preferences.sql")
     finally:
         pool.close()
 

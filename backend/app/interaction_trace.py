@@ -1,4 +1,4 @@
-"""Append learner AI chat and exercise submission traces to the local workspace."""
+"""Overwrite the local trace with the latest learner chat or exercise submission."""
 
 import json
 import logging
@@ -20,24 +20,25 @@ def write_interaction_trace(
     input_data: Any,
     output_data: Any = None,
     error: str | None = None,
+    status: str | None = None,
 ) -> None:
-    """Append one JSON record. Trace failures must not interrupt learning flows."""
+    """Write only the latest interaction. Trace failures must not interrupt learning flows."""
     record = {
         "timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "event": event,
         "user_id": user_id,
         "context": context,
-        "status": "error" if error else "success",
+        "status": status or ("error" if error else "success"),
         "input": input_data,
         "output": output_data,
         "error": error,
     }
 
     try:
-        rendered = "\n" + "=" * 80 + "\n"
+        rendered = "CODORA INTERACTION TRACE (latest interaction)\n" + "=" * 48 + "\n"
         rendered += json.dumps(record, ensure_ascii=False, indent=2, default=str)
         rendered += "\n"
-        with _TRACE_LOCK, _TRACE_PATH.open("a", encoding="utf-8") as trace_file:
-            trace_file.write(rendered)
+        with _TRACE_LOCK:
+            _TRACE_PATH.write_text(rendered, encoding="utf-8")
     except OSError:
-        logger.exception("Could not append interaction trace to %s", _TRACE_PATH)
+        logger.exception("Could not overwrite interaction trace at %s", _TRACE_PATH)

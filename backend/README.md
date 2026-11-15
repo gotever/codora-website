@@ -40,7 +40,7 @@ python -m app.seed
 uvicorn app.main:app --reload --host 0.0.0.0 --port 3001
 ```
 
-`python -m app.migrate --status` checks all six tables, required columns, and numeric curriculum identifiers. Migrations `001_initial_schema.sql` through `006_ai_tutor_memory.sql` are idempotent and run under a PostgreSQL advisory transaction lock. Migration 002 converts course keys, migration 004 converts lesson/exercise keys and references, migration 005 adds learner level and latest exercise score fields, and migration 006 adds structured AI tutor memory on `users` plus a conversation context key on `ai_chats`; no tables are added. Migration 003 removes the temporary course slug. No migration ledger table is created. Add future numbered, idempotent SQL files and extend the runner/status checks when the schema evolves.
+`python -m app.migrate --status` checks all six tables, required columns, and numeric curriculum identifiers. Migrations `001_initial_schema.sql` through `007_learner_preferences.sql` are idempotent and run under a PostgreSQL advisory transaction lock. Migration 002 converts course keys, migration 004 converts lesson/exercise keys and references, migration 005 adds learner level and latest exercise score fields, migration 006 adds structured AI tutor memory on `users` plus a conversation context key on `ai_chats`, and migration 007 adds `users.learning_preferences`; no tables are added. Migration 003 removes the temporary course slug. No migration ledger table is created. Add future numbered, idempotent SQL files and extend the runner/status checks when the schema evolves.
 
 ## Environment
 

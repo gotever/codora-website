@@ -8,7 +8,7 @@ from openai import OpenAI, OpenAIError
 
 from .db import connection
 from .llm_trace import write_llm_trace
-from .schemas import UserAbilitySchema
+from .schemas import LearningPreferences, UserAbilitySchema
 from .settings import settings
 
 DETAIL_MARKER = re.compile(r"\A<!-- codora-lesson:v1\r?\n([\s\S]*?)\r?\n-->\r?\n?")
@@ -18,23 +18,25 @@ logger = logging.getLogger(__name__)
 def get_user_ability(user_id: str | None, consecutive_errors: int) -> UserAbilitySchema:
     if user_id is None:
         return UserAbilitySchema(
-            level="beginner", mastered_topics=[], recent_quiz_avg=0.0,
+            level="beginner", learning_preferences=LearningPreferences(),
+            mastered_topics=[], recent_quiz_avg=0.0,
             consecutive_errors=consecutive_errors,
         )
 
     with connection() as conn:
-        user = conn.execute("SELECT level FROM users WHERE id=%s", (user_id,)).fetchone()
+        user = conn.execute("SELECT level,learning_preferences FROM users WHERE id=%s", (user_id,)).fetchone()
         if not user:
             raise HTTPException(401, "Authentication required")
         topics = conn.execute("""
-            SELECT DISTINCT COALESCE(lesson.title, exercise.title) AS topic
-            FROM user_progress AS progress
-            LEFT JOIN lessons AS lesson
-              ON progress.item_type='lesson' AND lesson.id=progress.item_id
-            LEFT JOIN exercises AS exercise
-              ON progress.item_type='exercise' AND exercise.id=progress.item_id
-            WHERE progress.user_id=%s AND progress.status='completed'
-              AND COALESCE(lesson.title, exercise.title) IS NOT NULL
+            SELECT lesson.title AS topic
+            FROM lessons AS lesson
+            JOIN exercises AS exercise ON exercise.lesson_id=lesson.id
+            LEFT JOIN user_progress AS progress
+              ON progress.user_id=%s AND progress.item_type='exercise'
+             AND progress.item_id=exercise.id
+            GROUP BY lesson.id, lesson.title
+            HAVING COUNT(exercise.id)>0
+               AND COUNT(exercise.id)=COUNT(*) FILTER (WHERE progress.status='completed')
             ORDER BY topic
         """, (user_id,)).fetchall()
         quiz_average = conn.execute("""
@@ -49,6 +51,7 @@ def get_user_ability(user_id: str | None, consecutive_errors: int) -> UserAbilit
 
     return UserAbilitySchema(
         level=user["level"],
+        learning_preferences=LearningPreferences.model_validate(user["learning_preferences"] or {}),
         mastered_topics=[row["topic"] for row in topics],
         recent_quiz_avg=quiz_average,
         consecutive_errors=consecutive_errors,
@@ -72,6 +75,7 @@ def personalize_lesson(content_markdown: str, user_id: str | None, consecutive_e
         raise HTTPException(422, "Lesson has no sections to personalize")
 
     ability = get_user_ability(user_id, consecutive_errors)
+    ability_data = ability.model_dump()
     section_source = [
         {
             "id": section.get("id"),
@@ -85,11 +89,19 @@ def personalize_lesson(content_markdown: str, user_id: str | None, consecutive_e
         for section in sections
     ]
     has_challenge = any(item["has_challenge"] for item in section_source)
-    instructions = """You adapt programming lessons for one learner. Keep the lesson skeleton exactly the same: same number and order of sections, section IDs, section titles, and main learning objectives. Adapt explanations, illustrative non-challenge examples, and takeaway text to the learner profile. Keep all code examples valid Python and consistent with lesson facts. Include one output item per input section in the same order. Return JSON only with this shape: {"sections":[{"id":"existing section id","paragraphs":["..."],"visual_example":{"filename":"example.py","language":"Python","code":"...","caption":"..."} or null,"takeaway_text":"..." or null,"challenge":null or {"title":"...","description":"...","practiceLabel":"...","filename":"...","initialCode":"...","testCases":[{"expected":"exact stdout for a correct solution"}]}}]}. If the lesson already has any interactive challenge, set challenge to null for every output section; existing challenges must remain unchanged. If the lesson has no interactive challenge, create exactly one new challenge in the section where it best reinforces the taught concept, and set challenge to null in all other sections. Match the task difficulty to the learner profile and recent performance: beginner tasks should be small and guided, intermediate tasks should combine concepts, and advanced tasks can require edge-case reasoning. Low scores or repeated errors mean simpler scaffolding; strong results permit more demanding work. The challenge must run in the existing browser Python editor: use one deterministic stdout test case, provide starter code with a clearly editable input value and TODO, and make expected output the exact stdout of a correct solution. Do not use input() or depend on stdin, files, network, or extra packages. Starter code must not contain the completed solution. Do not include a solution in the generated challenge. Do not add or remove sections. Use readable, direct learner-facing language."""
+    instructions = """You adapt programming lessons for one learner. Keep the lesson skeleton exactly the same: same number and order of sections, section IDs, section titles, and main learning objectives. Adapt explanations, illustrative non-challenge examples, and takeaway text to the learner profile. Apply learning_preferences exactly when provided; null preference fields mean no preference has been stated, so use a neutral style without guessing. Keep all code examples valid Python and consistent with lesson facts. Include one output item per input section in the same order. Return JSON only with this shape: {"sections":[{"id":"existing section id","paragraphs":["..."],"visual_example":{"filename":"example.py","language":"Python","code":"...","caption":"..."} or null,"takeaway_text":"..." or null,"challenge":null or {"title":"...","description":"...","practiceLabel":"...","filename":"...","initialCode":"...","testCases":[{"expected":"exact stdout for a correct solution"}]}}]}. If the lesson already has any interactive challenge, set challenge to null for every output section; existing challenges must remain unchanged. If the lesson has no interactive challenge, create exactly one new challenge in the section where it best reinforces the taught concept, and set challenge to null in all other sections. Match the task difficulty to the learner profile and recent performance: beginner tasks should be small and guided, intermediate tasks should combine concepts, and advanced tasks can require edge-case reasoning. Low scores or repeated errors mean simpler scaffolding; strong results permit more demanding work. The challenge must run in the existing browser Python editor: use one deterministic stdout test case, provide starter code with a clearly editable input value and TODO, and make expected output the exact stdout of a correct solution. Do not use input() or depend on stdin, files, network, or extra packages. Starter code must not contain the completed solution. Do not include a solution in the generated challenge. Do not add or remove sections. Use readable, direct learner-facing language."""
     user_input = {
         "output_format": "Respond with valid JSON only, using a top-level sections array.",
         "lesson_has_challenge": has_challenge,
-        "learner_profile": ability.model_dump(),
+        "learner_profile": {
+            "level": ability_data.get("level", "beginner"),
+            "learning_preferences": ability_data.get("learning_preferences", LearningPreferences().model_dump()),
+            "mastered_topics": ability_data.get("mastered_topics", []),
+        },
+        "learning_context": {
+            "recent_quiz_avg": ability_data.get("recent_quiz_avg", 0.0),
+            "consecutive_errors": ability_data.get("consecutive_errors", consecutive_errors),
+        },
         "lesson": {
             "title": lesson.get("title"),
             "description": lesson.get("description"),

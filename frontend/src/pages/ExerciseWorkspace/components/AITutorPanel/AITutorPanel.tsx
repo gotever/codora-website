@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { askTutor, fetchContextChats } from '../../../../lib/api'
 import type { Exercise } from '../../../../data/exercises'
+import TutorMessage from '../../../../components/TutorMessage/TutorMessage'
 import './AITutorPanel.css'
 
 export interface ChatMessage {
@@ -196,7 +197,7 @@ export default function AITutorPanel({
               className={`ai-tutor-msg ai-tutor-msg--${msg.sender}`}
             >
               <div className="ai-tutor-msg__bubble">
-                <p className="ai-tutor-msg__text">{msg.text}</p>
+                <div className="ai-tutor-msg__text"><TutorMessage text={msg.text} /></div>
                 <span className="ai-tutor-msg__time">{msg.timestamp}</span>
               </div>
             </div>
