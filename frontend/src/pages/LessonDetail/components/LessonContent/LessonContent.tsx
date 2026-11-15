@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import type { LessonDetail } from '../../../../data/lessons'
 import CodeBlock from './CodeBlock'
@@ -6,13 +7,41 @@ import './LessonContent.css'
 
 interface LessonContentProps {
   lesson: LessonDetail
-  onAskAIHint?: (challengeTitle: string) => void
+  onAskAIHint?: (challengeTitle: string, codeSnapshot: string, activity: string) => void
+  onLessonChallengesCompleted?: (lessonId: number) => void
 }
 
 export default function LessonContent({
   lesson,
   onAskAIHint,
+  onLessonChallengesCompleted,
 }: LessonContentProps) {
+  const challengeIds = lesson.sections.flatMap((section) => section.challenge ? [`${section.id}:${section.challenge.id}`] : [])
+  const completedChallengesRef = useRef<{ lessonId: string; ids: Set<string>; reported: boolean }>({
+    lessonId: lesson.id,
+    ids: new Set(),
+    reported: false,
+  })
+
+  useEffect(() => {
+    completedChallengesRef.current = { lessonId: lesson.id, ids: new Set(), reported: false }
+  }, [lesson.id])
+
+  const handleChallengeCompleted = (challengeId: string) => {
+    if (completedChallengesRef.current.lessonId !== lesson.id) {
+      completedChallengesRef.current = { lessonId: lesson.id, ids: new Set(), reported: false }
+    }
+    completedChallengesRef.current.ids.add(challengeId)
+    if (
+      !completedChallengesRef.current.reported &&
+      challengeIds.length > 0 &&
+      challengeIds.every((id) => completedChallengesRef.current.ids.has(id))
+    ) {
+      completedChallengesRef.current.reported = true
+      onLessonChallengesCompleted?.(Number(lesson.id))
+    }
+  }
+
   return (
     <main className="lesson-content" id="main-content">
       {/* 1. Lesson Header */}
@@ -69,6 +98,7 @@ export default function LessonContent({
                 key={sec.challenge.id}
                 challenge={sec.challenge}
                 onAskAIHint={onAskAIHint}
+                onCompleted={() => handleChallengeCompleted(`${sec.id}:${sec.challenge!.id}`)}
               />
             )}
 

@@ -1,22 +1,25 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import type { ChatMessage } from '../../../../data/lessons'
+import type { ChatMessage, LessonSection } from '../../../../data/lessons'
 import { INITIAL_ASSISTANT_MESSAGES } from '../../../../data/lessons'
 import { askTutor, fetchContextChats } from '../../../../lib/api'
+import TutorAnswer from '../../../../components/TutorAnswer'
 import './LessonAssistant.css'
 
 interface LessonAssistantProps {
   currentLessonTopic: string
   lessonId: number
   lessonDescription: string
+  lessonSections: LessonSection[]
   isOpenOnMobile?: boolean
   onCloseMobile?: () => void
-  externalPrompt?: string
+  externalPrompt?: { id: number; text: string; codeSnapshot: string; activity: string }
 }
 
 export default function LessonAssistant({
   currentLessonTopic,
   lessonId,
   lessonDescription,
+  lessonSections,
   isOpenOnMobile = false,
   onCloseMobile,
   externalPrompt,
@@ -50,7 +53,10 @@ export default function LessonAssistant({
     return () => { active = false }
   }, [lessonId])
 
-  const handleSend = useCallback((textToSend?: string) => {
+  const handleSend = useCallback((
+    textToSend?: string,
+    externalContext?: { codeSnapshot: string; activity: string },
+  ) => {
     const text = (textToSend ?? inputValue).trim()
     if (!text || isTyping) return
 
@@ -64,11 +70,37 @@ export default function LessonAssistant({
     if (!textToSend) setInputValue('')
     setIsTyping(true)
 
+    const lessonSummary = [
+      `${currentLessonTopic}: ${lessonDescription}`,
+      ...lessonSections.flatMap((section) => [section.title, ...section.paragraphs, section.takeaway?.text ?? '']),
+    ].filter(Boolean).join('\n').slice(0, 8000)
+    const lessonExamples = lessonSections.flatMap((section) => section.codeExample ? [{
+      section_title: section.title,
+      filename: section.codeExample.filename,
+      language: section.codeExample.language,
+      code: section.codeExample.code,
+      caption: section.codeExample.caption ?? '',
+    }] : [])
+    const lessonChallenges = lessonSections.flatMap((section) => section.challenge ? [{
+      section_title: section.title,
+      title: section.challenge.title,
+      description: section.challenge.description,
+      practice_label: section.challenge.practiceLabel,
+      filename: section.challenge.filename,
+      language: section.challenge.language,
+      initial_code: section.challenge.initialCode,
+      expected_outputs: section.challenge.testCases.map((testCase) => testCase.expected),
+    }] : [])
+
     void askTutor({
       context_type: 'lesson',
       context_id: lessonId,
       message: text,
-      activity: `Learner is reading ${currentLessonTopic}. ${lessonDescription}`,
+      activity: externalContext?.activity ?? `Learner is reading ${currentLessonTopic}. ${lessonDescription}`,
+      code_snapshot: externalContext?.codeSnapshot,
+      lesson_summary: lessonSummary,
+      lesson_examples: lessonExamples,
+      lesson_challenges: lessonChallenges,
     }).then(({ answer }) => {
       setMessages((prev) => [...prev, {
         id: `asst-${Date.now()}`,
@@ -83,7 +115,7 @@ export default function LessonAssistant({
         : 'The tutor could not respond right now. Please try again.'
       setMessages((prev) => [...prev, { id: `asst-${Date.now()}`, sender: 'assistant', paragraphs: [notice], timestamp: 'Just now', feedbackGiven: null }])
     }).finally(() => setIsTyping(false))
-  }, [inputValue, isTyping, currentLessonTopic, lessonDescription, lessonId])
+  }, [inputValue, isTyping, currentLessonTopic, lessonDescription, lessonId, lessonSections])
   // Keep a stable ref to handleSend so the externalPrompt effect never
   // needs handleSend as a dependency (avoids an infinite re-trigger loop
   // caused by isTyping toggling → handleSend recreation → effect re-runs).
@@ -92,15 +124,16 @@ export default function LessonAssistant({
     handleSendRef.current = handleSend
   })
 
-  // Handle external hint request (e.g. from "Ask AI for a hint →" in the embedded challenge).
-  // We track the last prompt we already sent so clicking the same challenge button
-  // twice in a row still only fires once.
-  const lastExternalPromptRef = useRef<string | undefined>(undefined)
+  // Handle each external hint request, even when consecutive clicks use the same text.
+  const lastExternalPromptRef = useRef<number | undefined>(undefined)
   useEffect(() => {
-    if (externalPrompt && externalPrompt !== lastExternalPromptRef.current) {
-      lastExternalPromptRef.current = externalPrompt
+    if (externalPrompt && externalPrompt.id !== lastExternalPromptRef.current) {
+      lastExternalPromptRef.current = externalPrompt.id
       const timer = setTimeout(() => {
-        handleSendRef.current(externalPrompt)
+        handleSendRef.current(externalPrompt.text, {
+          codeSnapshot: externalPrompt.codeSnapshot,
+          activity: externalPrompt.activity,
+        })
       }, 0)
       return () => clearTimeout(timer)
     }
@@ -213,9 +246,7 @@ export default function LessonAssistant({
                     <h4 className="lesson-assistant__asst-title">{msg.title}</h4>
                   )}
                   {msg.paragraphs?.map((p, idx) => (
-                    <p key={idx} className="lesson-assistant__asst-p">
-                      {p}
-                    </p>
+                    <TutorAnswer key={idx} className="lesson-assistant__asst-p" text={p} />
                   ))}
 
                   {/* Comparison blocks (return vs print) */}

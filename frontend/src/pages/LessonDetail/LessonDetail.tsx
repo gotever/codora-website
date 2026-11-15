@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import type { CourseNavigation, LessonDetail as LessonDetailType } from '../../data/lessons'
-import { fetchCourseLessons, fetchCourses, fetchLesson, personalizeLesson } from '../../lib/api'
+import { fetchCourseLessons, fetchCourses, fetchLesson, personalizeLesson, saveProgress } from '../../lib/api'
 import { buildCourseNavigation, parseLessonDetail, resolveLessonNavigation } from '../../lib/lessonContent'
 import CourseSidebar from './components/CourseSidebar/CourseSidebar'
 import LessonContent from './components/LessonContent/LessonContent'
@@ -35,10 +35,11 @@ export default function LessonDetail() {
     async function loadLesson() {
       try {
         const record = await fetchLesson(lessonId)
+        const lessonView = saveProgress(Number(record.id), 'lesson', 'in_progress').catch(() => undefined)
         const [courses, courseLessons, personalization] = await Promise.all([
           fetchCourses(),
           fetchCourseLessons(record.course_id),
-          personalizeLesson(record.id, getConsecutiveErrors())
+          lessonView.then(() => personalizeLesson(record.id, getConsecutiveErrors()))
             .then((value) => ({ value, adapted: true as const }))
             .catch(() => ({ value: null, adapted: false as const })),
         ])
@@ -72,12 +73,28 @@ export default function LessonDetail() {
   // Mobile drawer states
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isAssistantOpen, setIsAssistantOpen] = useState(false)
-  const [externalPrompt, setExternalPrompt] = useState<string | undefined>()
+  const [externalPrompt, setExternalPrompt] = useState<{
+    id: number
+    text: string
+    codeSnapshot: string
+    activity: string
+  } | undefined>()
+  const hintRequestId = useRef(0)
 
   // When user clicks "Ask AI for a hint ->" in the embedded challenge
-  const handleAskAIHint = (challengeTitle: string) => {
-    setExternalPrompt(`Give me a hint for: ${challengeTitle}`)
+  const handleAskAIHint = (challengeTitle: string, codeSnapshot: string, activity: string) => {
+    hintRequestId.current += 1
+    setExternalPrompt({
+      id: hintRequestId.current,
+      text: `Give me a hint for: ${challengeTitle}`,
+      codeSnapshot,
+      activity,
+    })
     setIsAssistantOpen(true)
+  }
+
+  const handleLessonChallengesCompleted = (lessonId: number) => {
+    void saveProgress(lessonId, 'lesson', 'completed').catch(() => undefined)
   }
 
   if (!id || loadedLesson?.requestedId !== id) {
@@ -155,6 +172,7 @@ export default function LessonDetail() {
           <LessonContent
             lesson={lesson}
             onAskAIHint={handleAskAIHint}
+            onLessonChallengesCompleted={handleLessonChallengesCompleted}
           />
         </div>
 
@@ -164,6 +182,7 @@ export default function LessonDetail() {
           currentLessonTopic={lesson.topic}
           lessonId={Number(lesson.id)}
           lessonDescription={lesson.description}
+          lessonSections={lesson.sections}
           isOpenOnMobile={isAssistantOpen}
           onCloseMobile={() => setIsAssistantOpen(false)}
           externalPrompt={externalPrompt}

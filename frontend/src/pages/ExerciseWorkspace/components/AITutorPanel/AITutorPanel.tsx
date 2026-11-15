@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { askTutor, fetchContextChats } from '../../../../lib/api'
+import TutorAnswer from '../../../../components/TutorAnswer'
 import type { Exercise } from '../../../../data/exercises'
 import './AITutorPanel.css'
 
@@ -196,7 +197,9 @@ export default function AITutorPanel({
               className={`ai-tutor-msg ai-tutor-msg--${msg.sender}`}
             >
               <div className="ai-tutor-msg__bubble">
-                <p className="ai-tutor-msg__text">{msg.text}</p>
+                {msg.sender === 'tutor'
+                  ? <TutorAnswer className="ai-tutor-msg__text" text={msg.text} />
+                  : <p className="ai-tutor-msg__text">{msg.text}</p>}
                 <span className="ai-tutor-msg__time">{msg.timestamp}</span>
               </div>
             </div>

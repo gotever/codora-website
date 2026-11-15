@@ -106,7 +106,11 @@ export interface ApiPersonalizedLesson {
   content_markdown: string
   ability: {
     level: 'beginner' | 'intermediate' | 'advanced'
+    completed_topics: string[]
     mastered_topics: string[]
+    current_learning_context: string | null
+    recent_lesson: string | null
+    last_active_at: string | null
     recent_quiz_avg: number
     consecutive_errors: number
   }
@@ -182,6 +186,24 @@ export async function askTutor(input: {
   message: string
   code_snapshot?: string
   activity?: string
+  lesson_summary?: string
+  lesson_examples?: Array<{
+    section_title: string
+    filename: string
+    language: string
+    code: string
+    caption: string
+  }>
+  lesson_challenges?: Array<{
+    section_title: string
+    title: string
+    description: string
+    practice_label: string
+    filename: string
+    language: string
+    initial_code: string
+    expected_outputs: string[]
+  }>
 }): Promise<{ answer: string; memory_summary: string; structured_memory: Record<string, unknown> }> {
   return request('/api/tutor/chat', { method: 'POST', body: JSON.stringify(input) })
 }

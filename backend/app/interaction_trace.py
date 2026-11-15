@@ -1,4 +1,4 @@
-"""Append learner AI chat and exercise submission traces to the local workspace."""
+"""Write the latest learner AI chat or exercise submission trace to the workspace."""
 
 import json
 import logging
@@ -21,7 +21,7 @@ def write_interaction_trace(
     output_data: Any = None,
     error: str | None = None,
 ) -> None:
-    """Append one JSON record. Trace failures must not interrupt learning flows."""
+    """Overwrite the trace with one JSON record; trace failures must not interrupt learning flows."""
     record = {
         "timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "event": event,
@@ -34,10 +34,10 @@ def write_interaction_trace(
     }
 
     try:
-        rendered = "\n" + "=" * 80 + "\n"
+        rendered = "=" * 80 + "\n"
         rendered += json.dumps(record, ensure_ascii=False, indent=2, default=str)
         rendered += "\n"
-        with _TRACE_LOCK, _TRACE_PATH.open("a", encoding="utf-8") as trace_file:
+        with _TRACE_LOCK, _TRACE_PATH.open("w", encoding="utf-8") as trace_file:
             trace_file.write(rendered)
     except OSError:
-        logger.exception("Could not append interaction trace to %s", _TRACE_PATH)
+        logger.exception("Could not write interaction trace to %s", _TRACE_PATH)

@@ -6,7 +6,8 @@ import './EmbeddedChallenge.css'
 
 interface EmbeddedChallengeProps {
   challenge: CodingChallenge
-  onAskAIHint?: (challengeTitle: string) => void
+  onAskAIHint?: (challengeTitle: string, codeSnapshot: string, activity: string) => void
+  onCompleted?: () => void
 }
 
 type RunStatus = 'idle' | 'running' | 'success' | 'fail' | 'error'
@@ -22,6 +23,7 @@ interface CaseResult {
 export default function EmbeddedChallenge({
   challenge,
   onAskAIHint,
+  onCompleted,
 }: EmbeddedChallengeProps) {
   const [code, setCode] = useState(challenge.initialCode)
   const [isRunning, setIsRunning] = useState(false)
@@ -114,6 +116,7 @@ export default function EmbeddedChallenge({
       })
       setCaseResults(updated)
       setRunStatus(updated.every((r) => r.passed) ? 'success' : 'fail')
+      if (updated.length > 0 && updated.every((r) => r.passed)) onCompleted?.()
     } else {
       // For function-based challenges just show output, don't auto-evaluate
       setCaseResults(
@@ -126,6 +129,15 @@ export default function EmbeddedChallenge({
   const passedCount = caseResults.filter((r) => r.passed === true).length
   const totalCount = caseResults.length
   const allPassed = passedCount === totalCount && runStatus === 'success'
+
+  const handleAskAIHint = () => {
+    const runContext = consoleError
+      ? `Latest run failed with this error: ${consoleError}`
+      : consoleOutput !== null
+        ? `Latest run output: ${consoleOutput}. Status: ${runStatus}.`
+        : 'The current code has not been run yet.'
+    onAskAIHint?.(challenge.title, code, `Learner requests a hint for challenge "${challenge.title}". ${runContext}`)
+  }
 
   return (
     <div className="embedded-challenge" role="region" aria-label={`Coding challenge: ${challenge.title}`}>
@@ -286,7 +298,7 @@ export default function EmbeddedChallenge({
         <button
           type="button"
           className="embedded-challenge__btn-hint"
-          onClick={() => onAskAIHint?.(challenge.title)}
+          onClick={handleAskAIHint}
         >
           Ask AI for a hint →
         </button>

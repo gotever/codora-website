@@ -104,12 +104,12 @@ def adapt_lesson(
 ):
     with connection() as conn:
         lesson = conn.execute(
-            "SELECT content_markdown FROM lessons WHERE id=%s", (lesson_id,)
+            "SELECT title,content_markdown FROM lessons WHERE id=%s", (lesson_id,)
         ).fetchone()
     if not lesson:
         raise HTTPException(404, "Lesson not found")
     content, ability = create_personalized_lesson(
-        lesson["content_markdown"], user_id, body.consecutive_errors
+        lesson["content_markdown"], user_id, body.consecutive_errors, lesson["title"]
     )
     return {"content_markdown": content, "ability": ability.model_dump()}
 
@@ -296,14 +296,17 @@ def put_progress(body: ProgressInput, user_id: str = Depends(current_user_id)):
         if not conn.execute(f"SELECT 1 FROM {table} WHERE id=%s", (body.item_id,)).fetchone():
             raise HTTPException(404, "Progress item not found")
         row = conn.execute("""INSERT INTO user_progress(user_id,item_type,item_id,status,completed_at,score,last_attempt_at)
-            VALUES(%s,%s,%s,%s,CASE WHEN %s='completed' THEN now() ELSE NULL END,%s,
-                CASE WHEN %s IS NOT NULL THEN now() ELSE NULL END)
-            ON CONFLICT(user_id,item_type,item_id) DO UPDATE SET status=EXCLUDED.status,
-            completed_at=CASE WHEN EXCLUDED.status='completed' THEN COALESCE(user_progress.completed_at,now()) ELSE NULL END,
+            VALUES(%s,%s,%s,%s,CASE WHEN %s='completed' THEN now() ELSE NULL END,%s,now())
+            ON CONFLICT(user_id,item_type,item_id) DO UPDATE SET
+            status=CASE WHEN user_progress.status='completed' AND EXCLUDED.status='in_progress'
+                THEN user_progress.status ELSE EXCLUDED.status END,
+            completed_at=CASE WHEN EXCLUDED.status='completed'
+                OR (user_progress.status='completed' AND EXCLUDED.status='in_progress')
+                THEN COALESCE(user_progress.completed_at,now()) ELSE NULL END,
             score=COALESCE(EXCLUDED.score,user_progress.score),
-            last_attempt_at=COALESCE(EXCLUDED.last_attempt_at,user_progress.last_attempt_at)
+            last_attempt_at=now()
             RETURNING id,item_type,item_id,status,completed_at,score,last_attempt_at""",
-            (user_id,body.item_type,body.item_id,body.status,body.status,body.score,body.score)).fetchone()
+            (user_id,body.item_type,body.item_id,body.status,body.status,body.score)).fetchone()
     row["id"] = str(row["id"])
     return {"progress": row}
 
