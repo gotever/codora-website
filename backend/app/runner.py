@@ -29,6 +29,9 @@ for tc in test_cases:
     args_expr = tc.get("argsExpression", "")
     expected = str(tc.get("expectedOutput", "")).strip()
     is_hidden = tc.get("is_hidden", False)
+    input_label = tc.get("inputLabel", "Input")
+    input_value = tc.get("input", args_expr)
+    inputs = tc.get("inputs")
 
     start_t = time.perf_counter()
     try:
@@ -49,6 +52,9 @@ for tc in test_cases:
             "passed": passed,
             "actual": actual_str,
             "expected": expected,
+            "input_label": input_label,
+            "input": input_value,
+            "inputs": inputs,
             "execution_time_ms": elapsed,
             "is_hidden": is_hidden
         })
@@ -62,6 +68,10 @@ for tc in test_cases:
             "label": label,
             "passed": False,
             "error": f"{type(exc).__name__}: {exc}",
+            "input_label": input_label,
+            "input": input_value,
+            "inputs": inputs,
+            "expected": expected,
             "execution_time_ms": elapsed,
             "is_hidden": is_hidden
         })
@@ -169,6 +179,15 @@ def run_code_sandbox(
 
     passed_count = sum(1 for r in results if r.get("passed"))
     total_count = len(test_cases)
+    visible_results = [
+        {
+            key: case[key]
+            for key in ("case_id", "label", "input_label", "input", "inputs", "actual", "expected", "passed", "error", "execution_time_ms")
+            if key in case
+        }
+        for case in results
+        if not case.get("is_hidden", False)
+    ]
 
     # All passed!
     if passed_count == total_count:
@@ -179,6 +198,7 @@ def run_code_sandbox(
             "runtime_ms": total_runtime_ms,
             "error": None,
             "failed_case": None,
+            "case_results": visible_results,
         }
 
     # Find the first failing case
@@ -191,6 +211,7 @@ def run_code_sandbox(
             "runtime_ms": total_runtime_ms,
             "error": None,
             "failed_case": None,
+            "case_results": visible_results,
         }
 
     # Hide actual/expected if the case is secret/hidden to avoid leaking test data
@@ -212,4 +233,5 @@ def run_code_sandbox(
         "runtime_ms": total_runtime_ms,
         "error": failed.get("error"),
         "failed_case": failed_info,
+        "case_results": visible_results,
     }

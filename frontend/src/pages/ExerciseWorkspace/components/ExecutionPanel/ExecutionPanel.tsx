@@ -4,46 +4,185 @@ import './ExecutionPanel.css'
 
 interface ExecutionPanelProps {
   testCases: TestCase[]
-  onRun: () => void
-  onSubmit: () => void
+  activeTab: 'testcases' | 'output'
+  onActiveTabChange: (tab: 'testcases' | 'output') => void
   isRunning: boolean
   isSubmitting: boolean
   runResult: {
     status: 'idle' | 'running' | 'success' | 'error'
+    operation?: 'run' | 'submit'
     message?: string
     stdout?: string
+    summary?: {
+      label: string
+      passedCount?: number
+      totalCount?: number
+      runtimeMs?: number
+      failedCase?: {
+        label?: string
+        hidden?: boolean
+        expected?: string
+        actual?: string
+        error?: string
+      }
+    }
     results?: {
       caseId: string
+      label?: string
+      inputLabel?: string
+      input?: string
+      inputs?: { label: string; value: string }[]
+      expectedOutput?: string
       passed: boolean
       actualOutput: string
       error?: string
       executionTime?: number
     }[]
   }
-  pyodideReady?: boolean
   pyodideLoading?: boolean
+}
+
+function getInputFields(inputLabel: string, input: string, structuredInputs?: { label: string; value: string }[]) {
+  if (structuredInputs?.length) return structuredInputs
+
+  const labels = inputLabel.split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
+  const labelNames = labels.map((line) => line.match(/^([\w]+)\s*=/)?.[1]).filter((name): name is string => Boolean(name))
+  const lines = input.split(/\r?\n/)
+  const assignments: { label: string; value: string }[] = []
+  const preamble: string[] = []
+  let active: { label: string; value: string } | null = null
+
+  for (const line of lines) {
+    const match = line.match(/^\s*([\w]+)\s*=\s*(.*)$/)
+    if (match) {
+      active = { label: `${match[1]} =`, value: match[2] }
+      assignments.push(active)
+    } else if (active) {
+      active.value = active.value ? `${active.value}\n${line}` : line
+    } else if (line.trim()) {
+      preamble.push(line)
+    }
+  }
+
+  if (labelNames.length > 1) {
+    const matched = labelNames.map((name) => assignments.find((field) => field.label.startsWith(`${name} `)))
+    if (matched.every(Boolean)) return matched as { label: string; value: string }[]
+    if (lines.length === labelNames.length) return labels.map((label, index) => ({ label, value: lines[index] }))
+  }
+
+  if (assignments.length) {
+    return [
+      ...(preamble.length ? [{ label: labels[0] ?? 'Input', value: preamble.join('\n') }] : []),
+      ...assignments,
+    ]
+  }
+
+  return [{ label: inputLabel || 'Input', value: input }]
+}
+
+function InputFields({ fields, onCopy, copiedIndex }: {
+  fields: { label: string; value: string }[]
+  onCopy: (value: string, index: number) => void
+  copiedIndex: number | null
+}) {
+  return (
+    <div className="exec-panel__input-fields">
+      {fields.map((field, index) => (
+        <div className="exec-panel__sample-field" key={`${field.label}-${index}`}>
+          <span>{field.label}</span>
+          <pre>{field.value}</pre>
+          <button type="button" className="exec-panel__copy-input" onClick={() => onCopy(field.value, index)} aria-label={`Copy ${field.label}`} title="Copy input">
+            {copiedIndex === index ? '✓' : (
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+                <rect x="8" y="8" width="12" height="12" rx="2" />
+                <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />
+              </svg>
+            )}
+          </button>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 export default function ExecutionPanel({
   testCases,
-  onRun,
-  onSubmit,
+  activeTab,
+  onActiveTabChange,
   isRunning,
   isSubmitting,
   runResult,
-  pyodideReady = false,
   pyodideLoading = false,
 }: ExecutionPanelProps) {
-  const [activeTab, setActiveTab] = useState<'testcases' | 'output'>('testcases')
   const [selectedCaseIdx, setSelectedCaseIdx] = useState(0)
+  const [copiedInputIndex, setCopiedInputIndex] = useState<number | null>(null)
 
-  const currentCase = testCases[selectedCaseIdx] || testCases[0]
+  const activeCaseIdx = Math.min(selectedCaseIdx, Math.max(0, testCases.length - 1))
+  const currentCase = testCases[activeCaseIdx] || testCases[0]
   const currentCaseResult = runResult.results?.find((r) => r.caseId === currentCase?.id)
 
-  const isCasePassed = currentCaseResult?.passed
+  const currentInputFields = currentCase
+    ? getInputFields(
+        currentCaseResult?.inputLabel ?? currentCase.inputLabel,
+        currentCaseResult?.input ?? currentCase.input,
+        currentCaseResult?.inputs ?? currentCase.inputs,
+      )
+    : []
 
-  const runDisabled = isRunning || isSubmitting || !pyodideReady
-  const submitDisabled = isRunning || isSubmitting
+  const copyInput = async (value: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopiedInputIndex(index)
+      window.setTimeout(() => setCopiedInputIndex(null), 1400)
+    } catch {
+      setCopiedInputIndex(null)
+    }
+  }
+
+  const renderCasePicker = (showAddCase = false) => (
+    <div className="exec-panel__output-case-row">
+      <div className="exec-panel__case-pills" role="group" aria-label="Choose test case">
+        {testCases.map((testCase, index) => {
+          const result = runResult.results?.find((item) => item.caseId === testCase.id)
+          return (
+            <button
+              key={testCase.id}
+              type="button"
+              aria-pressed={activeCaseIdx === index}
+              className={`exec-panel__case-pill ${activeCaseIdx === index ? 'exec-panel__case-pill--active' : ''} ${result ? result.passed ? 'exec-panel__case-pill--passed' : 'exec-panel__case-pill--failed' : ''}`}
+              onClick={() => setSelectedCaseIdx(index)}
+            >
+              {testCase.label}
+              {result && <span className="exec-panel__pill-status-icon">{result.passed ? '✓' : '×'}</span>}
+            </button>
+          )
+        })}
+        {showAddCase && <button type="button" className="exec-panel__add-case-btn" title="Add custom test case" aria-label="Add custom test case">+</button>}
+      </div>
+    </div>
+  )
+
+  const renderSelectedCaseContent = (includeOutput: boolean) => currentCase && (
+    <div className="exec-panel__sample-content">
+      <div className="exec-panel__sample-section">
+        <span className="exec-panel__sample-label">Input</span>
+        <InputFields fields={currentInputFields} onCopy={copyInput} copiedIndex={copiedInputIndex} />
+      </div>
+      {includeOutput && (
+        <div className="exec-panel__sample-section">
+          <span className="exec-panel__sample-label">Output</span>
+          <div className="exec-panel__sample-field exec-panel__sample-field--output">
+            <pre>{currentCaseResult ? currentCaseResult.actualOutput || '(empty output)' : 'Not run yet'}</pre>
+          </div>
+          {currentCaseResult?.error && <pre className="exec-panel__error-detail">{currentCaseResult.error}</pre>}
+        </div>
+      )}
+      <div className="exec-panel__sample-section">
+        <span className="exec-panel__sample-label">Expected</span>
+        <div className="exec-panel__sample-field exec-panel__sample-field--output"><pre>{currentCaseResult?.expectedOutput ?? currentCase.expectedOutput ?? '(empty output)'}</pre></div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="exec-panel">
@@ -101,14 +240,14 @@ export default function ExecutionPanel({
         <button
           type="button"
           className={`exec-panel__tab ${activeTab === 'testcases' ? 'exec-panel__tab--active' : ''}`}
-          onClick={() => setActiveTab('testcases')}
+          onClick={() => onActiveTabChange('testcases')}
         >
           Test cases
         </button>
         <button
           type="button"
           className={`exec-panel__tab ${activeTab === 'output' ? 'exec-panel__tab--active' : ''}`}
-          onClick={() => setActiveTab('output')}
+          onClick={() => onActiveTabChange('output')}
         >
           Output
           {runResult.status !== 'idle' && (
@@ -125,104 +264,8 @@ export default function ExecutionPanel({
       <div className="exec-panel__body">
         {activeTab === 'testcases' ? (
           <div className="exec-panel__cases-content">
-            {/* Case selector pills */}
-            <div className="exec-panel__case-selector">
-              <div className="exec-panel__case-pills">
-                {testCases.map((tc, idx) => {
-                  const caseRes = runResult.results?.find((r) => r.caseId === tc.id)
-                  return (
-                    <button
-                      key={tc.id}
-                      type="button"
-                      className={`exec-panel__case-pill ${
-                        selectedCaseIdx === idx ? 'exec-panel__case-pill--active' : ''
-                      } ${
-                        caseRes
-                          ? caseRes.passed
-                            ? 'exec-panel__case-pill--passed'
-                            : 'exec-panel__case-pill--failed'
-                          : ''
-                      }`}
-                      onClick={() => setSelectedCaseIdx(idx)}
-                    >
-                      {tc.label}
-                      {caseRes && (
-                        <span className="exec-panel__pill-status-icon">
-                          {caseRes.passed ? '✓' : '✗'}
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
-                <button
-                  type="button"
-                  className="exec-panel__add-case-btn"
-                  title="Add custom test case"
-                  aria-label="Add custom test case"
-                >
-                  +
-                </button>
-              </div>
-
-              {/* Status on right */}
-              <div className="exec-panel__case-summary">
-                {runResult.status === 'idle' && <span>Not run yet</span>}
-                {runResult.status === 'running' && <span>Testing…</span>}
-                {runResult.status === 'success' && (
-                  <span className="exec-panel__success-text">All cases passed</span>
-                )}
-                {runResult.status === 'error' && (
-                  <span className="exec-panel__error-text">Check test results</span>
-                )}
-              </div>
-            </div>
-
-            {/* Test Case Details */}
-            {currentCase && (
-              <div className="exec-panel__case-details">
-                <div className="exec-panel__field">
-                  <span className="exec-panel__field-label">{currentCase.inputLabel}</span>
-                  <div className="exec-panel__field-box">{currentCase.input}</div>
-                </div>
-
-                <div className="exec-panel__field-expected">
-                  <span className="exec-panel__expected-label">Expected output</span>
-                  <span className="exec-panel__expected-value">{currentCase.expectedOutput}</span>
-                </div>
-
-                {currentCaseResult && (
-                  <div
-                    className={`exec-panel__result-box ${
-                      isCasePassed
-                        ? 'exec-panel__result-box--passed'
-                        : 'exec-panel__result-box--failed'
-                    }`}
-                  >
-                    <div className="exec-panel__result-header">
-                      <span>{isCasePassed ? '✓ Passed' : '✗ Output mismatch'}</span>
-                      {currentCaseResult.executionTime !== undefined && (
-                        <span className="exec-panel__result-time">{currentCaseResult.executionTime}ms</span>
-                      )}
-                    </div>
-                    <div className="exec-panel__result-actual">
-                      <span>Your output:</span>
-                      <code>{currentCaseResult.actualOutput}</code>
-                    </div>
-                    {currentCaseResult.error && (
-                      <div className="exec-panel__result-error">
-                        <code>{currentCaseResult.error}</code>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <p className="exec-panel__hint-text">
-                  {pyodideReady
-                    ? 'Run your code to see the result. Submit to check all test cases.'
-                    : 'Waiting for Python runtime to load…'}
-                </p>
-              </div>
-            )}
+            {renderCasePicker(true)}
+            {renderSelectedCaseContent(true)}
           </div>
         ) : (
           /* Output Terminal Tab */
@@ -237,72 +280,68 @@ export default function ExecutionPanel({
                 <span>Executing Python code via Pyodide (WebAssembly)…</span>
               </div>
             ) : (
-              <pre className="exec-panel__terminal-pre">
-                <code>
-                  {`Python 3.12 (Pyodide — in-browser WebAssembly)
-[sandbox: client-side execution]
-====================================
-${runResult.stdout || ''}
+              <div className="exec-panel__result-view" aria-live="polite">
+                <div className={`exec-panel__verdict ${runResult.status === 'success' ? 'exec-panel__verdict--accepted' : 'exec-panel__verdict--failed'}`}>
+                  <div className="exec-panel__verdict-main">
+                    <strong>{runResult.summary?.label ?? (runResult.status === 'success' ? 'Accepted' : 'Execution failed')}</strong>
+                  </div>
+                  <div className="exec-panel__result-metrics">
+                    {runResult.summary?.runtimeMs !== undefined && (
+                      <div><span>Runtime:</span><strong>{runResult.summary.runtimeMs} ms</strong></div>
+                    )}
+                  </div>
+                </div>
 
-${runResult.message || 'Execution finished.'}
-`}
-                </code>
-              </pre>
+                {runResult.summary?.failedCase && (runResult.summary.failedCase.hidden || !runResult.results?.length) && (
+                  <section className="exec-panel__failed-case" aria-label="Failed test case details">
+                    <div className="exec-panel__section-heading">
+                      <strong>{runResult.summary.failedCase.hidden ? 'Hidden test case failed' : `${runResult.summary.failedCase.label ?? 'Failed test case'} failed`}</strong>
+                      <span>First failing case</span>
+                    </div>
+                    {runResult.summary.failedCase.hidden ? (
+                      <p className="exec-panel__hidden-case-note">The failing test is hidden. Review your edge cases and constraints.</p>
+                    ) : (
+                      <div className="exec-panel__comparison-grid">
+                        {runResult.summary.failedCase.expected !== undefined && (
+                          <div className="exec-panel__comparison-item">
+                            <span>Expected</span>
+                            <pre>{runResult.summary.failedCase.expected || '(empty output)'}</pre>
+                          </div>
+                        )}
+                        {runResult.summary.failedCase.actual !== undefined && (
+                          <div className="exec-panel__comparison-item exec-panel__comparison-item--actual">
+                            <span>Your output</span>
+                            <pre>{runResult.summary.failedCase.actual || '(empty output)'}</pre>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {runResult.summary.failedCase.error && <pre className="exec-panel__error-detail">{runResult.summary.failedCase.error}</pre>}
+                  </section>
+                )}
+
+                {testCases.length > 0 && (
+                  <section className="exec-panel__selected-test" aria-label="Test case details">
+                    {renderCasePicker()}
+                    {renderSelectedCaseContent(true)}
+                  </section>
+                )}
+
+                {runResult.operation === 'run' && runResult.stdout && (
+                  <details className="exec-panel__raw-output">
+                    <summary>Raw run log</summary>
+                    <pre>{runResult.stdout}</pre>
+                  </details>
+                )}
+
+                {!runResult.summary && runResult.message && <pre className="exec-panel__error-detail">{runResult.message}</pre>}
+              </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Action Footer Bar with Run & Submit */}
-      <div className="exec-panel__footer">
-        <button
-          type="button"
-          className="exec-panel__btn-run"
-          onClick={() => {
-            setActiveTab('output')
-            onRun()
-          }}
-          disabled={runDisabled}
-          title={!pyodideReady ? 'Waiting for Python runtime…' : 'Run code'}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            width="14"
-            height="14"
-            aria-hidden="true"
-          >
-            <polygon points="5 3 19 12 5 21 5 3" />
-          </svg>
-          <span>{isRunning ? 'Running…' : !pyodideReady ? 'Loading…' : 'Run'}</span>
-        </button>
 
-        <button
-          type="button"
-          className="exec-panel__btn-submit"
-          onClick={() => {
-            setActiveTab('output')
-            onSubmit()
-          }}
-          disabled={submitDisabled}
-          title={isSubmitting ? 'Submitting to judge…' : 'Submit solution to judge'}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            width="14"
-            height="14"
-            aria-hidden="true"
-          >
-            <path d="M12 19V5M5 12l7-7 7 7" />
-          </svg>
-          <span>{isSubmitting ? 'Submitting…' : 'Submit'}</span>
-        </button>
-      </div>
     </div>
   )
 }

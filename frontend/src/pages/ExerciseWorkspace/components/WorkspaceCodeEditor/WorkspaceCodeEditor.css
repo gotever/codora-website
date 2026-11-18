@@ -1,8 +1,9 @@
 .ws-editor {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 440px;
+  height: 380px;
+  min-height: 380px;
+  max-height: 380px;
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -79,26 +80,52 @@
   color: var(--color-text-muted);
 }
 
+.ws-editor__saved-status--viewing {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.ws-editor__file-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ws-editor__return-draft {
+  padding: 3px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.ws-editor__return-draft:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
 /* Monaco Editor Canvas */
 .ws-editor__canvas {
   position: relative;
   flex: 1;
-  min-height: 360px;
-  height: 360px;
+  min-height: 276px;
+  height: 276px;
   background-color: #ffffff;
   overflow: hidden;
 }
 
 .ws-editor__canvas section {
-  height: 360px !important;
+  height: 276px !important;
 }
 
 .ws-editor__canvas div[data-keybinding-context] {
-  height: 360px !important;
+  height: 276px !important;
 }
 
 .ws-editor__canvas .monaco-editor {
-  height: 360px !important;
+  height: 276px !important;
 }
 
 /* Loading state for Monaco */
@@ -107,8 +134,8 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
-  height: 360px;
-  min-height: 360px;
+  height: 276px;
+  min-height: 276px;
   color: var(--color-text-muted);
   font-size: 13px;
 }

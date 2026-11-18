@@ -1,4 +1,4 @@
-import json
+﻿import json
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, Response
@@ -10,9 +10,10 @@ from psycopg import errors
 from .auth import current_user_id, hash_password, make_token, optional_current_user_id, verify_password
 from .db import connection, pool
 from .interaction_trace import write_interaction_trace
+from .learning_profile import get_all_concept_progress, get_completed_lessons
 from .personalization import personalize_lesson as create_personalized_lesson
 from .runner import run_code_sandbox
-from .schemas import ChatInput, LoginInput, PersonalizeLessonInput, ProgressInput, RegisterInput, SubmitInput, TutorChatInput, UserLevelInput
+from .schemas import ChatInput, ExerciseWorkspaceInput, LoginInput, PersonalizeLessonInput, ProgressInput, RegisterInput, SubmitInput, TutorChatInput, UserLevelInput
 from .settings import settings
 from .tutor import create_tutor_reply
 
@@ -83,14 +84,14 @@ def get_course(course_id: int):
 @app.get("/api/courses/{course_id}/lessons")
 def course_lessons(course_id: int):
     with connection() as conn:
-        rows = conn.execute("SELECT id,title,course_id,content_markdown,order_index FROM lessons WHERE course_id=%s ORDER BY order_index", (course_id,)).fetchall()
+        rows = conn.execute("SELECT id,title,course_id,content_markdown,order_index,preknowledge,new_concepts FROM lessons WHERE course_id=%s ORDER BY order_index", (course_id,)).fetchall()
     return {"lessons": rows}
 
 
 @app.get("/api/lessons/{lesson_id}")
 def get_lesson(lesson_id: int):
     with connection() as conn:
-        row = conn.execute("SELECT id,title,course_id,content_markdown,order_index FROM lessons WHERE id=%s", (lesson_id,)).fetchone()
+        row = conn.execute("SELECT id,title,course_id,content_markdown,order_index,preknowledge,new_concepts FROM lessons WHERE id=%s", (lesson_id,)).fetchone()
     if not row:
         raise HTTPException(404, "Lesson not found")
     return {"lesson": row}
@@ -104,12 +105,13 @@ def adapt_lesson(
 ):
     with connection() as conn:
         lesson = conn.execute(
-            "SELECT content_markdown FROM lessons WHERE id=%s", (lesson_id,)
+            "SELECT content_markdown,preknowledge,new_concepts FROM lessons WHERE id=%s", (lesson_id,)
         ).fetchone()
     if not lesson:
         raise HTTPException(404, "Lesson not found")
     content, ability = create_personalized_lesson(
-        lesson["content_markdown"], user_id, body.consecutive_errors
+        lesson["content_markdown"], user_id, body.consecutive_errors,
+        lesson["preknowledge"], lesson["new_concepts"],
     )
     return {"content_markdown": content, "ability": ability.model_dump()}
 
@@ -248,8 +250,10 @@ def submit_exercise(
             conn.execute(
                 """INSERT INTO user_progress(user_id,item_type,item_id,status,completed_at,score,last_attempt_at)
                     VALUES(%s,'exercise',%s,%s,CASE WHEN %s='completed' THEN now() ELSE NULL END,%s,now())
-                    ON CONFLICT(user_id,item_type,item_id) DO UPDATE SET status=EXCLUDED.status,
-                    completed_at=CASE WHEN EXCLUDED.status='completed' THEN COALESCE(user_progress.completed_at,now()) ELSE NULL END,
+                    ON CONFLICT(user_id,item_type,item_id) DO UPDATE SET
+                    status=CASE WHEN user_progress.status='completed' THEN 'completed' ELSE EXCLUDED.status END,
+                    completed_at=CASE WHEN user_progress.status='completed' OR EXCLUDED.status='completed'
+                        THEN COALESCE(user_progress.completed_at,now()) ELSE NULL END,
                     score=EXCLUDED.score,last_attempt_at=now()""",
                 (user_id, row["id"], status, status, score),
             )
@@ -269,6 +273,70 @@ def submit_exercise(
                 VALUES(%s,%s,%s,'submission','user',%s,%s)""",
                 (user_id, exercise_id, f"exercise:{exercise_id}", json.dumps(submission, ensure_ascii=False), body.code))
     return result
+
+
+@app.get("/api/exercises/{exercise_id}/submissions")
+def get_exercise_submissions(exercise_id: int, user_id: str = Depends(current_user_id)):
+    with connection() as conn:
+        if not conn.execute("SELECT 1 FROM exercises WHERE id=%s", (exercise_id,)).fetchone():
+            raise HTTPException(404, "Exercise not found")
+        rows = conn.execute("""SELECT id,message,code_snapshot,created_at FROM ai_chats
+            WHERE user_id=%s AND exercise_id=%s AND event_type='submission'
+            ORDER BY created_at DESC,id DESC""", (user_id, exercise_id)).fetchall()
+
+    submissions = []
+    for row in rows:
+        try:
+            result = json.loads(row["message"])
+        except (TypeError, json.JSONDecodeError):
+            continue
+        if not isinstance(result, dict):
+            continue
+        submissions.append({
+            "id": str(row["id"]),
+            "status": result.get("status"),
+            "passed_count": result.get("passed_count", 0),
+            "total_count": result.get("total_count", 0),
+            "runtime_ms": result.get("runtime_ms", 0),
+            "code": row["code_snapshot"] or "",
+            "created_at": row["created_at"].isoformat(),
+        })
+    return {"submissions": submissions}
+
+
+@app.get("/api/exercises/{exercise_id}/workspace")
+def get_exercise_workspace(exercise_id: int, user_id: str = Depends(current_user_id)):
+    with connection() as conn:
+        if not conn.execute("SELECT 1 FROM exercises WHERE id=%s", (exercise_id,)).fetchone():
+            raise HTTPException(404, "Exercise not found")
+        row = conn.execute("""SELECT draft_code,latest_run_code,latest_run_result,updated_at
+            FROM exercise_workspace_state WHERE user_id=%s AND exercise_id=%s""", (user_id, exercise_id)).fetchone()
+    if not row:
+        return {"draft_code": None, "latest_run_code": None, "latest_run_result": None, "updated_at": None}
+    return {**row, "updated_at": row["updated_at"].isoformat()}
+
+
+@app.put("/api/exercises/{exercise_id}/workspace")
+def save_exercise_workspace(
+    exercise_id: int,
+    body: ExerciseWorkspaceInput,
+    user_id: str = Depends(current_user_id),
+):
+    with connection() as conn:
+        if not conn.execute("SELECT 1 FROM exercises WHERE id=%s", (exercise_id,)).fetchone():
+            raise HTTPException(404, "Exercise not found")
+        conn.execute("""INSERT INTO exercise_workspace_state
+                (user_id,exercise_id,draft_code,latest_run_code,latest_run_result,updated_at)
+            VALUES(%s,%s,%s,%s,%s::jsonb,now())
+            ON CONFLICT(user_id,exercise_id) DO UPDATE SET
+                draft_code=EXCLUDED.draft_code,
+                latest_run_code=COALESCE(EXCLUDED.latest_run_code,exercise_workspace_state.latest_run_code),
+                latest_run_result=COALESCE(EXCLUDED.latest_run_result,exercise_workspace_state.latest_run_result),
+                updated_at=now()""",
+            (user_id, exercise_id, body.draft_code, body.latest_run_code,
+             json.dumps(body.latest_run_result, ensure_ascii=False) if body.latest_run_result is not None else None),
+        )
+    return {"saved": True}
 
 
 @app.post("/api/auth/register", status_code=201)
@@ -330,7 +398,9 @@ def update_level(body: UserLevelInput, user_id: str = Depends(current_user_id)):
 def get_progress(user_id: str = Depends(current_user_id)):
     with connection() as conn:
         rows = conn.execute("SELECT id,item_type,item_id,status,completed_at FROM user_progress WHERE user_id=%s ORDER BY id", (user_id,)).fetchall()
-    return {"progress": rows}
+        completed_lessons = get_completed_lessons(conn, user_id)
+        concepts = get_all_concept_progress(conn, user_id)
+    return {"progress": rows, "completed_lessons": completed_lessons, "concepts": concepts}
 
 
 @app.put("/api/progress")
@@ -360,11 +430,17 @@ def get_chats(exercise_id: int | None = None, context_key: str | None = None, us
         return {"messages": []}
     with connection() as conn:
         if context_key is not None:
-            rows = conn.execute("SELECT id,exercise_id,context_key,event_type,role,message,code_snapshot,created_at FROM ai_chats WHERE user_id=%s AND context_key=%s AND event_type='chat' ORDER BY created_at,id", (user_id, context_key)).fetchall()
+            rows = conn.execute("""SELECT id,exercise_id,context_key,event_type,role,message,code_snapshot,created_at
+                FROM ai_chats WHERE user_id=%s AND context_key=%s AND event_type='chat'
+                ORDER BY created_at,CASE role WHEN 'user' THEN 0 ELSE 1 END,id""", (user_id, context_key)).fetchall()
         elif exercise_id is not None:
-            rows = conn.execute("SELECT id,exercise_id,role,message,code_snapshot,created_at FROM ai_chats WHERE user_id=%s AND exercise_id=%s ORDER BY created_at", (user_id, exercise_id)).fetchall()
+            rows = conn.execute("""SELECT id,exercise_id,role,message,code_snapshot,created_at
+                FROM ai_chats WHERE user_id=%s AND exercise_id=%s
+                ORDER BY created_at,CASE role WHEN 'user' THEN 0 ELSE 1 END,id""", (user_id, exercise_id)).fetchall()
         else:
-            rows = conn.execute("SELECT id,exercise_id,role,message,code_snapshot,created_at FROM ai_chats WHERE user_id=%s AND exercise_id IS NULL ORDER BY created_at", (user_id,)).fetchall()
+            rows = conn.execute("""SELECT id,exercise_id,role,message,code_snapshot,created_at
+                FROM ai_chats WHERE user_id=%s AND exercise_id IS NULL
+                ORDER BY created_at,CASE role WHEN 'user' THEN 0 ELSE 1 END,id""", (user_id,)).fetchall()
     for row in rows:
         row["id"] = str(row["id"])
     return {"messages": rows}

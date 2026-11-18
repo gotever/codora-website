@@ -8,6 +8,9 @@ interface WorkspaceCodeEditorProps {
   filename: string
   language?: string
   onReset?: () => void
+  readOnly?: boolean
+  statusLabel?: string
+  onExitReadOnly?: () => void
 }
 
 export default function WorkspaceCodeEditor({
@@ -15,6 +18,9 @@ export default function WorkspaceCodeEditor({
   onChange,
   filename,
   onReset,
+  readOnly = false,
+  statusLabel,
+  onExitReadOnly,
 }: WorkspaceCodeEditorProps) {
   const [copied, setCopied] = useState(false)
   const [cursorPos, setCursorPos] = useState({ line: 1, col: 1 })
@@ -109,28 +115,30 @@ export default function WorkspaceCodeEditor({
 
         <div className="ws-editor__actions">
           {/* Action icon buttons */}
-          <button
-            type="button"
-            className="ws-editor__icon-btn"
-            title="Reset code"
-            aria-label="Reset code"
-            onClick={onReset}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              width="15"
-              height="15"
+          {!readOnly && onReset && (
+            <button
+              type="button"
+              className="ws-editor__icon-btn"
+              title="Reset code"
+              aria-label="Reset code"
+              onClick={onReset}
             >
-              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-              <path d="M3 3v5h5" />
-            </svg>
-          </button>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                width="15"
+                height="15"
+              >
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+            </button>
+          )}
           <button
             type="button"
             className="ws-editor__icon-btn"
@@ -175,13 +183,22 @@ export default function WorkspaceCodeEditor({
       {/* Sub-bar: filename on left, draft saved locally on right */}
       <div className="ws-editor__file-bar">
         <span className="ws-editor__filename">{filename}</span>
-        <span className="ws-editor__saved-status">Draft saved locally</span>
+        <div className="ws-editor__file-status">
+          <span className={`ws-editor__saved-status ${readOnly ? 'ws-editor__saved-status--viewing' : ''}`}>
+            {statusLabel ?? 'Draft saved locally'}
+          </span>
+          {readOnly && onExitReadOnly && (
+            <button type="button" className="ws-editor__return-draft" onClick={onExitReadOnly}>
+              Back to draft
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Monaco Editor Container */}
       <div className="ws-editor__canvas">
         <Editor
-          height="360px"
+          height="276px"
           language="python"
           value={value}
           onChange={(val) => onChange(val ?? '')}
@@ -195,6 +212,7 @@ export default function WorkspaceCodeEditor({
             </div>
           }
           options={{
+            readOnly,
             fontSize: 13,
             fontFamily: "'Fira Code', 'Cascadia Code', Consolas, ui-monospace, monospace",
             fontLigatures: true,

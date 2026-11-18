@@ -7,11 +7,19 @@ import './LessonContent.css'
 interface LessonContentProps {
   lesson: LessonDetail
   onAskAIHint?: (challengeTitle: string) => void
+  isCompleted: boolean
+  isMarkingComplete: boolean
+  completionError: string | null
+  onMarkComplete: () => void
 }
 
 export default function LessonContent({
   lesson,
   onAskAIHint,
+  isCompleted,
+  isMarkingComplete,
+  completionError,
+  onMarkComplete,
 }: LessonContentProps) {
   return (
     <main className="lesson-content" id="main-content">
@@ -120,6 +128,18 @@ export default function LessonContent({
           ) : (
             <div />
           )}
+
+          <div className="lesson-content__completion-control">
+            <button
+              type="button"
+              className="lesson-content__complete-btn"
+              disabled={isCompleted || isMarkingComplete}
+              onClick={onMarkComplete}
+            >
+              {isCompleted ? 'Lesson completed' : isMarkingComplete ? 'Saving…' : 'Mark lesson complete'}
+            </button>
+            {completionError && <span className="lesson-content__completion-error" role="alert">{completionError}</span>}
+          </div>
 
           {lesson.nextLesson ? (
             <Link

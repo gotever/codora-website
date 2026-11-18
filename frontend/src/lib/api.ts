@@ -32,6 +32,8 @@ export interface ApiLesson {
   course_id: number
   content_markdown: string
   order_index: number
+  preknowledge: string[]
+  new_concepts: string[]
 }
 
 export interface ApiExercise {
@@ -43,7 +45,7 @@ export interface ApiExercise {
   function_name: string
   starter_code: string
   test_cases: {
-    runner: { id: string; label: string; input: string; inputLabel: string; expectedOutput: string; explanation?: string; argsExpression: string }[]
+    runner: { id: string; label: string; input: string; inputLabel: string; inputs?: { label: string; value: string }[]; expectedOutput: string; explanation?: string; argsExpression: string }[]
     examples: { id: number; input: string; output: string; explanation?: string }[]
     constraints: string[]
     functionSignature: string
@@ -134,6 +136,45 @@ export async function fetchExercise(id: string | number): Promise<ApiExercise> {
   return result.exercise
 }
 
+export interface ApiProgressEntry {
+  item_type: 'lesson' | 'exercise'
+  item_id: string
+  status: 'not_started' | 'in_progress' | 'completed'
+  completed_at: string | null
+}
+
+export interface ApiCompletedLesson {
+  id: number
+  title: string
+  completed_at: string
+}
+
+export interface ApiConceptProgress {
+  id: string
+  name: string
+  description: string
+  status: 'mastered' | 'demonstrated' | 'practicing' | 'not_assessed'
+  completed_exercises: number
+  strong_score_exercises: number
+  attempted_exercises: number
+  total_exercises: number
+}
+
+export interface ApiProgressSnapshot {
+  progress: ApiProgressEntry[]
+  completed_lessons: ApiCompletedLesson[]
+  concepts: ApiConceptProgress[]
+}
+
+export async function fetchProgressSnapshot(): Promise<ApiProgressSnapshot> {
+  return request<ApiProgressSnapshot>('/api/progress')
+}
+
+export async function fetchProgress(): Promise<ApiProgressEntry[]> {
+  const result = await fetchProgressSnapshot()
+  return result.progress
+}
+
 export async function saveProgress(itemId: number, itemType: 'lesson' | 'exercise', status: 'not_started' | 'in_progress' | 'completed', score?: number) {
   return request('/api/progress', { method: 'PUT', body: JSON.stringify({ item_id: itemId, item_type: itemType, status, score }) })
 }
@@ -152,12 +193,62 @@ export interface SubmitResult {
     expected?: string
     error?: string
   } | null
+  case_results?: {
+    case_id: string
+    label?: string
+    input_label?: string
+    input?: string
+    inputs?: { label: string; value: string }[]
+    actual?: string
+    expected?: string
+    passed: boolean
+    error?: string
+    execution_time_ms?: number
+  }[]
 }
 
 export async function submitExercise(exerciseId: string, code: string): Promise<SubmitResult> {
   return request<SubmitResult>(`/api/exercises/${encodeURIComponent(exerciseId)}/submit`, {
     method: 'POST',
     body: JSON.stringify({ code }),
+  })
+}
+
+export interface ApiSubmissionHistoryEntry {
+  id: string
+  status: SubmitResult['status']
+  passed_count: number
+  total_count: number
+  runtime_ms: number
+  code: string
+  created_at: string
+}
+
+export async function fetchExerciseSubmissions(exerciseId: number): Promise<ApiSubmissionHistoryEntry[]> {
+  const result = await request<{ submissions: ApiSubmissionHistoryEntry[] }>(
+    `/api/exercises/${encodeURIComponent(exerciseId)}/submissions`,
+  )
+  return result.submissions
+}
+
+export interface ApiExerciseWorkspace {
+  draft_code: string | null
+  latest_run_code: string | null
+  latest_run_result: unknown
+  updated_at: string | null
+}
+
+export async function fetchExerciseWorkspace(exerciseId: number): Promise<ApiExerciseWorkspace> {
+  return request<ApiExerciseWorkspace>(`/api/exercises/${encodeURIComponent(exerciseId)}/workspace`)
+}
+
+export async function saveExerciseWorkspace(
+  exerciseId: number,
+  workspace: { draft_code: string; latest_run_code: string | null; latest_run_result: unknown | null },
+) {
+  return request<{ saved: boolean }>(`/api/exercises/${encodeURIComponent(exerciseId)}/workspace`, {
+    method: 'PUT',
+    body: JSON.stringify(workspace),
   })
 }
 

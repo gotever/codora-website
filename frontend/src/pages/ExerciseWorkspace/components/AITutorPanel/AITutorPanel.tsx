@@ -53,10 +53,14 @@ export default function AITutorPanel({
   ])
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const chatHistoryRef = useRef<HTMLDivElement>(null)
   const chatBottomRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
-    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const history = chatHistoryRef.current
+    if (history) {
+      history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' })
+    }
   }
 
   useEffect(() => {
@@ -190,7 +194,7 @@ export default function AITutorPanel({
         </div>
 
         {/* Chat History */}
-        <div className="ai-tutor-panel__chat-history">
+        <div className="ai-tutor-panel__chat-history" ref={chatHistoryRef}>
           {messages.map((msg) => (
             <div
               key={msg.id}

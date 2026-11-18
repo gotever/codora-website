@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { EXERCISE_LIST, type ExerciseListItem } from '../../data/exercises'
-import { fetchExercises } from '../../lib/api'
+import { fetchExercises, fetchProgress } from '../../lib/api'
 import './Exercises.css'
 
 type Difficulty = 'Easy' | 'Medium' | 'Hard'
@@ -38,6 +38,7 @@ function CodeBracketsIcon() {
 
 export default function Exercises() {
   const [exercises, setExercises] = useState<ExerciseListItem[]>(EXERCISE_LIST)
+  const [completedExerciseIds, setCompletedExerciseIds] = useState<Set<string>>(() => new Set())
 
   useEffect(() => {
     let active = true
@@ -57,6 +58,16 @@ export default function Exercises() {
       }))
     }).catch(() => {
       // The local curriculum remains usable while the optional API is offline.
+    })
+    fetchProgress().then((progress) => {
+      if (!active) return
+      setCompletedExerciseIds(new Set(
+        progress
+          .filter((item) => item.item_type === 'exercise' && item.status === 'completed')
+          .map((item) => String(item.item_id)),
+      ))
+    }).catch(() => {
+      // Progress is account-specific and unavailable when signed out.
     })
     return () => { active = false }
   }, [])
@@ -98,11 +109,21 @@ export default function Exercises() {
                   ))}
                 </div>
               </div>
-              <span
-                className={`exercises-page__badge ${getDifficultyClass(exercise.difficulty as Difficulty)}`}
-              >
-                {exercise.difficulty}
-              </span>
+              <div className="exercises-page__item-badges">
+                {completedExerciseIds.has(String(exercise.id)) && (
+                  <span className="exercises-page__completed-badge" aria-label="Completed">
+                    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="m3 8 3.2 3.2L13 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Completed
+                  </span>
+                )}
+                <span
+                  className={`exercises-page__badge ${getDifficultyClass(exercise.difficulty as Difficulty)}`}
+                >
+                  {exercise.difficulty}
+                </span>
+              </div>
               <svg
                 className="exercises-page__item-arrow"
                 viewBox="0 0 24 24"

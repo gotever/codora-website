@@ -9,6 +9,7 @@ export interface TestCase {
   label: string
   input: string
   inputLabel: string
+  inputs?: { label: string; value: string }[]
   expectedOutput: string
   explanation?: string
   /** Python expression for the argument(s) to pass to the function under test */

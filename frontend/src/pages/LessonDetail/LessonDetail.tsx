@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import type { CourseNavigation, LessonDetail as LessonDetailType } from '../../data/lessons'
-import { fetchCourseLessons, fetchCourses, fetchLesson, personalizeLesson } from '../../lib/api'
+import { fetchCourseLessons, fetchCourses, fetchLesson, fetchProgress, personalizeLesson, saveProgress } from '../../lib/api'
 import { buildCourseNavigation, parseLessonDetail, resolveLessonNavigation } from '../../lib/lessonContent'
 import CourseSidebar from './components/CourseSidebar/CourseSidebar'
 import LessonContent from './components/LessonContent/LessonContent'
@@ -24,8 +24,11 @@ export default function LessonDetail() {
     lesson: LessonDetailType | null
     courseNav: CourseNavigation | null
     personalization: { adapted: boolean; level?: 'beginner' | 'intermediate' | 'advanced' }
+    isCompleted: boolean
     error: boolean
   } | null>(null)
+  const [isMarkingLessonComplete, setIsMarkingLessonComplete] = useState(false)
+  const [lessonCompletionError, setLessonCompletionError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -35,12 +38,13 @@ export default function LessonDetail() {
     async function loadLesson() {
       try {
         const record = await fetchLesson(lessonId)
-        const [courses, courseLessons, personalization] = await Promise.all([
+        const [courses, courseLessons, personalization, progress] = await Promise.all([
           fetchCourses(),
           fetchCourseLessons(record.course_id),
           personalizeLesson(record.id, getConsecutiveErrors())
             .then((value) => ({ value, adapted: true as const }))
             .catch(() => ({ value: null, adapted: false as const })),
+          fetchProgress().catch(() => []),
         ])
         const contentMarkdown = personalization.value?.content_markdown ?? record.content_markdown
         const course = courses.find((item) => item.id === record.course_id)
@@ -57,11 +61,12 @@ export default function LessonDetail() {
               adapted: personalization.adapted,
               level: personalization.value?.ability.level,
             },
+            isCompleted: progress.some((item) => item.item_type === 'lesson' && item.item_id === String(record.id) && item.status === 'completed'),
             error: false,
           })
         }
       } catch {
-        if (active) setLoadedLesson({ requestedId: lessonId, lesson: null, courseNav: null, personalization: { adapted: false }, error: true })
+        if (active) setLoadedLesson({ requestedId: lessonId, lesson: null, courseNav: null, personalization: { adapted: false }, isCompleted: false, error: true })
       }
     }
 
@@ -84,13 +89,27 @@ export default function LessonDetail() {
     return <main className="lesson-page-container" id="main-content" role="status">Loading lesson…</main>
   }
 
-  const { lesson, courseNav, personalization, error } = loadedLesson
+  const { lesson, courseNav, personalization, isCompleted, error } = loadedLesson
   if (error || !lesson || !courseNav) {
     return (
       <main className="lesson-page-container" id="main-content">
         <p role="alert">Could not load this lesson from the database. Check that the API is running and try again.</p>
       </main>
     )
+  }
+
+  const handleMarkLessonComplete = async () => {
+    if (isCompleted || isMarkingLessonComplete) return
+    setIsMarkingLessonComplete(true)
+    setLessonCompletionError(null)
+    try {
+      await saveProgress(Number(lesson.id), 'lesson', 'completed')
+      setLoadedLesson((current) => current?.requestedId === id ? { ...current, isCompleted: true } : current)
+    } catch {
+      setLessonCompletionError('Could not save lesson progress. Please sign in and try again.')
+    } finally {
+      setIsMarkingLessonComplete(false)
+    }
   }
 
   return (
@@ -155,6 +174,10 @@ export default function LessonDetail() {
           <LessonContent
             lesson={lesson}
             onAskAIHint={handleAskAIHint}
+            isCompleted={isCompleted}
+            isMarkingComplete={isMarkingLessonComplete}
+            completionError={lessonCompletionError}
+            onMarkComplete={handleMarkLessonComplete}
           />
         </div>
 

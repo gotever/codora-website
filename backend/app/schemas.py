@@ -1,4 +1,6 @@
-from typing import Literal
+﻿from typing import Literal
+
+from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -29,10 +31,28 @@ class LearningPreferences(BaseModel):
     hint_preference: Literal["progressive", "minimal", "direct"] | None = None
 
 
+class ConceptProgressSchema(BaseModel):
+    id: str
+    name: str
+    description: str
+    status: Literal["mastered", "demonstrated", "practicing", "not_assessed"]
+    completed_exercises: int = Field(ge=0)
+    strong_score_exercises: int = Field(ge=0)
+    attempted_exercises: int = Field(ge=0)
+    total_exercises: int = Field(ge=0)
+
+
+class CompletedLessonSchema(BaseModel):
+    id: int
+    title: str
+    completed_at: datetime
+
+
 class UserAbilitySchema(BaseModel):
     level: Literal["beginner", "intermediate", "advanced"]
     learning_preferences: LearningPreferences = Field(default_factory=LearningPreferences)
-    mastered_topics: list[str] = Field(default_factory=list)
+    completed_lessons: list[CompletedLessonSchema] = Field(default_factory=list)
+    concepts: list[ConceptProgressSchema] = Field(default_factory=list)
     recent_quiz_avg: float = Field(ge=0.0, le=10.0)
     consecutive_errors: int = Field(default=0, ge=0)
 
@@ -47,6 +67,12 @@ class UserLevelInput(BaseModel):
 
 class SubmitInput(BaseModel):
     code: str = Field(min_length=1, max_length=100_000)
+
+
+class ExerciseWorkspaceInput(BaseModel):
+    draft_code: str = Field(max_length=100_000)
+    latest_run_code: str | None = Field(default=None, max_length=100_000)
+    latest_run_result: dict | None = None
 
 
 class ChatInput(BaseModel):

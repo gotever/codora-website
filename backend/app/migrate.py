@@ -10,14 +10,20 @@ MIGRATIONS = [
     Path(__file__).resolve().parents[1] / "migrations" / "005_learner_ability.sql",
     Path(__file__).resolve().parents[1] / "migrations" / "006_ai_tutor_memory.sql",
     Path(__file__).resolve().parents[1] / "migrations" / "007_learner_preferences.sql",
+    Path(__file__).resolve().parents[1] / "migrations" / "008_lesson_concepts.sql",
+    Path(__file__).resolve().parents[1] / "migrations" / "009_exercise_concepts.sql",
+    Path(__file__).resolve().parents[1] / "migrations" / "010_exercise_workspace_state.sql",
 ]
 REQUIRED_COLUMNS = {
     "users": {"id", "email", "username", "password_hash", "full_name", "created_at", "level", "ai_tutor_memory", "learning_preferences"},
     "courses": {"id", "title", "description", "order_index"},
-    "lessons": {"id", "title", "course_id", "content_markdown", "order_index"},
+    "lessons": {"id", "title", "course_id", "content_markdown", "order_index", "preknowledge", "new_concepts"},
+    "learning_concepts": {"id", "name", "description"},
+    "exercise_concepts": {"exercise_id", "concept_id"},
     "exercises": {"id", "lesson_id", "title", "difficulty", "description", "function_name", "starter_code", "test_cases", "hints", "tags"},
     "user_progress": {"id", "user_id", "item_type", "item_id", "status", "completed_at", "score", "last_attempt_at"},
     "ai_chats": {"id", "user_id", "exercise_id", "role", "message", "code_snapshot", "context_key", "event_type", "created_at"},
+    "exercise_workspace_state": {"user_id", "exercise_id", "draft_code", "latest_run_code", "latest_run_result", "updated_at"},
 }
 
 
@@ -46,13 +52,13 @@ def main() -> None:
             )):
                 print("Pending schema; all curriculum IDs and references must be bigint.")
                 raise SystemExit(1)
-            print("Schema is up to date (six tables and required columns present).")
+            print("Schema is up to date (required tables and columns are present).")
             return
         with connection() as conn:
             conn.execute("SELECT pg_advisory_xact_lock(73190421)")
             for migration in MIGRATIONS:
                 conn.execute(migration.read_text(encoding="utf-8"))
-        print("Applied idempotent migrations 001_initial_schema.sql through 007_learner_preferences.sql")
+        print("Applied idempotent migrations 001_initial_schema.sql through 010_exercise_workspace_state.sql")
     finally:
         pool.close()
 
