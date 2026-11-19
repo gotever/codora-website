@@ -1,5 +1,5 @@
 import type { CourseNavigation, LessonDetail } from '../data/lessons'
-import type { ApiCourse, ApiLesson } from './api'
+import type { ApiCourse, ApiLesson, ApiProgressEntry } from './api'
 
 const DETAIL_MARKER = /^<!-- codora-lesson:v1\r?\n([\s\S]*?)\r?\n-->\r?\n?/
 
@@ -37,7 +37,12 @@ export function resolveLessonNavigation(detail: LessonDetail, lesson: ApiLesson,
   return detail
 }
 
-export function buildCourseNavigation(course: ApiCourse, lessons: ApiLesson[]): CourseNavigation | null {
+export function buildCourseNavigation(
+  course: ApiCourse,
+  lessons: ApiLesson[],
+  progress: ApiProgressEntry[] = [],
+  activeLessonId?: string | number,
+): CourseNavigation | null {
   const details = lessons
     .slice()
     .sort((left, right) => left.order_index - right.order_index)
@@ -51,6 +56,9 @@ export function buildCourseNavigation(course: ApiCourse, lessons: ApiLesson[]): 
   })
 
   const modules = new Map<string, CourseNavigation['modules'][number]>()
+  const lessonProgress = new Map(
+    progress.filter((item) => item.item_type === 'lesson').map((item) => [String(item.item_id), item.status]),
+  )
   for (const { detail } of details) {
     if (!detail) continue
     const moduleId = `module-${detail.moduleNumber}`
@@ -69,7 +77,11 @@ export function buildCourseNavigation(course: ApiCourse, lessons: ApiLesson[]): 
       number: String(detail.lessonNumber).padStart(2, '0'),
       title: detail.topic,
       duration: detail.duration,
-      status: detail.status,
+      status: lessonProgress.get(detail.id) === 'completed'
+        ? 'completed'
+        : lessonProgress.get(detail.id) === 'in_progress' || detail.id === String(activeLessonId)
+          ? 'in_progress'
+          : 'upcoming',
     })
   }
 

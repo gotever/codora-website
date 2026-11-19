@@ -153,7 +153,7 @@ export interface ApiConceptProgress {
   id: string
   name: string
   description: string
-  status: 'mastered' | 'demonstrated' | 'practicing' | 'not_assessed'
+  status: 'mastered' | 'demonstrated' | 'practicing' | 'studied' | 'not_assessed'
   completed_exercises: number
   strong_score_exercises: number
   attempted_exercises: number
@@ -278,6 +278,11 @@ export async function askTutor(input: {
   message: string
   code_snapshot?: string
   activity?: string
+  challenge_context?: {
+    title: string
+    description: string
+    run_result: string
+  }
 }): Promise<{
   answer: string
   memory_summary: string

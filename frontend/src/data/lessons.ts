@@ -24,6 +24,13 @@ export interface CodingChallenge {
   testCases: TestCase[]
 }
 
+export interface LessonChallengeContext {
+  title: string
+  description: string
+  code: string
+  runResult: string
+}
+
 export interface CodeExample {
   filename: string
   language: string

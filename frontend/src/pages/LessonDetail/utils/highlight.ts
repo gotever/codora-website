@@ -31,42 +31,54 @@ export function highlightPythonDark(code: string): string {
         }
       }
 
-      // 3. Extract string literals and replace with safe NUL-delimited placeholders.
-      //    This prevents later keyword/builtin regexes from matching text that
-      //    appears inside class="..." attributes added by earlier passes.
-      const stringPlaceholders: string[] = []
+      // 3. Protect strings and generated markup so later regexes only inspect
+      //    source text, never HTML attributes such as class="...".
+      const placeholders: string[] = []
+      const putPlaceholder = (html: string) => {
+        let value = placeholders.length
+        let suffix = ''
+        do {
+          suffix = String.fromCharCode(65 + (value % 26)) + suffix
+          value = Math.floor(value / 26) - 1
+        } while (value >= 0)
+        placeholders.push(html)
+        return `__CODORA_TOKEN_${suffix}__`
+      }
       escaped = escaped.replace(
         /("""[\s\S]*?"""|'''[\s\S]*?'''|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g,
-        (match) => {
-          const idx = stringPlaceholders.length
-          stringPlaceholders.push(`<span class="dark-tok-string">${match}</span>`)
-          return `\x00STR${idx}\x00`
-        }
+        (match) => putPlaceholder(`<span class="dark-tok-string">${match}</span>`)
       )
 
       // 4. Function definitions:  def func_name
       escaped = escaped.replace(
         /\b(def)\s+([a-zA-Z_][a-zA-Z0-9_]*)/g,
-        '<span class="dark-tok-keyword">$1</span> <span class="dark-tok-fn">$2</span>'
+        (_match, keyword: string, name: string) => putPlaceholder(
+          `<span class="dark-tok-keyword">${keyword}</span> <span class="dark-tok-fn">${name}</span>`
+        )
       )
 
       // 5. Python keywords  (safe — strings are placeholders now)
       escaped = escaped.replace(
         /\b(return|pass|if|else|elif|for|in|while|break|continue|and|or|not|is|import|from|as|class|try|except|finally|raise|with|lambda|yield|async|await|None|True|False)\b/g,
-        '<span class="dark-tok-keyword">$1</span>'
+        (_match, keyword: string) => putPlaceholder(`<span class="dark-tok-keyword">${keyword}</span>`)
       )
 
       // 6. Built-in functions
       escaped = escaped.replace(
         /\b(print|len|range|sum|min|max|abs|map|filter|list|dict|set|int|str|float|bool|type|enumerate|zip)\b/g,
-        '<span class="dark-tok-builtin">$1</span>'
+        (_match, builtin: string) => putPlaceholder(`<span class="dark-tok-builtin">${builtin}</span>`)
       )
 
       // 7. Numbers
-      escaped = escaped.replace(/\b(\d+)\b/g, '<span class="dark-tok-number">$1</span>')
+      escaped = escaped.replace(/\b(\d+)\b/g, (_match, number: string) =>
+        putPlaceholder(`<span class="dark-tok-number">${number}</span>`)
+      )
 
-      // 8. Restore string placeholders with their HTML-wrapped versions
-      escaped = escaped.replace(/\x00STR(\d+)\x00/g, (_, idx) => stringPlaceholders[Number(idx)])
+      // 8. Restore highlighted tokens after all regex passes are complete.
+      escaped = escaped.replace(/__CODORA_TOKEN_([A-Z]+)__/g, (_match, suffix: string) => {
+        const index = [...suffix].reduce((value, char) => value * 26 + char.charCodeAt(0) - 64, 0) - 1
+        return placeholders[index]
+      })
 
       return escaped + commentPart
     })

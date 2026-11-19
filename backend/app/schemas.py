@@ -35,7 +35,7 @@ class ConceptProgressSchema(BaseModel):
     id: str
     name: str
     description: str
-    status: Literal["mastered", "demonstrated", "practicing", "not_assessed"]
+    status: Literal["mastered", "demonstrated", "practicing", "studied", "not_assessed"]
     completed_exercises: int = Field(ge=0)
     strong_score_exercises: int = Field(ge=0)
     attempted_exercises: int = Field(ge=0)
@@ -88,6 +88,7 @@ class TutorChatInput(BaseModel):
     message: str = Field(min_length=1, max_length=20_000)
     code_snapshot: str | None = Field(default=None, max_length=100_000)
     activity: str | None = Field(default=None, max_length=8_000)
+    challenge_context: dict[str, str] | None = None
 
 
 class PublicUser(BaseModel):

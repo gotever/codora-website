@@ -1,26 +1,56 @@
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
-import type { LessonDetail } from '../../../../data/lessons'
+import type { LessonChallengeContext, LessonDetail } from '../../../../data/lessons'
 import CodeBlock from './CodeBlock'
 import EmbeddedChallenge from '../EmbeddedChallenge/EmbeddedChallenge'
 import './LessonContent.css'
 
+function renderInlineCode(text: string) {
+  return text.split(/(`[^`]+`)/g).map((part, index) => {
+    if (part.startsWith('`') && part.endsWith('`') && part.length > 1) {
+      return (
+        <code key={index} className="lesson-content__inline-code">
+          {part.slice(1, -1)}
+        </code>
+      )
+    }
+    return part
+  })
+}
+
 interface LessonContentProps {
   lesson: LessonDetail
-  onAskAIHint?: (challengeTitle: string) => void
-  isCompleted: boolean
-  isMarkingComplete: boolean
-  completionError: string | null
-  onMarkComplete: () => void
+  onAskAIHint?: (context: LessonChallengeContext) => void
+  onChallengeContextChange?: (context: LessonChallengeContext) => void
+  onAllChallengesPassed?: () => Promise<boolean>
+  completionStatus?: 'saving' | 'completed' | 'auth_required' | 'error'
 }
 
 export default function LessonContent({
   lesson,
   onAskAIHint,
-  isCompleted,
-  isMarkingComplete,
-  completionError,
-  onMarkComplete,
+  onChallengeContextChange,
+  onAllChallengesPassed,
+  completionStatus,
 }: LessonContentProps) {
+  const completedChallengeIds = useRef(new Set<string>())
+  const isSavingCompletion = useRef(false)
+  const lessonCompletionSaved = useRef(false)
+  const challengeIds = lesson.sections.flatMap((section) => section.challenge ? [section.challenge.id] : [])
+
+  const handleChallengePassed = (challengeId: string) => {
+    completedChallengeIds.current.add(challengeId)
+    const allChallengesPassed = challengeIds.length > 0
+      && challengeIds.every((id) => completedChallengeIds.current.has(id))
+    if (!allChallengesPassed || !onAllChallengesPassed || isSavingCompletion.current || lessonCompletionSaved.current) return
+
+    isSavingCompletion.current = true
+    void onAllChallengesPassed()
+      .then((saved) => { lessonCompletionSaved.current = saved })
+      .catch(() => { lessonCompletionSaved.current = false })
+      .finally(() => { isSavingCompletion.current = false })
+  }
+
   return (
     <main className="lesson-content" id="main-content">
       {/* 1. Lesson Header */}
@@ -33,7 +63,7 @@ export default function LessonContent({
         </div>
 
         <h1 className="lesson-content__title">{lesson.title}</h1>
-        <p className="lesson-content__desc">{lesson.description}</p>
+        <p className="lesson-content__desc">{renderInlineCode(lesson.description)}</p>
 
         <div className="lesson-content__meta-row">
           <div className="lesson-content__badges">
@@ -52,12 +82,12 @@ export default function LessonContent({
           <section key={sec.id} className="lesson-content__section">
             <div className="lesson-content__section-header">
               <span className="lesson-content__section-num">{sec.number}</span>
-              <h2 className="lesson-content__section-title">{sec.title}</h2>
+              <h2 className="lesson-content__section-title">{renderInlineCode(sec.title)}</h2>
             </div>
 
             {sec.paragraphs.map((p, idx) => (
               <p key={idx} className="lesson-content__paragraph">
-                {p}
+                {renderInlineCode(p)}
               </p>
             ))}
 
@@ -77,6 +107,8 @@ export default function LessonContent({
                 key={sec.challenge.id}
                 challenge={sec.challenge}
                 onAskAIHint={onAskAIHint}
+                onContextChange={onChallengeContextChange}
+                onPassed={handleChallengePassed}
               />
             )}
 
@@ -87,7 +119,7 @@ export default function LessonContent({
                   {sec.takeaway.label}
                 </span>
                 <p className="lesson-content__takeaway-text">
-                  {sec.takeaway.text}
+                  {renderInlineCode(sec.takeaway.text)}
                 </p>
               </div>
             )}
@@ -102,6 +134,18 @@ export default function LessonContent({
             Up next: a hands-on challenge
           </span>
         </div>
+
+        {completionStatus && (
+          <p className={`lesson-content__completion-status lesson-content__completion-status--${completionStatus}`} role="status">
+            {completionStatus === 'saving'
+              ? 'All Code challenges passed. Saving lesson progress…'
+              : completionStatus === 'completed'
+                ? 'Lesson completed.'
+                : completionStatus === 'auth_required'
+                  ? 'All Code challenges passed. Sign in to save lesson progress, then run a passed challenge again.'
+                  : 'All Code challenges passed, but progress could not be saved. Run a passed challenge again to retry.'}
+          </p>
+        )}
 
         <div className="lesson-content__nav-row">
           {lesson.prevLesson ? (
@@ -128,18 +172,6 @@ export default function LessonContent({
           ) : (
             <div />
           )}
-
-          <div className="lesson-content__completion-control">
-            <button
-              type="button"
-              className="lesson-content__complete-btn"
-              disabled={isCompleted || isMarkingComplete}
-              onClick={onMarkComplete}
-            >
-              {isCompleted ? 'Lesson completed' : isMarkingComplete ? 'Saving…' : 'Mark lesson complete'}
-            </button>
-            {completionError && <span className="lesson-content__completion-error" role="alert">{completionError}</span>}
-          </div>
 
           {lesson.nextLesson ? (
             <Link

@@ -1,4 +1,5 @@
 import json
+from contextlib import nullcontext
 from types import SimpleNamespace
 
 import pytest
@@ -35,8 +36,10 @@ def _mock_openai(output):
 
 def _setup_model(monkeypatch, payload):
     monkeypatch.setattr(personalization.settings, "openai_api_key", "test-key")
+    monkeypatch.setattr(personalization, "connection", lambda: nullcontext(None))
+    monkeypatch.setattr(personalization, "get_concept_details", lambda *_: [])
     monkeypatch.setattr(personalization, "get_user_ability", lambda *_: SimpleNamespace(
-        model_dump=lambda: {"level": "beginner", "recent_quiz_avg": 0},
+        model_dump=lambda **_kwargs: {"level": "beginner", "recent_quiz_avg": 0},
     ))
     monkeypatch.setattr(personalization, "OpenAI", _mock_openai(payload))
     monkeypatch.setattr(personalization, "write_llm_trace", lambda **_kwargs: None)
@@ -85,4 +88,21 @@ def test_personalization_fails_if_model_omits_required_challenge(monkeypatch):
     _setup_model(monkeypatch, _section_response(None))
     with pytest.raises(HTTPException) as error:
         personalization.personalize_lesson(_lesson(), None, 0)
+    assert error.value.status_code == 502
+
+
+def test_personalization_rejects_challenge_with_non_python_starter(monkeypatch):
+    generated = {
+        "title": "Make a greeting",
+        "description": "Return a greeting.",
+        "practiceLabel": "Beginner practice",
+        "filename": "greeting.py",
+        "initialCode": 'class="dark-tok-keyword">def greet():\n    pass',
+        "testCases": [{"expected": "Hello!"}],
+    }
+    _setup_model(monkeypatch, _section_response(generated))
+
+    with pytest.raises(HTTPException) as error:
+        personalization.personalize_lesson(_lesson(), None, 0)
+
     assert error.value.status_code == 502

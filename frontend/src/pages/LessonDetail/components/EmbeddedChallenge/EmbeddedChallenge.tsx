@@ -1,12 +1,14 @@
-import { useState, useRef, useMemo } from 'react'
-import type { CodingChallenge } from '../../../../data/lessons'
+import { useState, useRef, useMemo, useEffect } from 'react'
+import type { CodingChallenge, LessonChallengeContext } from '../../../../data/lessons'
 import { highlightPythonDark } from '../../utils/highlight'
 import { usePyodide } from '../../../../hooks/usePyodide'
 import './EmbeddedChallenge.css'
 
 interface EmbeddedChallengeProps {
   challenge: CodingChallenge
-  onAskAIHint?: (challengeTitle: string) => void
+  onAskAIHint?: (context: LessonChallengeContext) => void
+  onContextChange?: (context: LessonChallengeContext) => void
+  onPassed?: (challengeId: string) => void
 }
 
 type RunStatus = 'idle' | 'running' | 'success' | 'fail' | 'error'
@@ -22,6 +24,8 @@ interface CaseResult {
 export default function EmbeddedChallenge({
   challenge,
   onAskAIHint,
+  onContextChange,
+  onPassed,
 }: EmbeddedChallengeProps) {
   const [code, setCode] = useState(challenge.initialCode)
   const [isRunning, setIsRunning] = useState(false)
@@ -40,6 +44,24 @@ export default function EmbeddedChallenge({
   const highlightedCode = useMemo(() => highlightPythonDark(code), [code])
 
   const { runPython, isReady, isLoading } = usePyodide()
+
+  const reportContext = (currentCode: string, runResult: string) => {
+    onContextChange?.({ title: challenge.title, description: challenge.description, code: currentCode, runResult })
+  }
+
+  const handleCodeChange = (currentCode: string) => {
+    setCode(currentCode)
+    reportContext(currentCode, 'The code was edited after the previous run, so there is no current run result.')
+  }
+
+  useEffect(() => {
+    onContextChange?.({
+      title: challenge.title,
+      description: challenge.description,
+      code: challenge.initialCode,
+      runResult: 'The learner has not run this code yet.',
+    })
+  }, [challenge.description, challenge.id, challenge.initialCode, challenge.title, onContextChange])
 
   // Determine if the challenge is stdout-based (call === 'stdout')
   const isStdoutChallenge = challenge.testCases.every((tc) => tc.call === 'stdout')
@@ -66,7 +88,7 @@ export default function EmbeddedChallenge({
       const start = ta.selectionStart
       const end = ta.selectionEnd
       const updated = code.substring(0, start) + '    ' + code.substring(end)
-      setCode(updated)
+      handleCodeChange(updated)
       requestAnimationFrame(() => {
         ta.selectionStart = ta.selectionEnd = start + 4
       })
@@ -74,7 +96,7 @@ export default function EmbeddedChallenge({
   }
 
   const handleReset = () => {
-    setCode(challenge.initialCode)
+    handleCodeChange(challenge.initialCode)
     setRunStatus('idle')
     setConsoleOutput(null)
     setConsoleError(null)
@@ -89,37 +111,62 @@ export default function EmbeddedChallenge({
     setRunStatus('running')
     setConsoleOutput(null)
     setConsoleError(null)
-
-    const result = await runPython(code)
-
-    setIsRunning(false)
-
-    if (!result.success) {
-      setRunStatus('error')
-      setConsoleError(result.error)
-      setCaseResults(
-        challenge.testCases.map((tc) => ({ id: tc.id, call: tc.call, expected: tc.expected }))
-      )
-      return
-    }
-
-    const stdout = result.output.trim()
-    setConsoleOutput(stdout || '(no output)')
+    reportContext(code, 'The learner is currently running this code.')
 
     if (isStdoutChallenge) {
+      const result = await runPython(code)
+      setIsRunning(false)
+      if (!result.success) {
+        setRunStatus('error')
+        setConsoleError(result.error)
+        setCaseResults(
+          challenge.testCases.map((tc) => ({ id: tc.id, call: tc.call, expected: tc.expected }))
+        )
+        reportContext(code, `Run failed with Python error: ${result.error}`)
+        return
+      }
+
+      const stdout = result.output.trim()
+      setConsoleOutput(stdout || '(no output)')
       // Compare stdout against each expected value
       const updated = challenge.testCases.map((tc) => {
         const passed = stdout === tc.expected.trim()
         return { id: tc.id, call: tc.call, expected: tc.expected, actual: stdout, passed }
       })
       setCaseResults(updated)
-      setRunStatus(updated.every((r) => r.passed) ? 'success' : 'fail')
+      const allCasesPassed = updated.length > 0 && updated.every((r) => r.passed)
+      setRunStatus(allCasesPassed ? 'success' : 'fail')
+      reportContext(code, `Run ${allCasesPassed ? 'passed' : 'failed'}. stdout: ${stdout || '(no output)'}. Test cases: ${updated.map((result) => `${result.passed ? 'passed' : 'failed'} ${result.call}, expected ${result.expected}, got ${result.actual ?? ''}`).join('; ')}`)
+      if (allCasesPassed) onPassed?.(challenge.id)
     } else {
-      // For function-based challenges just show output, don't auto-evaluate
-      setCaseResults(
-        challenge.testCases.map((tc) => ({ id: tc.id, call: tc.call, expected: tc.expected }))
-      )
-      setRunStatus('idle')
+      const results: CaseResult[] = []
+      let firstError: string | null = null
+      for (const testCase of challenge.testCases) {
+        const result = await runPython(`${code}\nstr(${testCase.call})`)
+        if (!result.success && !firstError) firstError = result.error
+        const actual = result.success ? result.returnValue ?? result.output.trim() : result.error
+        results.push({
+          id: testCase.id,
+          call: testCase.call,
+          expected: testCase.expected,
+          actual,
+          passed: result.success && actual.trim() === testCase.expected.trim(),
+        })
+      }
+      setIsRunning(false)
+      setCaseResults(results)
+      if (firstError) {
+        setConsoleOutput(null)
+        setConsoleError(firstError)
+        setRunStatus('error')
+        reportContext(code, `Run failed with Python error: ${firstError}`)
+        return
+      }
+      setConsoleOutput(results.map((result) => `${result.call} → ${result.actual}`).join('\n') || '(no output)')
+      const allCasesPassed = results.length > 0 && results.every((result) => result.passed)
+      setRunStatus(allCasesPassed ? 'success' : 'fail')
+      reportContext(code, `Run ${allCasesPassed ? 'passed' : 'failed'}. Test cases: ${results.map((result) => `${result.passed ? 'passed' : 'failed'} ${result.call}, expected ${result.expected}, got ${result.actual ?? ''}`).join('; ')}`)
+      if (allCasesPassed) onPassed?.(challenge.id)
     }
   }
 
@@ -178,7 +225,7 @@ export default function EmbeddedChallenge({
               ref={textareaRef}
               className="embedded-challenge__textarea"
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) => handleCodeChange(e.target.value)}
               onKeyDown={handleKeyDown}
               onScroll={handleScroll}
               spellCheck={false}
@@ -286,7 +333,14 @@ export default function EmbeddedChallenge({
         <button
           type="button"
           className="embedded-challenge__btn-hint"
-          onClick={() => onAskAIHint?.(challenge.title)}
+          onClick={() => onAskAIHint?.({
+            title: challenge.title,
+            description: challenge.description,
+            code,
+            runResult: runStatus === 'idle'
+              ? 'The learner has not run this code yet.'
+              : `Latest run status: ${runStatus}. ${consoleError ? `Error: ${consoleError}` : consoleOutput ? `Output: ${consoleOutput}` : ''}`,
+          })}
         >
           Ask AI for a hint →
         </button>

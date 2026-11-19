@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import type { ChatMessage } from '../../../../data/lessons'
+import type { ChatMessage, LessonChallengeContext } from '../../../../data/lessons'
 import { INITIAL_ASSISTANT_MESSAGES } from '../../../../data/lessons'
 import { askTutor, fetchContextChats } from '../../../../lib/api'
 import TutorMessage from '../../../../components/TutorMessage/TutorMessage'
@@ -9,6 +9,7 @@ interface LessonAssistantProps {
   currentLessonTopic: string
   lessonId: number
   lessonDescription: string
+  challengeContext?: LessonChallengeContext
   isOpenOnMobile?: boolean
   onCloseMobile?: () => void
   externalPrompt?: string
@@ -18,6 +19,7 @@ export default function LessonAssistant({
   currentLessonTopic,
   lessonId,
   lessonDescription,
+  challengeContext,
   isOpenOnMobile = false,
   onCloseMobile,
   externalPrompt,
@@ -25,10 +27,13 @@ export default function LessonAssistant({
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_ASSISTANT_MESSAGES)
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
-  const chatEndRef = useRef<HTMLDivElement>(null)
+  const chatContainerRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const chatContainer = chatContainerRef.current
+    if (chatContainer) {
+      chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' })
+    }
   }
 
   useEffect(() => {
@@ -69,7 +74,15 @@ export default function LessonAssistant({
       context_type: 'lesson',
       context_id: lessonId,
       message: text,
-      activity: `Learner is reading ${currentLessonTopic}. ${lessonDescription}`,
+      code_snapshot: challengeContext?.code,
+      challenge_context: challengeContext ? {
+        title: challengeContext.title,
+        description: challengeContext.description,
+        run_result: challengeContext.runResult,
+      } : undefined,
+      activity: challengeContext
+        ? `Learner is reading ${currentLessonTopic}. ${lessonDescription} They are working on the Code challenge "${challengeContext.title}". Latest run: ${challengeContext.runResult}`
+        : `Learner is reading ${currentLessonTopic}. ${lessonDescription}`,
     }).then(({ answer }) => {
       setMessages((prev) => [...prev, {
         id: `asst-${Date.now()}`,
@@ -84,7 +97,7 @@ export default function LessonAssistant({
         : 'The tutor could not respond right now. Please try again.'
       setMessages((prev) => [...prev, { id: `asst-${Date.now()}`, sender: 'assistant', paragraphs: [notice], timestamp: 'Just now', feedbackGiven: null }])
     }).finally(() => setIsTyping(false))
-  }, [inputValue, isTyping, currentLessonTopic, lessonDescription, lessonId])
+  }, [inputValue, isTyping, currentLessonTopic, lessonDescription, lessonId, challengeContext])
   // Keep a stable ref to handleSend so the externalPrompt effect never
   // needs handleSend as a dependency (avoids an infinite re-trigger loop
   // caused by isTyping toggling → handleSend recreation → effect re-runs).
@@ -187,7 +200,7 @@ export default function LessonAssistant({
         </div>
 
         {/* Conversation Area */}
-        <div className="lesson-assistant__chat">
+        <div className="lesson-assistant__chat" ref={chatContainerRef}>
           <div className="lesson-assistant__date-divider">
             <span>TODAY</span>
           </div>
@@ -298,7 +311,6 @@ export default function LessonAssistant({
             </div>
           )}
 
-          <div ref={chatEndRef} />
         </div>
 
         {/* Quick Actions (Keep exploring) */}

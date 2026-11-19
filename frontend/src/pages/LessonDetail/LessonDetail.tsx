@@ -1,12 +1,62 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import type { CourseNavigation, LessonDetail as LessonDetailType } from '../../data/lessons'
-import { fetchCourseLessons, fetchCourses, fetchLesson, fetchProgress, personalizeLesson, saveProgress } from '../../lib/api'
+import { useAuth } from '../../auth/useAuth'
+import type { CourseNavigation, LessonChallengeContext, LessonDetail as LessonDetailType } from '../../data/lessons'
+import { ApiError, fetchCourseLessons, fetchCourses, fetchLesson, fetchProgress, personalizeLesson, saveProgress, type ApiCourse, type ApiLesson, type ApiPersonalizedLesson } from '../../lib/api'
 import { buildCourseNavigation, parseLessonDetail, resolveLessonNavigation } from '../../lib/lessonContent'
 import CourseSidebar from './components/CourseSidebar/CourseSidebar'
 import LessonContent from './components/LessonContent/LessonContent'
 import LessonAssistant from './components/LessonAssistant/LessonAssistant'
 import './LessonDetail.css'
+
+const LESSON_CACHE_VERSION = 1
+const personalizationRequests = new Map<string, Promise<ApiPersonalizedLesson | null>>()
+
+interface CachedLessonPage {
+  lesson: ApiLesson
+  course: ApiCourse
+  courseLessons: ApiLesson[]
+  contentMarkdown: string
+  adapted: boolean
+  level?: 'beginner' | 'intermediate' | 'advanced'
+}
+
+function getLessonCacheKey(lessonId: string, userId?: string) {
+  return `codora:lesson-page:v${LESSON_CACHE_VERSION}:${userId ?? 'guest'}:${lessonId}`
+}
+
+function readLessonCache(lessonId: string, userId?: string): CachedLessonPage | null {
+  try {
+    const raw = localStorage.getItem(getLessonCacheKey(lessonId, userId))
+    if (!raw) return null
+    const cached: unknown = JSON.parse(raw)
+    if (!cached || typeof cached !== 'object') return null
+    const value = cached as CachedLessonPage
+    return value.lesson && value.course && Array.isArray(value.courseLessons) && typeof value.contentMarkdown === 'string'
+      ? value
+      : null
+  } catch {
+    return null
+  }
+}
+
+function writeLessonCache(lessonId: string, userId: string | undefined, value: CachedLessonPage) {
+  try {
+    localStorage.setItem(getLessonCacheKey(lessonId, userId), JSON.stringify(value))
+  } catch {
+    // Keep lesson loading functional when browser storage is unavailable or full.
+  }
+}
+
+function personalizeLessonOnce(lessonId: string | number, userId?: string) {
+  const key = getLessonCacheKey(String(lessonId), userId)
+  const existing = personalizationRequests.get(key)
+  if (existing) return existing
+
+  const request = personalizeLesson(lessonId, getConsecutiveErrors()).catch(() => null)
+  personalizationRequests.set(key, request)
+  return request
+}
 
 function getConsecutiveErrors() {
   try {
@@ -19,38 +69,49 @@ function getConsecutiveErrors() {
 
 export default function LessonDetail() {
   const { id } = useParams<{ id: string }>()
+  const { user, loading: authLoading } = useAuth()
   const [loadedLesson, setLoadedLesson] = useState<{
     requestedId: string
     lesson: LessonDetailType | null
     courseNav: CourseNavigation | null
     personalization: { adapted: boolean; level?: 'beginner' | 'intermediate' | 'advanced' }
-    isCompleted: boolean
     error: boolean
   } | null>(null)
-  const [isMarkingLessonComplete, setIsMarkingLessonComplete] = useState(false)
-  const [lessonCompletionError, setLessonCompletionError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!id) return
+    if (!id || authLoading) return
     const lessonId = id
+    const cachedPage = readLessonCache(lessonId, user?.id)
     let active = true
 
     async function loadLesson() {
       try {
-        const record = await fetchLesson(lessonId)
-        const [courses, courseLessons, personalization, progress] = await Promise.all([
-          fetchCourses(),
-          fetchCourseLessons(record.course_id),
-          personalizeLesson(record.id, getConsecutiveErrors())
-            .then((value) => ({ value, adapted: true as const }))
-            .catch(() => ({ value: null, adapted: false as const })),
+        const record = cachedPage?.lesson ?? await fetchLesson(lessonId)
+        const [course, courseLessons, progress, personalization] = await Promise.all([
+          cachedPage ? Promise.resolve(cachedPage.course) : fetchCourses().then((items) => items.find((item) => item.id === record.course_id) ?? null),
+          cachedPage ? Promise.resolve(cachedPage.courseLessons) : fetchCourseLessons(record.course_id),
           fetchProgress().catch(() => []),
+          cachedPage
+            ? Promise.resolve(null)
+            : personalizeLessonOnce(record.id, user?.id).then((value) => ({ value, adapted: value !== null })),
         ])
-        const contentMarkdown = personalization.value?.content_markdown ?? record.content_markdown
-        const course = courses.find((item) => item.id === record.course_id)
+        if (!course) throw new Error('Course not found')
+        const contentMarkdown = cachedPage?.contentMarkdown ?? personalization?.value?.content_markdown ?? record.content_markdown
+        const adapted = cachedPage?.adapted ?? personalization?.adapted ?? false
+        const level = cachedPage?.level ?? personalization?.value?.ability.level
+        if (!cachedPage) {
+          writeLessonCache(lessonId, user?.id, {
+            lesson: record,
+            course,
+            courseLessons,
+            contentMarkdown,
+            adapted,
+            level,
+          })
+        }
         const parsedLesson = parseLessonDetail(contentMarkdown, record.id)
         const lesson = parsedLesson ? resolveLessonNavigation(parsedLesson, record, courseLessons) : null
-        const courseNav = course ? buildCourseNavigation(course, courseLessons) : null
+        const courseNav = buildCourseNavigation(course, courseLessons, progress, record.id)
 
         if (active) {
           setLoadedLesson({
@@ -58,30 +119,35 @@ export default function LessonDetail() {
             lesson,
             courseNav,
             personalization: {
-              adapted: personalization.adapted,
-              level: personalization.value?.ability.level,
+              adapted,
+              level,
             },
-            isCompleted: progress.some((item) => item.item_type === 'lesson' && item.item_id === String(record.id) && item.status === 'completed'),
             error: false,
           })
         }
       } catch {
-        if (active) setLoadedLesson({ requestedId: lessonId, lesson: null, courseNav: null, personalization: { adapted: false }, isCompleted: false, error: true })
+        if (active) setLoadedLesson({ requestedId: lessonId, lesson: null, courseNav: null, personalization: { adapted: false }, error: true })
       }
     }
 
     void loadLesson()
     return () => { active = false }
-  }, [id])
+  }, [id, authLoading, user?.id])
 
   // Mobile drawer states
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isAssistantOpen, setIsAssistantOpen] = useState(false)
   const [externalPrompt, setExternalPrompt] = useState<string | undefined>()
+  const [challengeContext, setChallengeContext] = useState<LessonChallengeContext | undefined>()
+  const [completionNotice, setCompletionNotice] = useState<{
+    lessonId: string
+    status: 'saving' | 'completed' | 'auth_required' | 'error'
+  } | null>(null)
 
   // When user clicks "Ask AI for a hint ->" in the embedded challenge
-  const handleAskAIHint = (challengeTitle: string) => {
-    setExternalPrompt(`Give me a hint for: ${challengeTitle}`)
+  const handleAskAIHint = (context: LessonChallengeContext) => {
+    setChallengeContext(context)
+    setExternalPrompt(`Give me a hint for: ${context.title}`)
     setIsAssistantOpen(true)
   }
 
@@ -89,7 +155,7 @@ export default function LessonDetail() {
     return <main className="lesson-page-container" id="main-content" role="status">Loading lesson…</main>
   }
 
-  const { lesson, courseNav, personalization, isCompleted, error } = loadedLesson
+  const { lesson, courseNav, personalization, error } = loadedLesson
   if (error || !lesson || !courseNav) {
     return (
       <main className="lesson-page-container" id="main-content">
@@ -98,17 +164,34 @@ export default function LessonDetail() {
     )
   }
 
-  const handleMarkLessonComplete = async () => {
-    if (isCompleted || isMarkingLessonComplete) return
-    setIsMarkingLessonComplete(true)
-    setLessonCompletionError(null)
+  const handleAllChallengesPassed = async () => {
+    const lessonId = String(lesson.id)
+    setCompletionNotice({ lessonId, status: 'saving' })
     try {
       await saveProgress(Number(lesson.id), 'lesson', 'completed')
-      setLoadedLesson((current) => current?.requestedId === id ? { ...current, isCompleted: true } : current)
-    } catch {
-      setLessonCompletionError('Could not save lesson progress. Please sign in and try again.')
-    } finally {
-      setIsMarkingLessonComplete(false)
+      setCompletionNotice({ lessonId, status: 'completed' })
+      setLoadedLesson((current) => {
+        if (!current || current.requestedId !== lessonId || !current.courseNav) return current
+
+        const wasCompleted = current.courseNav.modules.some((module) =>
+          module.lessons.some((item) => item.id === lessonId && item.status === 'completed'),
+        )
+        return {
+          ...current,
+          courseNav: {
+            ...current.courseNav,
+            completedLessons: current.courseNav.completedLessons + (wasCompleted ? 0 : 1),
+            modules: current.courseNav.modules.map((module) => ({
+              ...module,
+              lessons: module.lessons.map((item) => item.id === lessonId ? { ...item, status: 'completed' } : item),
+            })),
+          },
+        }
+      })
+      return true
+    } catch (error) {
+      setCompletionNotice({ lessonId, status: error instanceof ApiError && error.status === 401 ? 'auth_required' : 'error' })
+      return false
     }
   }
 
@@ -172,12 +255,12 @@ export default function LessonDetail() {
               : 'Personalized lesson unavailable; showing the standard lesson.'}
           </p>
           <LessonContent
+            key={lesson.id}
             lesson={lesson}
             onAskAIHint={handleAskAIHint}
-            isCompleted={isCompleted}
-            isMarkingComplete={isMarkingLessonComplete}
-            completionError={lessonCompletionError}
-            onMarkComplete={handleMarkLessonComplete}
+            onChallengeContextChange={setChallengeContext}
+            onAllChallengesPassed={handleAllChallengesPassed}
+            completionStatus={completionNotice?.lessonId === String(lesson.id) ? completionNotice.status : undefined}
           />
         </div>
 
@@ -187,6 +270,7 @@ export default function LessonDetail() {
           currentLessonTopic={lesson.topic}
           lessonId={Number(lesson.id)}
           lessonDescription={lesson.description}
+          challengeContext={challengeContext}
           isOpenOnMobile={isAssistantOpen}
           onCloseMobile={() => setIsAssistantOpen(false)}
           externalPrompt={externalPrompt}

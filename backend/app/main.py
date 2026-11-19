@@ -413,7 +413,7 @@ def put_progress(body: ProgressInput, user_id: str = Depends(current_user_id)):
             raise HTTPException(404, "Progress item not found")
         row = conn.execute("""INSERT INTO user_progress(user_id,item_type,item_id,status,completed_at,score,last_attempt_at)
             VALUES(%s,%s,%s,%s,CASE WHEN %s='completed' THEN now() ELSE NULL END,%s,
-                CASE WHEN %s IS NOT NULL THEN now() ELSE NULL END)
+                CASE WHEN %s::numeric IS NOT NULL THEN now() ELSE NULL END)
             ON CONFLICT(user_id,item_type,item_id) DO UPDATE SET status=EXCLUDED.status,
             completed_at=CASE WHEN EXCLUDED.status='completed' THEN COALESCE(user_progress.completed_at,now()) ELSE NULL END,
             score=COALESCE(EXCLUDED.score,user_progress.score),
