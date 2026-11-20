@@ -44,6 +44,19 @@ def remap_lesson_navigation(content: str, lesson_id: int, lesson_ids: dict[str, 
     return marker + json.dumps(detail, ensure_ascii=False, separators=(",", ":")) + content[metadata_end:]
 
 
+def challenge_fingerprint(content: str) -> str:
+    marker = "<!-- codora-lesson:v1\n"
+    metadata_end = content.find("\n-->\n", len(marker))
+    if not content.startswith(marker) or metadata_end < 0:
+        raise ValueError("Seeded lesson content is missing its versioned metadata block.")
+    detail = json.loads(content[len(marker):metadata_end])
+    challenges = [
+        section["challenge"] for section in detail.get("sections", [])
+        if isinstance(section.get("challenge"), dict)
+    ]
+    return json.dumps(challenges, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
 def md_for_course_preview(course: dict, item: dict, number: int) -> tuple[str, str]:
     lesson_id = f"{course['id']}-{number}"
     detail = {
@@ -131,7 +144,8 @@ def main() -> None:
                     (course["id"], course["title"], course.get("description", course["paceLabel"]), index)
                     for index, course in enumerate(courses, start=1)
                 ]
-                course_rows.append((navigation["id"], navigation["title"], navigation["description"], 3))
+                if navigation["id"] not in {course["id"] for course in courses}:
+                    course_rows.append((navigation["id"], navigation["title"], navigation["description"], len(course_rows) + 1))
                 course_ids = {}
                 for source_key, title, description, order_index in course_rows:
                     row = cur.execute("""INSERT INTO courses(title,description,order_index)
@@ -140,6 +154,10 @@ def main() -> None:
                           description=EXCLUDED.description,order_index=EXCLUDED.order_index
                         RETURNING id""", (title, description, order_index)).fetchone()
                     course_ids[source_key] = row["id"]
+                if navigation["id"] not in course_ids:
+                    if len(course_ids) != 1:
+                        raise ValueError("Course navigation must map to exactly one seeded course.")
+                    course_ids[navigation["id"]] = next(iter(course_ids.values()))
 
                 lesson_sources = []
                 for course in courses:
@@ -171,6 +189,38 @@ def main() -> None:
                     unexpected = set(lesson_concepts) - expected_keys
                     raise ValueError(f"Lesson concept mapping keys mismatch; missing={sorted(missing)}, unexpected={sorted(unexpected)}")
 
+                # Lesson completion belongs to a particular curriculum. Clear it once when
+                # the seeded lesson set or its concept mapping changes, so old completions
+                # do not falsely mark the replacement lessons as complete.
+                expected_by_order = {}
+                for _source_id, title, course_id, _content, order_index, preknowledge, new_concepts in lesson_sources:
+                    if course_id == course_ids[navigation["id"]]:
+                        expected_by_order[order_index] = (
+                            title, json.loads(preknowledge), json.loads(new_concepts), challenge_fingerprint(_content)
+                        )
+                existing_lessons = cur.execute("""SELECT id,order_index,title,preknowledge,new_concepts,content_markdown
+                    FROM lessons WHERE course_id=%s ORDER BY order_index""", (course_ids[navigation["id"]],)).fetchall()
+                curriculum_changed = len(existing_lessons) != len(expected_by_order) or any(
+                    lesson["order_index"] not in expected_by_order
+                    or lesson["title"] != expected_by_order[lesson["order_index"]][0]
+                    or lesson["preknowledge"] != expected_by_order[lesson["order_index"]][1]
+                    or lesson["new_concepts"] != expected_by_order[lesson["order_index"]][2]
+                    or challenge_fingerprint(lesson["content_markdown"]) != expected_by_order[lesson["order_index"]][3]
+                    for lesson in existing_lessons
+                )
+                if curriculum_changed:
+                    cur.execute("""DELETE FROM user_progress AS progress
+                        USING lessons AS lesson, courses AS course
+                        WHERE progress.item_type='lesson' AND progress.item_id=lesson.id
+                          AND lesson.course_id=course.id
+                          AND (course.id=%s OR course.title='Python foundations')""",
+                        (course_ids[navigation["id"]],))
+                    cur.execute("""DELETE FROM lesson_challenge_progress AS challenge
+                        USING lessons AS lesson, courses AS course
+                        WHERE challenge.lesson_id=lesson.id AND lesson.course_id=course.id
+                          AND (course.id=%s OR course.title='Python foundations')""",
+                        (course_ids[navigation["id"]],))
+
                 lesson_ids = {}
                 for source_id, title, course_id, content, order_index, preknowledge, new_concepts in lesson_sources:
                     row = cur.execute("""INSERT INTO lessons(title,course_id,content_markdown,order_index,preknowledge,new_concepts)
@@ -186,18 +236,50 @@ def main() -> None:
                     for source_id, _title, _course_id, content, _order_index, _preknowledge, _new_concepts in lesson_sources
                 ])
 
+                # Merge progress and exercise links before deleting the retired duplicate course.
+                duplicate_courses = cur.execute("""SELECT id FROM courses
+                    WHERE title='Python foundations' AND id<>%s""", (course_ids[navigation["id"]],)).fetchall()
+                for duplicate in duplicate_courses:
+                    cur.execute("""INSERT INTO user_progress(user_id,item_type,item_id,status,completed_at)
+                        SELECT progress.user_id,'lesson',target.id,
+                          CASE WHEN bool_or(progress.status='completed') THEN 'completed'
+                            WHEN bool_or(progress.status='in_progress') THEN 'in_progress' ELSE 'not_started' END,
+                          CASE WHEN bool_or(progress.status='completed')
+                            THEN COALESCE(max(progress.completed_at),now()) ELSE NULL END
+                        FROM user_progress AS progress
+                        JOIN lessons AS old_lesson ON old_lesson.id=progress.item_id
+                        JOIN lessons AS target ON target.course_id=%s AND target.order_index=old_lesson.order_index
+                        WHERE progress.item_type='lesson' AND old_lesson.course_id=%s
+                        GROUP BY progress.user_id,target.id
+                        ON CONFLICT(user_id,item_type,item_id) DO UPDATE SET
+                          status=CASE WHEN user_progress.status='completed' OR EXCLUDED.status='completed'
+                            THEN 'completed' WHEN user_progress.status='in_progress' OR EXCLUDED.status='in_progress'
+                            THEN 'in_progress' ELSE 'not_started' END,
+                          completed_at=CASE WHEN user_progress.status='completed' OR EXCLUDED.status='completed'
+                            THEN COALESCE(user_progress.completed_at,EXCLUDED.completed_at,now()) ELSE NULL END""",
+                        (course_ids[navigation["id"]], duplicate["id"]))
+                    cur.execute("""DELETE FROM user_progress AS progress
+                        USING lessons AS old_lesson
+                        WHERE progress.item_type='lesson' AND progress.item_id=old_lesson.id
+                          AND old_lesson.course_id=%s""", (duplicate["id"],))
+                    cur.execute("""UPDATE exercises AS exercise SET lesson_id=target.id
+                        FROM lessons AS old_lesson
+                        JOIN lessons AS target ON target.course_id=%s AND target.order_index=old_lesson.order_index
+                        WHERE exercise.lesson_id=old_lesson.id AND old_lesson.course_id=%s""",
+                        (course_ids[navigation["id"]], duplicate["id"]))
+                    cur.execute("DELETE FROM courses WHERE id=%s", (duplicate["id"],))
+
                 hidden_cases = {}
                 if HIDDEN_DATA.exists():
                     hidden_cases = json.loads(HIDDEN_DATA.read_text(encoding="utf-8"))
 
                 exercise_rows = []
                 for exercise in data["exercises"]:
-                    # No canonical exercise-to-lesson mapping exists in the source data. These
-                    # assignments are provisional to satisfy the lesson FK; see backend/README.md.
+                    # Keep the separate exercise workspace linked to the closest matching lesson.
                     if exercise["functionName"] in ("reverse_string", "count_vowels", "is_palindrome"):
-                        lesson_id = lesson_ids["3"]
+                        lesson_id = lesson_ids["5"]
                     else:
-                        lesson_id = lesson_ids["7"]
+                        lesson_id = lesson_ids["6"]
                     exercise_rows.append((exercise["id"], lesson_id, exercise["title"], exercise["difficulty"],
                         exercise["description"], exercise["functionName"], exercise["initialCode"],
                         json.dumps({"runner": data["testCases"][exercise["id"]],
@@ -230,6 +312,7 @@ def main() -> None:
                     cur.executemany("INSERT INTO exercise_concepts(exercise_id,concept_id) VALUES(%s,%s)", [
                         (exercise_id, concept_id) for concept_id in exercise_concepts[exercise_slug]
                     ])
+                cur.execute("DELETE FROM lessons WHERE course_id=%s AND order_index>9", (course_ids[navigation["id"]],))
         print(f"Seeded {len(course_rows)} courses, {len(lesson_sources)} lessons, {len(exercise_rows)} exercises, {len(concepts)} concepts, and {sum(len(ids) for ids in exercise_concepts.values())} exercise-concept links.")
     finally:
         pool.close()

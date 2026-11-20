@@ -126,6 +126,8 @@
   color: var(--color-accent);
   font-family: var(--font-mono);
   font-size: 0.9em;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
 }
 
 /* Takeaway Card */

@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../../auth/useAuth'
 import type { CourseNavigation, LessonChallengeContext, LessonDetail as LessonDetailType } from '../../data/lessons'
-import { ApiError, fetchCourseLessons, fetchCourses, fetchLesson, fetchProgress, personalizeLesson, saveProgress, type ApiCourse, type ApiLesson, type ApiPersonalizedLesson } from '../../lib/api'
+import { ApiError, fetchCourseLessons, fetchCourses, fetchLesson, fetchLessonChallengeProgress, fetchProgress, personalizeLesson, saveProgress, type ApiCourse, type ApiLesson, type ApiPersonalizedLesson } from '../../lib/api'
 import { buildCourseNavigation, parseLessonDetail, resolveLessonNavigation } from '../../lib/lessonContent'
 import CourseSidebar from './components/CourseSidebar/CourseSidebar'
 import LessonContent from './components/LessonContent/LessonContent'
 import LessonAssistant from './components/LessonAssistant/LessonAssistant'
 import './LessonDetail.css'
 
-const LESSON_CACHE_VERSION = 1
+const LESSON_CACHE_VERSION = 2
 const personalizationRequests = new Map<string, Promise<ApiPersonalizedLesson | null>>()
 
 interface CachedLessonPage {
@@ -74,23 +74,28 @@ export default function LessonDetail() {
     requestedId: string
     lesson: LessonDetailType | null
     courseNav: CourseNavigation | null
+    completedChallengeIds: string[]
     personalization: { adapted: boolean; level?: 'beginner' | 'intermediate' | 'advanced' }
     error: boolean
   } | null>(null)
+  const [personalizingLessonId, setPersonalizingLessonId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id || authLoading) return
     const lessonId = id
+    setChallengeContext(undefined)
     const cachedPage = readLessonCache(lessonId, user?.id)
     let active = true
 
     async function loadLesson() {
       try {
         const record = cachedPage?.lesson ?? await fetchLesson(lessonId)
-        const [course, courseLessons, progress, personalization] = await Promise.all([
+        if (!cachedPage && active) setPersonalizingLessonId(lessonId)
+        const [course, courseLessons, progress, completedChallengeIds, personalization] = await Promise.all([
           cachedPage ? Promise.resolve(cachedPage.course) : fetchCourses().then((items) => items.find((item) => item.id === record.course_id) ?? null),
           cachedPage ? Promise.resolve(cachedPage.courseLessons) : fetchCourseLessons(record.course_id),
           fetchProgress().catch(() => []),
+          fetchLessonChallengeProgress(record.id).catch(() => []),
           cachedPage
             ? Promise.resolve(null)
             : personalizeLessonOnce(record.id, user?.id).then((value) => ({ value, adapted: value !== null })),
@@ -114,10 +119,12 @@ export default function LessonDetail() {
         const courseNav = buildCourseNavigation(course, courseLessons, progress, record.id)
 
         if (active) {
+          setPersonalizingLessonId(null)
           setLoadedLesson({
             requestedId: lessonId,
             lesson,
             courseNav,
+            completedChallengeIds,
             personalization: {
               adapted,
               level,
@@ -126,7 +133,10 @@ export default function LessonDetail() {
           })
         }
       } catch {
-        if (active) setLoadedLesson({ requestedId: lessonId, lesson: null, courseNav: null, personalization: { adapted: false }, error: true })
+        if (active) {
+          setPersonalizingLessonId(null)
+          setLoadedLesson({ requestedId: lessonId, lesson: null, courseNav: null, completedChallengeIds: [], personalization: { adapted: false }, error: true })
+        }
       }
     }
 
@@ -152,7 +162,32 @@ export default function LessonDetail() {
   }
 
   if (!id || loadedLesson?.requestedId !== id) {
-    return <main className="lesson-page-container" id="main-content" role="status">Loading lesson…</main>
+    const isPersonalizing = personalizingLessonId === id
+    return (
+      <main
+        className="lesson-loading"
+        id="main-content"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <div className="lesson-loading__content">
+          <span className="lesson-loading__spinner" aria-hidden="true" />
+          <div className="lesson-loading__copy">
+            <p className="lesson-loading__eyebrow">{isPersonalizing ? 'AI PERSONALIZATION' : 'LESSON'}</p>
+            <p className="lesson-loading__title">
+              {isPersonalizing ? 'AI is personalizing your lesson' : 'Loading lesson…'}
+            </p>
+            {isPersonalizing && (
+              <p className="lesson-loading__description">
+                Adapting explanations and examples to your learning profile. This may take a moment.
+              </p>
+            )}
+          </div>
+          {isPersonalizing && <span className="lesson-loading__progress" aria-hidden="true" />}
+        </div>
+      </main>
+    )
   }
 
   const { lesson, courseNav, personalization, error } = loadedLesson
@@ -257,6 +292,8 @@ export default function LessonDetail() {
           <LessonContent
             key={lesson.id}
             lesson={lesson}
+            completedChallengeIds={loadedLesson.completedChallengeIds}
+            userId={user?.id}
             onAskAIHint={handleAskAIHint}
             onChallengeContextChange={setChallengeContext}
             onAllChallengesPassed={handleAllChallengesPassed}

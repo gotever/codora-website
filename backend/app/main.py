@@ -13,7 +13,7 @@ from .interaction_trace import write_interaction_trace
 from .learning_profile import get_all_concept_progress, get_completed_lessons
 from .personalization import personalize_lesson as create_personalized_lesson
 from .runner import run_code_sandbox
-from .schemas import ChatInput, ExerciseWorkspaceInput, LoginInput, PersonalizeLessonInput, ProgressInput, RegisterInput, SubmitInput, TutorChatInput, UserLevelInput
+from .schemas import ChatInput, ExerciseWorkspaceInput, LearningPreferences, LoginInput, PersonalizeLessonInput, ProgressInput, RegisterInput, SubmitInput, TutorChatInput, UserLevelInput
 from .settings import settings
 from .tutor import create_tutor_reply
 
@@ -95,6 +95,52 @@ def get_lesson(lesson_id: int):
     if not row:
         raise HTTPException(404, "Lesson not found")
     return {"lesson": row}
+
+
+def lesson_contains_challenge(content_markdown: str, challenge_id: str) -> bool:
+    marker = "<!-- codora-lesson:v1\n"
+    if not content_markdown.startswith(marker):
+        return False
+    try:
+        metadata = json.loads(content_markdown[len(marker):].split("\n-->\n", 1)[0])
+    except (json.JSONDecodeError, IndexError, TypeError):
+        return False
+    sections = metadata.get("sections", []) if isinstance(metadata, dict) else []
+    return any(
+        isinstance(section, dict)
+        and isinstance(section.get("challenge"), dict)
+        and section["challenge"].get("id") == challenge_id
+        for section in sections
+    )
+
+
+@app.get("/api/lessons/{lesson_id}/challenge-progress")
+def get_lesson_challenge_progress(
+    lesson_id: int,
+    user_id: str | None = Depends(optional_current_user_id),
+):
+    if user_id is None:
+        return {"completed_challenge_ids": []}
+    with connection() as conn:
+        rows = conn.execute("""SELECT challenge_id FROM lesson_challenge_progress
+            WHERE user_id=%s AND lesson_id=%s ORDER BY completed_at""", (user_id, lesson_id)).fetchall()
+    return {"completed_challenge_ids": [row["challenge_id"] for row in rows]}
+
+
+@app.put("/api/lessons/{lesson_id}/challenges/{challenge_id}/progress")
+def complete_lesson_challenge(lesson_id: int, challenge_id: str, user_id: str = Depends(current_user_id)):
+    with connection() as conn:
+        lesson = conn.execute("SELECT content_markdown FROM lessons WHERE id=%s", (lesson_id,)).fetchone()
+        if not lesson:
+            raise HTTPException(404, "Lesson not found")
+        if not lesson_contains_challenge(lesson["content_markdown"], challenge_id):
+            raise HTTPException(404, "Code challenge not found in this lesson")
+        row = conn.execute("""INSERT INTO lesson_challenge_progress(user_id,lesson_id,challenge_id)
+            VALUES(%s,%s,%s)
+            ON CONFLICT(user_id,lesson_id,challenge_id) DO UPDATE SET completed_at=COALESCE(
+                lesson_challenge_progress.completed_at,EXCLUDED.completed_at)
+            RETURNING challenge_id,completed_at""", (user_id, lesson_id, challenge_id)).fetchone()
+    return {"progress": row}
 
 
 @app.post("/api/lessons/{lesson_id}/personalize")
@@ -344,7 +390,7 @@ def register(body: RegisterInput, response: Response):
     try:
         with connection() as conn:
             user = conn.execute("""INSERT INTO users(email,username,password_hash,full_name,level) VALUES(%s,%s,%s,%s,%s)
-                RETURNING id,email,username,full_name,level,created_at""", (str(body.email).lower(), body.username, hash_password(body.password), body.full_name, body.level)).fetchone()
+                RETURNING id,email,username,full_name,level,created_at,learning_preferences""", (str(body.email).lower(), body.username, hash_password(body.password), body.full_name, body.level)).fetchone()
     except errors.UniqueViolation:
         raise HTTPException(409, "Email or username is already registered") from None
     set_session(response, str(user["id"]), user["email"])
@@ -356,7 +402,7 @@ def register(body: RegisterInput, response: Response):
 @app.post("/api/auth/login")
 def login(body: LoginInput, response: Response):
     with connection() as conn:
-        user = conn.execute("SELECT id,email,username,full_name,level,created_at,password_hash FROM users WHERE email=%s", (str(body.email).lower(),)).fetchone()
+        user = conn.execute("SELECT id,email,username,full_name,level,created_at,learning_preferences,password_hash FROM users WHERE email=%s", (str(body.email).lower(),)).fetchone()
     if not user or not verify_password(body.password, user["password_hash"]):
         raise HTTPException(401, "Invalid email or password")
     set_session(response, str(user["id"]), user["email"])
@@ -375,7 +421,7 @@ def logout(response: Response):
 @app.get("/api/auth/me")
 def me(user_id: str = Depends(current_user_id)):
     with connection() as conn:
-        user = conn.execute("SELECT id,email,username,full_name,level,created_at FROM users WHERE id=%s", (user_id,)).fetchone()
+        user = conn.execute("SELECT id,email,username,full_name,level,created_at,learning_preferences FROM users WHERE id=%s", (user_id,)).fetchone()
     if not user:
         raise HTTPException(401, "Authentication required")
     user["id"] = str(user["id"])
@@ -394,13 +440,32 @@ def update_level(body: UserLevelInput, user_id: str = Depends(current_user_id)):
     return {"level": user["level"]}
 
 
+@app.put("/api/auth/learning-preferences")
+def update_learning_preferences(body: LearningPreferences, user_id: str = Depends(current_user_id)):
+    preferences = body.model_dump()
+    with connection() as conn:
+        user = conn.execute(
+            "UPDATE users SET learning_preferences=%s::jsonb WHERE id=%s RETURNING learning_preferences",
+            (json.dumps(preferences), user_id),
+        ).fetchone()
+    if not user:
+        raise HTTPException(401, "Authentication required")
+    return {"learning_preferences": user["learning_preferences"]}
+
+
 @app.get("/api/progress")
 def get_progress(user_id: str = Depends(current_user_id)):
     with connection() as conn:
         rows = conn.execute("SELECT id,item_type,item_id,status,completed_at FROM user_progress WHERE user_id=%s ORDER BY id", (user_id,)).fetchall()
         completed_lessons = get_completed_lessons(conn, user_id)
         concepts = get_all_concept_progress(conn, user_id)
-    return {"progress": rows, "completed_lessons": completed_lessons, "concepts": concepts}
+        completed_lesson_challenges = conn.execute("""SELECT COUNT(*) AS count
+            FROM lesson_challenge_progress AS challenge
+            JOIN lessons AS lesson ON lesson.id=challenge.lesson_id
+            JOIN courses AS course ON course.id=lesson.course_id
+            WHERE challenge.user_id=%s AND course.title='Python fundamentals'""", (user_id,)).fetchone()["count"]
+    return {"progress": rows, "completed_lessons": completed_lessons, "concepts": concepts,
+        "completed_lesson_challenges": completed_lesson_challenges}
 
 
 @app.put("/api/progress")

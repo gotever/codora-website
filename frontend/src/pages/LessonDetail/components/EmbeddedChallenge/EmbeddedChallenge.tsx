@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import type { CodingChallenge, LessonChallengeContext } from '../../../../data/lessons'
 import { highlightPythonDark } from '../../utils/highlight'
 import { usePyodide } from '../../../../hooks/usePyodide'
@@ -6,9 +6,11 @@ import './EmbeddedChallenge.css'
 
 interface EmbeddedChallengeProps {
   challenge: CodingChallenge
+  lessonId: string | number
+  userId?: string
   onAskAIHint?: (context: LessonChallengeContext) => void
   onContextChange?: (context: LessonChallengeContext) => void
-  onPassed?: (challengeId: string) => void
+  onPassed?: (challengeId: string) => void | Promise<void>
 }
 
 type RunStatus = 'idle' | 'running' | 'success' | 'fail' | 'error'
@@ -21,19 +23,45 @@ interface CaseResult {
   passed?: boolean
 }
 
+function getChallengeDraftKey(lessonId: string | number, challengeId: string, userId?: string) {
+  return `codora:lesson-challenge-draft:v1:${userId ?? 'guest'}:${lessonId}:${challengeId}`
+}
+
+function getTestCaseLabel(testCase: { call: string; input?: string }) {
+  return testCase.input === undefined ? testCase.call : `stdin: ${testCase.input.trim() || '(empty)'}`
+}
+
+function readChallengeDraft(lessonId: string | number, challengeId: string, userId: string | undefined, initialCode: string) {
+  try {
+    return localStorage.getItem(getChallengeDraftKey(lessonId, challengeId, userId)) ?? initialCode
+  } catch {
+    return initialCode
+  }
+}
+
+function writeChallengeDraft(lessonId: string | number, challengeId: string, userId: string | undefined, code: string) {
+  try {
+    localStorage.setItem(getChallengeDraftKey(lessonId, challengeId, userId), code)
+  } catch {
+    // Keep editing available when browser storage is unavailable or full.
+  }
+}
+
 export default function EmbeddedChallenge({
   challenge,
+  lessonId,
+  userId,
   onAskAIHint,
   onContextChange,
   onPassed,
 }: EmbeddedChallengeProps) {
-  const [code, setCode] = useState(challenge.initialCode)
+  const [code, setCode] = useState(() => readChallengeDraft(lessonId, challenge.id, userId, challenge.initialCode))
   const [isRunning, setIsRunning] = useState(false)
   const [runStatus, setRunStatus] = useState<RunStatus>('idle')
   const [consoleOutput, setConsoleOutput] = useState<string | null>(null)
   const [consoleError, setConsoleError] = useState<string | null>(null)
   const [caseResults, setCaseResults] = useState<CaseResult[]>(
-    challenge.testCases.map((tc) => ({ id: tc.id, call: tc.call, expected: tc.expected }))
+    challenge.testCases.map((tc) => ({ id: tc.id, call: getTestCaseLabel(tc), expected: tc.expected }))
   )
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -51,20 +79,12 @@ export default function EmbeddedChallenge({
 
   const handleCodeChange = (currentCode: string) => {
     setCode(currentCode)
+    writeChallengeDraft(lessonId, challenge.id, userId, currentCode)
     reportContext(currentCode, 'The code was edited after the previous run, so there is no current run result.')
   }
 
-  useEffect(() => {
-    onContextChange?.({
-      title: challenge.title,
-      description: challenge.description,
-      code: challenge.initialCode,
-      runResult: 'The learner has not run this code yet.',
-    })
-  }, [challenge.description, challenge.id, challenge.initialCode, challenge.title, onContextChange])
-
-  // Determine if the challenge is stdout-based (call === 'stdout')
-  const isStdoutChallenge = challenge.testCases.every((tc) => tc.call === 'stdout')
+  // Program challenges run once per stdout/stdin case; other cases call a function.
+  const isProgramChallenge = challenge.testCases.every((tc) => tc.call === 'stdout' || tc.input !== undefined)
 
   // Synchronize scrolling
   const handleScroll = () => {
@@ -101,7 +121,7 @@ export default function EmbeddedChallenge({
     setConsoleOutput(null)
     setConsoleError(null)
     setCaseResults(
-      challenge.testCases.map((tc) => ({ id: tc.id, call: tc.call, expected: tc.expected }))
+      challenge.testCases.map((tc) => ({ id: tc.id, call: getTestCaseLabel(tc), expected: tc.expected }))
     )
   }
 
@@ -113,31 +133,44 @@ export default function EmbeddedChallenge({
     setConsoleError(null)
     reportContext(code, 'The learner is currently running this code.')
 
-    if (isStdoutChallenge) {
-      const result = await runPython(code)
+    if (isProgramChallenge) {
+      const updated: CaseResult[] = []
+      let firstError: string | null = null
+      for (const testCase of challenge.testCases) {
+        const result = await runPython(code, testCase.input)
+        if (!result.success && !firstError) firstError = result.error
+        const actual = result.success ? result.output.trim() : result.error
+        updated.push({
+          id: testCase.id,
+          call: getTestCaseLabel(testCase),
+          expected: testCase.expected,
+          actual,
+          passed: result.success && actual === testCase.expected.trim(),
+        })
+      }
       setIsRunning(false)
-      if (!result.success) {
+      setCaseResults(updated)
+      if (firstError) {
         setRunStatus('error')
-        setConsoleError(result.error)
-        setCaseResults(
-          challenge.testCases.map((tc) => ({ id: tc.id, call: tc.call, expected: tc.expected }))
-        )
-        reportContext(code, `Run failed with Python error: ${result.error}`)
+        setConsoleOutput(null)
+        setConsoleError(firstError)
+        reportContext(code, `Run failed with Python error: ${firstError}`)
         return
       }
-
-      const stdout = result.output.trim()
-      setConsoleOutput(stdout || '(no output)')
-      // Compare stdout against each expected value
-      const updated = challenge.testCases.map((tc) => {
-        const passed = stdout === tc.expected.trim()
-        return { id: tc.id, call: tc.call, expected: tc.expected, actual: stdout, passed }
-      })
-      setCaseResults(updated)
-      const allCasesPassed = updated.length > 0 && updated.every((r) => r.passed)
+      const allCasesPassed = updated.length > 0 && updated.every((result) => result.passed)
       setRunStatus(allCasesPassed ? 'success' : 'fail')
-      reportContext(code, `Run ${allCasesPassed ? 'passed' : 'failed'}. stdout: ${stdout || '(no output)'}. Test cases: ${updated.map((result) => `${result.passed ? 'passed' : 'failed'} ${result.call}, expected ${result.expected}, got ${result.actual ?? ''}`).join('; ')}`)
-      if (allCasesPassed) onPassed?.(challenge.id)
+      setConsoleError(null)
+      setConsoleOutput(updated.map((result) => `${result.call} ? ${result.actual || '(no output)'}`).join('\n'))
+      reportContext(code, `Run ${allCasesPassed ? 'passed' : 'failed'}. Test cases: ${updated.map((result) => `${result.passed ? 'passed' : 'failed'} ${result.call}, expected ${result.expected}, got ${result.actual ?? ''}`).join('; ')}`)
+      if (allCasesPassed) {
+        try {
+          await onPassed?.(challenge.id)
+        } catch {
+          const message = 'Code challenge passed, but progress could not be saved. Run it again to retry.'
+          setConsoleError(message)
+          reportContext(code, message)
+        }
+      }
     } else {
       const results: CaseResult[] = []
       let firstError: string | null = null
@@ -166,7 +199,15 @@ export default function EmbeddedChallenge({
       const allCasesPassed = results.length > 0 && results.every((result) => result.passed)
       setRunStatus(allCasesPassed ? 'success' : 'fail')
       reportContext(code, `Run ${allCasesPassed ? 'passed' : 'failed'}. Test cases: ${results.map((result) => `${result.passed ? 'passed' : 'failed'} ${result.call}, expected ${result.expected}, got ${result.actual ?? ''}`).join('; ')}`)
-      if (allCasesPassed) onPassed?.(challenge.id)
+      if (allCasesPassed) {
+        try {
+          await onPassed?.(challenge.id)
+        } catch {
+          const message = 'Code challenge passed, but progress could not be saved. Run it again to retry.'
+          setConsoleError(message)
+          reportContext(code, message)
+        }
+      }
     }
   }
 

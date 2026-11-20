@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
+import { useAuth } from '../../auth/useAuth'
 import CourseCard from '../../components/CourseCard/CourseCard'
 import type { Course } from '../../data/courses'
-import { fetchCourseLessons, fetchCourses } from '../../lib/api'
+import { fetchCourseLessons, fetchCourses, fetchProgress } from '../../lib/api'
 import { parseLessonDetail } from '../../lib/lessonContent'
 import './Learning.css'
 
@@ -24,21 +25,33 @@ function BookIcon() {
 }
 
 export default function Learning() {
+  const { user, loading: authLoading } = useAuth()
   const [courses, setCourses] = useState<Course[] | null>(null)
   const [error, setError] = useState(false)
 
   useEffect(() => {
+    if (authLoading) return
     let active = true
 
     async function loadCurriculum() {
       try {
-        const records = await fetchCourses()
+        const [records, progress] = await Promise.all([
+          fetchCourses(),
+          fetchProgress().catch(() => null),
+        ])
+        const completedLessonIds = new Set(
+          progress?.filter((item) => item.item_type === 'lesson' && item.status === 'completed')
+            .map((item) => String(item.item_id)) ?? [],
+        )
         const coursesFromDatabase = await Promise.all(records.map(async (course) => {
           const lessons = await fetchCourseLessons(course.id)
           return {
             id: course.id,
             title: course.title,
             lessonCount: lessons.length,
+            completedLessonCount: progress === null
+              ? undefined
+              : lessons.filter((lesson) => completedLessonIds.has(String(lesson.id))).length,
             paceLabel: course.order_index === 1 ? course.description : undefined,
             lessons: lessons.map((lesson) => {
               const detail = parseLessonDetail(lesson.content_markdown, lesson.id)
@@ -47,6 +60,7 @@ export default function Learning() {
                 number: detail?.lessonNumber,
                 title: detail?.topic ?? lesson.title,
                 description: detail?.description ?? '',
+                completed: completedLessonIds.has(String(lesson.id)),
               }
             }),
           }
@@ -60,7 +74,7 @@ export default function Learning() {
 
     void loadCurriculum()
     return () => { active = false }
-  }, [])
+  }, [authLoading, user?.id])
 
   return (
     <main className="learning-page" id="main-content">

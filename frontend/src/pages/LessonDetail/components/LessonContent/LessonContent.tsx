@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import type { LessonChallengeContext, LessonDetail } from '../../../../data/lessons'
+import { saveLessonChallengeProgress } from '../../../../lib/api'
 import CodeBlock from './CodeBlock'
 import EmbeddedChallenge from '../EmbeddedChallenge/EmbeddedChallenge'
 import './LessonContent.css'
@@ -14,12 +15,14 @@ function renderInlineCode(text: string) {
         </code>
       )
     }
-    return part
+    return part.replace(/<=/g, '≤')
   })
 }
 
 interface LessonContentProps {
   lesson: LessonDetail
+  completedChallengeIds?: string[]
+  userId?: string
   onAskAIHint?: (context: LessonChallengeContext) => void
   onChallengeContextChange?: (context: LessonChallengeContext) => void
   onAllChallengesPassed?: () => Promise<boolean>
@@ -28,17 +31,20 @@ interface LessonContentProps {
 
 export default function LessonContent({
   lesson,
+  completedChallengeIds: previouslyCompletedChallengeIds = [],
+  userId,
   onAskAIHint,
   onChallengeContextChange,
   onAllChallengesPassed,
   completionStatus,
 }: LessonContentProps) {
-  const completedChallengeIds = useRef(new Set<string>())
+  const completedChallengeIds = useRef(new Set(previouslyCompletedChallengeIds))
   const isSavingCompletion = useRef(false)
   const lessonCompletionSaved = useRef(false)
   const challengeIds = lesson.sections.flatMap((section) => section.challenge ? [section.challenge.id] : [])
 
-  const handleChallengePassed = (challengeId: string) => {
+  const handleChallengePassed = async (challengeId: string) => {
+    if (userId) await saveLessonChallengeProgress(Number(lesson.id), challengeId)
     completedChallengeIds.current.add(challengeId)
     const allChallengesPassed = challengeIds.length > 0
       && challengeIds.every((id) => completedChallengeIds.current.has(id))
@@ -104,8 +110,10 @@ export default function LessonContent({
             {/* Embedded coding challenge if present */}
             {sec.challenge && (
               <EmbeddedChallenge
-                key={sec.challenge.id}
+                key={`${userId ?? 'guest'}:${lesson.id}:${sec.challenge.id}`}
                 challenge={sec.challenge}
+                lessonId={lesson.id}
+                userId={userId}
                 onAskAIHint={onAskAIHint}
                 onContextChange={onChallengeContextChange}
                 onPassed={handleChallengePassed}

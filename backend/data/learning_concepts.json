@@ -1,124 +1,423 @@
 {
   "concepts": [
-    { "id": "python.program_execution", "name": "Running a Python program", "description": "Executing Python statements in order." },
-    { "id": "python.print_output", "name": "Printing output", "description": "Using print() to display text and values." },
-    { "id": "python.variables", "name": "Variables", "description": "Naming and reusing values with assignment." },
-    { "id": "python.data_types", "name": "Basic data types", "description": "Distinguishing common kinds of values such as text and numbers." },
-    { "id": "python.strings", "name": "Strings", "description": "Representing and working with text values." },
-    { "id": "python.string_operations", "name": "String operations", "description": "Combining and transforming strings." },
-    { "id": "python.string_slicing", "name": "String slicing", "description": "Selecting a range of characters from a string with slice notation." },
-    { "id": "python.numbers", "name": "Numbers", "description": "Representing numeric values in Python." },
-    { "id": "python.arithmetic_operators", "name": "Arithmetic operators", "description": "Using operators to perform numeric calculations." },
-    { "id": "python.expressions", "name": "Expressions", "description": "Combining values and operators to produce a value." },
-    { "id": "python.comparisons", "name": "Comparisons", "description": "Comparing values to produce a Boolean result." },
-    { "id": "python.conditionals", "name": "Conditional statements", "description": "Choosing which code runs with if, elif, and else." },
-    { "id": "python.boolean_logic", "name": "Boolean logic", "description": "Combining or negating Boolean conditions." },
-    { "id": "python.iteration", "name": "Iteration", "description": "Repeating work over values or until a condition changes." },
-    { "id": "python.for_loops", "name": "For loops", "description": "Repeating an operation for each item in an iterable." },
-    { "id": "python.while_loops", "name": "While loops", "description": "Repeating an operation while a condition remains true." },
-    { "id": "python.lists", "name": "Lists", "description": "Storing an ordered, mutable collection of values." },
-    { "id": "python.collections", "name": "Collections", "description": "Grouping related values into collection data structures." },
-    { "id": "python.indexing", "name": "Indexing collections", "description": "Accessing an item in an ordered collection by position." },
-    { "id": "python.dictionaries", "name": "Dictionaries", "description": "Storing and retrieving values by key." },
-    { "id": "python.functions.definition", "name": "Defining and calling functions", "description": "Creating a reusable function with def and calling it by name." },
-    { "id": "python.functions.parameters", "name": "Function parameters and arguments", "description": "Receiving input through parameters and supplying arguments at a call site." },
-    { "id": "python.functions.return_values", "name": "Function return values", "description": "Returning a result from a function to its caller." },
-    { "id": "python.scope", "name": "Scope", "description": "Understanding where names are available in a program." },
-    { "id": "python.closures", "name": "Closures", "description": "Functions retaining access to names from an enclosing scope." },
-    { "id": "python.modules", "name": "Modules", "description": "Organizing Python code into reusable modules." },
-    { "id": "python.imports", "name": "Imports", "description": "Making names from another module available with import." },
-    { "id": "python.exceptions", "name": "Exceptions", "description": "Handling exceptional runtime conditions." },
-    { "id": "python.debugging", "name": "Debugging", "description": "Finding and correcting errors in a program." },
-    { "id": "python.file_io", "name": "File input and output", "description": "Reading from and writing to files." },
-    { "id": "python.project_integration", "name": "Combining concepts in a project", "description": "Applying previously learned concepts together in a small program." }
+    {
+      "id": "python.program_execution",
+      "name": "Running a Python program",
+      "description": "Executing Python statements in order."
+    },
+    {
+      "id": "python.print_output",
+      "name": "Printing output",
+      "description": "Using print() to display text and values."
+    },
+    {
+      "id": "python.variables",
+      "name": "Variables",
+      "description": "Naming and reusing values with assignment."
+    },
+    {
+      "id": "python.data_types",
+      "name": "Basic data types",
+      "description": "Distinguishing common kinds of values such as text and numbers."
+    },
+    {
+      "id": "python.strings",
+      "name": "Strings",
+      "description": "Representing and working with text values."
+    },
+    {
+      "id": "python.string_operations",
+      "name": "String operations",
+      "description": "Combining and transforming strings."
+    },
+    {
+      "id": "python.string_slicing",
+      "name": "String slicing",
+      "description": "Selecting a range of characters from a string with slice notation."
+    },
+    {
+      "id": "python.numbers",
+      "name": "Numbers",
+      "description": "Representing numeric values in Python."
+    },
+    {
+      "id": "python.arithmetic_operators",
+      "name": "Arithmetic operators",
+      "description": "Using operators to perform numeric calculations."
+    },
+    {
+      "id": "python.expressions",
+      "name": "Expressions",
+      "description": "Combining values and operators to produce a value."
+    },
+    {
+      "id": "python.comparisons",
+      "name": "Comparisons",
+      "description": "Comparing values to produce a Boolean result."
+    },
+    {
+      "id": "python.conditionals",
+      "name": "Conditional statements",
+      "description": "Choosing which code runs with if, elif, and else."
+    },
+    {
+      "id": "python.boolean_logic",
+      "name": "Boolean logic",
+      "description": "Combining or negating Boolean conditions."
+    },
+    {
+      "id": "python.iteration",
+      "name": "Iteration",
+      "description": "Repeating work over values or until a condition changes."
+    },
+    {
+      "id": "python.for_loops",
+      "name": "For loops",
+      "description": "Repeating an operation for each item in an iterable."
+    },
+    {
+      "id": "python.while_loops",
+      "name": "While loops",
+      "description": "Repeating an operation while a condition remains true."
+    },
+    {
+      "id": "python.lists",
+      "name": "Lists",
+      "description": "Storing an ordered, mutable collection of values."
+    },
+    {
+      "id": "python.collections",
+      "name": "Collections",
+      "description": "Grouping related values into collection data structures."
+    },
+    {
+      "id": "python.indexing",
+      "name": "Indexing collections",
+      "description": "Accessing an item in an ordered collection by position."
+    },
+    {
+      "id": "python.dictionaries",
+      "name": "Dictionaries",
+      "description": "Storing and retrieving values by key."
+    },
+    {
+      "id": "python.functions.definition",
+      "name": "Defining and calling functions",
+      "description": "Creating a reusable function with def and calling it by name."
+    },
+    {
+      "id": "python.functions.parameters",
+      "name": "Function parameters and arguments",
+      "description": "Receiving input through parameters and supplying arguments at a call site."
+    },
+    {
+      "id": "python.functions.return_values",
+      "name": "Function return values",
+      "description": "Returning a result from a function to its caller."
+    },
+    {
+      "id": "python.scope",
+      "name": "Scope",
+      "description": "Understanding where names are available in a program."
+    },
+    {
+      "id": "python.closures",
+      "name": "Closures",
+      "description": "Functions retaining access to names from an enclosing scope."
+    },
+    {
+      "id": "python.modules",
+      "name": "Modules",
+      "description": "Organizing Python code into reusable modules."
+    },
+    {
+      "id": "python.imports",
+      "name": "Imports",
+      "description": "Making names from another module available with import."
+    },
+    {
+      "id": "python.exceptions",
+      "name": "Exceptions",
+      "description": "Handling exceptional runtime conditions."
+    },
+    {
+      "id": "python.debugging",
+      "name": "Debugging",
+      "description": "Finding and correcting errors in a program."
+    },
+    {
+      "id": "python.file_io",
+      "name": "File input and output",
+      "description": "Reading from and writing to files."
+    },
+    {
+      "id": "python.project_integration",
+      "name": "Combining concepts in a project",
+      "description": "Applying previously learned concepts together in a small program."
+    },
+    {
+      "id": "python.input_output",
+      "name": "Input and output",
+      "description": "Reading text with input() and displaying results with print()."
+    },
+    {
+      "id": "python.type_conversion",
+      "name": "Type conversion",
+      "description": "Converting values between strings and numeric types when processing input."
+    },
+    {
+      "id": "python.variable_naming",
+      "name": "Variable naming and assignment",
+      "description": "Choosing valid descriptive names and binding values through assignment."
+    },
+    {
+      "id": "python.operators",
+      "name": "Python operators",
+      "description": "Using arithmetic, comparison, logical, assignment, identity, and membership operators."
+    },
+    {
+      "id": "python.global_local_variables",
+      "name": "Global and local variables",
+      "description": "Understanding function scope and when global is needed to reassign a module-level name."
+    },
+    {
+      "id": "python.recursion",
+      "name": "Recursion",
+      "description": "Solving a problem by calling the same function on a smaller input."
+    },
+    {
+      "id": "python.recursion_base_case",
+      "name": "Recursive base cases",
+      "description": "Defining the stopping condition that prevents recursive calls from continuing indefinitely."
+    }
   ],
   "lessons": {
     "detail:1": {
       "preknowledge": [],
-      "new_concepts": ["python.program_execution", "python.print_output"]
-    },
-    "detail:2": {
-      "preknowledge": ["python.print_output"],
-      "new_concepts": ["python.variables", "python.data_types"]
-    },
-    "detail:3": {
-      "preknowledge": ["python.variables", "python.data_types"],
-      "new_concepts": ["python.arithmetic_operators", "python.expressions"]
-    },
-    "detail:4": {
-      "preknowledge": ["python.variables", "python.expressions"],
-      "new_concepts": ["python.functions.definition", "python.functions.parameters", "python.functions.return_values"]
-    },
-    "detail:5": {
-      "preknowledge": ["python.variables", "python.functions.definition"],
-      "new_concepts": ["python.scope", "python.closures"]
-    },
-    "detail:6": {
-      "preknowledge": ["python.variables", "python.data_types"],
-      "new_concepts": ["python.lists", "python.dictionaries"]
-    },
-    "detail:7": {
-      "preknowledge": ["python.variables", "python.lists"],
-      "new_concepts": ["python.iteration"]
-    },
-    "detail:8": {
-      "preknowledge": ["python.expressions", "python.comparisons"],
-      "new_concepts": ["python.conditionals", "python.boolean_logic"]
-    },
-    "detail:9": {
-      "preknowledge": ["python.functions.definition", "python.variables"],
-      "new_concepts": ["python.modules", "python.imports"]
-    },
-    "detail:10": {
-      "preknowledge": ["python.conditionals", "python.functions.definition"],
-      "new_concepts": ["python.exceptions", "python.debugging"]
-    },
-    "detail:11": {
-      "preknowledge": ["python.strings", "python.exceptions"],
-      "new_concepts": ["python.file_io"]
-    },
-    "detail:12": {
-      "preknowledge": ["python.variables", "python.data_types", "python.strings", "python.arithmetic_operators", "python.expressions", "python.comparisons", "python.conditionals", "python.boolean_logic", "python.iteration", "python.lists", "python.dictionaries", "python.functions.definition", "python.functions.parameters", "python.functions.return_values", "python.scope", "python.closures", "python.modules", "python.imports", "python.exceptions", "python.debugging", "python.file_io"],
-      "new_concepts": []
+      "new_concepts": [
+        "python.program_execution",
+        "python.print_output"
+      ]
     },
     "preview:python-fundamentals:1": {
       "preknowledge": [],
-      "new_concepts": ["python.program_execution", "python.print_output"]
+      "new_concepts": [
+        "python.program_execution",
+        "python.print_output"
+      ]
+    },
+    "detail:2": {
+      "preknowledge": [
+        "python.print_output"
+      ],
+      "new_concepts": [
+        "python.input_output",
+        "python.type_conversion"
+      ]
     },
     "preview:python-fundamentals:2": {
-      "preknowledge": ["python.print_output"],
-      "new_concepts": ["python.variables", "python.data_types"]
+      "preknowledge": [
+        "python.print_output"
+      ],
+      "new_concepts": [
+        "python.input_output",
+        "python.type_conversion"
+      ]
+    },
+    "detail:3": {
+      "preknowledge": [
+        "python.input_output",
+        "python.data_types"
+      ],
+      "new_concepts": [
+        "python.variables",
+        "python.variable_naming"
+      ]
     },
     "preview:python-fundamentals:3": {
-      "preknowledge": ["python.variables", "python.data_types"],
-      "new_concepts": ["python.strings", "python.string_operations"]
+      "preknowledge": [
+        "python.input_output",
+        "python.data_types"
+      ],
+      "new_concepts": [
+        "python.variables",
+        "python.variable_naming"
+      ]
+    },
+    "detail:4": {
+      "preknowledge": [
+        "python.variables",
+        "python.data_types"
+      ],
+      "new_concepts": [
+        "python.operators",
+        "python.arithmetic_operators",
+        "python.comparisons",
+        "python.boolean_logic"
+      ]
     },
     "preview:python-fundamentals:4": {
-      "preknowledge": ["python.variables", "python.data_types"],
-      "new_concepts": ["python.numbers", "python.arithmetic_operators", "python.expressions"]
+      "preknowledge": [
+        "python.variables",
+        "python.data_types"
+      ],
+      "new_concepts": [
+        "python.operators",
+        "python.arithmetic_operators",
+        "python.comparisons",
+        "python.boolean_logic"
+      ]
+    },
+    "detail:5": {
+      "preknowledge": [
+        "python.variables",
+        "python.operators"
+      ],
+      "new_concepts": [
+        "python.data_types",
+        "python.numbers",
+        "python.strings",
+        "python.collections",
+        "python.lists",
+        "python.dictionaries"
+      ]
     },
     "preview:python-fundamentals:5": {
-      "preknowledge": ["python.expressions", "python.comparisons"],
-      "new_concepts": ["python.conditionals", "python.boolean_logic"]
+      "preknowledge": [
+        "python.variables",
+        "python.operators"
+      ],
+      "new_concepts": [
+        "python.data_types",
+        "python.numbers",
+        "python.strings",
+        "python.collections",
+        "python.lists",
+        "python.dictionaries"
+      ]
+    },
+    "detail:6": {
+      "preknowledge": [
+        "python.operators",
+        "python.boolean_logic",
+        "python.data_types"
+      ],
+      "new_concepts": [
+        "python.conditionals",
+        "python.for_loops",
+        "python.while_loops",
+        "python.iteration"
+      ]
     },
     "preview:python-fundamentals:6": {
-      "preknowledge": ["python.variables", "python.conditionals"],
-      "new_concepts": ["python.for_loops", "python.while_loops", "python.iteration"]
+      "preknowledge": [
+        "python.operators",
+        "python.boolean_logic",
+        "python.data_types"
+      ],
+      "new_concepts": [
+        "python.conditionals",
+        "python.for_loops",
+        "python.while_loops",
+        "python.iteration"
+      ]
+    },
+    "detail:7": {
+      "preknowledge": [
+        "python.variables",
+        "python.conditionals",
+        "python.iteration"
+      ],
+      "new_concepts": [
+        "python.functions.definition",
+        "python.functions.parameters",
+        "python.functions.return_values"
+      ]
     },
     "preview:python-fundamentals:7": {
-      "preknowledge": ["python.variables", "python.data_types"],
-      "new_concepts": ["python.lists", "python.collections", "python.indexing"]
+      "preknowledge": [
+        "python.variables",
+        "python.conditionals",
+        "python.iteration"
+      ],
+      "new_concepts": [
+        "python.functions.definition",
+        "python.functions.parameters",
+        "python.functions.return_values"
+      ]
+    },
+    "detail:8": {
+      "preknowledge": [
+        "python.functions.definition",
+        "python.variables"
+      ],
+      "new_concepts": [
+        "python.scope",
+        "python.global_local_variables"
+      ]
     },
     "preview:python-fundamentals:8": {
-      "preknowledge": ["python.variables", "python.expressions"],
-      "new_concepts": ["python.functions.definition", "python.functions.parameters", "python.functions.return_values"]
+      "preknowledge": [
+        "python.functions.definition",
+        "python.variables"
+      ],
+      "new_concepts": [
+        "python.scope",
+        "python.global_local_variables"
+      ]
+    },
+    "detail:9": {
+      "preknowledge": [
+        "python.functions.definition",
+        "python.conditionals"
+      ],
+      "new_concepts": [
+        "python.recursion",
+        "python.recursion_base_case"
+      ]
+    },
+    "preview:python-fundamentals:9": {
+      "preknowledge": [
+        "python.functions.definition",
+        "python.conditionals"
+      ],
+      "new_concepts": [
+        "python.recursion",
+        "python.recursion_base_case"
+      ]
     }
   },
   "exercises": {
-    "sum-of-even-numbers": ["python.lists", "python.for_loops", "python.conditionals", "python.arithmetic_operators"],
-    "reverse-a-string": ["python.strings", "python.string_slicing", "python.string_operations"],
-    "count-vowels": ["python.strings", "python.for_loops", "python.conditionals", "python.iteration", "python.variables"],
-    "find-maximum": ["python.lists", "python.for_loops", "python.iteration", "python.comparisons", "python.variables"],
-    "is-palindrome": ["python.strings", "python.string_slicing", "python.string_operations", "python.conditionals"]
+    "sum-of-even-numbers": [
+      "python.lists",
+      "python.for_loops",
+      "python.conditionals",
+      "python.arithmetic_operators"
+    ],
+    "reverse-a-string": [
+      "python.strings",
+      "python.string_slicing",
+      "python.string_operations"
+    ],
+    "count-vowels": [
+      "python.strings",
+      "python.for_loops",
+      "python.conditionals",
+      "python.iteration",
+      "python.variables"
+    ],
+    "find-maximum": [
+      "python.lists",
+      "python.for_loops",
+      "python.iteration",
+      "python.comparisons",
+      "python.variables"
+    ],
+    "is-palindrome": [
+      "python.strings",
+      "python.string_slicing",
+      "python.string_operations",
+      "python.conditionals"
+    ]
   }
 }

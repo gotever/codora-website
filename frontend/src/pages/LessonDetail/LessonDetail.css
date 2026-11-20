@@ -6,6 +6,104 @@
   position: relative;
 }
 
+.lesson-loading {
+  min-height: calc(100vh - var(--navbar-height));
+  display: grid;
+  place-items: center;
+  padding: var(--space-8) var(--space-4);
+  background-color: var(--color-surface);
+}
+
+.lesson-loading__content {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  width: min(100%, 560px);
+  padding: var(--space-6);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.lesson-loading__spinner {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  margin-top: 2px;
+  border: 2px solid var(--color-accent-light);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: lesson-loading-spin 800ms linear infinite;
+}
+
+.lesson-loading__copy {
+  min-width: 0;
+}
+
+.lesson-loading__eyebrow {
+  margin-bottom: 4px;
+  color: var(--color-accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.lesson-loading__title {
+  color: var(--color-text-primary);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.lesson-loading__description {
+  margin-top: 4px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.lesson-loading__progress {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  overflow: hidden;
+  background-color: var(--color-accent-light);
+}
+
+.lesson-loading__progress::after {
+  display: block;
+  width: 36%;
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--color-accent);
+  content: '';
+  animation: lesson-loading-progress 1.4s ease-in-out infinite;
+}
+
+@keyframes lesson-loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes lesson-loading-progress {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(280%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lesson-loading__spinner,
+  .lesson-loading__progress::after {
+    animation: none;
+  }
+
+  .lesson-loading__progress::after {
+    width: 100%;
+  }
+}
+
 /* 3-Column Desktop Layout */
 .lesson-layout {
   display: flex;

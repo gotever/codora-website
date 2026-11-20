@@ -21,6 +21,15 @@
   background-color: var(--color-bg);
 }
 
+.lesson-row--completed .lesson-row__number {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.lesson-row--completed .lesson-row__title {
+  color: #15803d;
+}
+
 .lesson-row:hover .lesson-row__arrow {
   color: var(--color-accent);
   transform: translateX(2px);
@@ -74,4 +83,15 @@
   transition: color var(--transition-fast), transform var(--transition-fast);
   width: 18px;
   height: 18px;
+}
+
+.lesson-row__completed {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #16a34a;
+  font-size: 18px;
+  font-weight: 700;
 }

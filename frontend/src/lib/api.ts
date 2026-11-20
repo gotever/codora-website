@@ -7,6 +7,13 @@ export interface AuthUser {
   full_name: string
   level: 'beginner' | 'intermediate' | 'advanced'
   created_at: string
+  learning_preferences: LearningPreferences
+}
+
+export interface LearningPreferences {
+  explanation_style: 'step_by_step' | 'conceptual' | 'direct' | null
+  detail_level: 'concise' | 'balanced' | 'detailed' | null
+  hint_preference: 'progressive' | 'minimal' | 'direct' | null
 }
 
 export class ApiError extends Error {
@@ -75,6 +82,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export async function fetchCurrentUser(): Promise<AuthUser> {
   return (await request<{ user: AuthUser }>('/api/auth/me')).user
+}
+
+export async function updateLearningPreferences(preferences: LearningPreferences): Promise<LearningPreferences> {
+  const result = await request<{ learning_preferences: LearningPreferences }>('/api/auth/learning-preferences', {
+    method: 'PUT',
+    body: JSON.stringify(preferences),
+  })
+  return result.learning_preferences
 }
 
 export async function login(email: string, password: string): Promise<AuthUser> {
@@ -163,6 +178,7 @@ export interface ApiConceptProgress {
 export interface ApiProgressSnapshot {
   progress: ApiProgressEntry[]
   completed_lessons: ApiCompletedLesson[]
+  completed_lesson_challenges: number
   concepts: ApiConceptProgress[]
 }
 
@@ -173,6 +189,17 @@ export async function fetchProgressSnapshot(): Promise<ApiProgressSnapshot> {
 export async function fetchProgress(): Promise<ApiProgressEntry[]> {
   const result = await fetchProgressSnapshot()
   return result.progress
+}
+
+export async function fetchLessonChallengeProgress(lessonId: number): Promise<string[]> {
+  const result = await request<{ completed_challenge_ids: string[] }>(`/api/lessons/${encodeURIComponent(lessonId)}/challenge-progress`)
+  return result.completed_challenge_ids
+}
+
+export async function saveLessonChallengeProgress(lessonId: number, challengeId: string) {
+  return request(`/api/lessons/${encodeURIComponent(lessonId)}/challenges/${encodeURIComponent(challengeId)}/progress`, {
+    method: 'PUT',
+  })
 }
 
 export async function saveProgress(itemId: number, itemType: 'lesson' | 'exercise', status: 'not_started' | 'in_progress' | 'completed', score?: number) {
@@ -268,7 +295,10 @@ export async function fetchChats(exerciseId?: number): Promise<ApiChatMessage[]>
 }
 
 export async function fetchContextChats(contextType: 'lesson' | 'exercise', contextId: number): Promise<ApiChatMessage[]> {
-  const result = await request<{ messages: ApiChatMessage[] }>(`/api/chats?context_key=${encodeURIComponent(`${contextType}:${contextId}`)}`)
+  const contextKey = contextType === 'lesson'
+    ? `lesson:${contextId}:python-fundamentals-v2`
+    : `exercise:${contextId}`
+  const result = await request<{ messages: ApiChatMessage[] }>(`/api/chats?context_key=${encodeURIComponent(contextKey)}`)
   return result.messages
 }
 

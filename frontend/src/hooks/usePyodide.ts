@@ -19,7 +19,7 @@ export interface UsePyodideReturn {
   /** Error during Pyodide initialisation */
   loadError: string | null
   /** Run arbitrary Python code and capture output */
-  runPython: (code: string) => Promise<PyodideResult>
+  runPython: (code: string, stdin?: string) => Promise<PyodideResult>
   /** Run a function from user code with given arguments, return its repr */
   runTestCase: (
     code: string,
@@ -116,7 +116,7 @@ export function usePyodide(): UsePyodideReturn {
   }, [])
 
   const runPython = useCallback(
-    async (code: string): Promise<PyodideResult> => {
+    async (code: string, stdin = ''): Promise<PyodideResult> => {
       const pyodide = pyodideRef.current
       if (!pyodide) {
         return {
@@ -130,13 +130,15 @@ export function usePyodide(): UsePyodideReturn {
 
       const start = performance.now()
 
-      // Set up stdout/stderr capture
+      // Set up stdout/stderr and stdin for deterministic program challenges.
+      pyodide.globals.set('__codora_stdin', stdin)
       pyodide.runPython(`
 import sys, io
 __stdout_capture = io.StringIO()
 __stderr_capture = io.StringIO()
 sys.stdout = __stdout_capture
 sys.stderr = __stderr_capture
+sys.stdin = io.StringIO(__codora_stdin)
 `)
 
       try {
@@ -150,7 +152,9 @@ sys.stderr = __stderr_capture
         pyodide.runPython(`
 sys.stdout = sys.__stdout__
 sys.stderr = sys.__stderr__
+sys.stdin = sys.__stdin__
 `)
+        pyodide.globals.delete('__codora_stdin')
 
         return {
           success: true,
@@ -177,7 +181,9 @@ sys.stderr = sys.__stderr__
           pyodide.runPython(`
 sys.stdout = sys.__stdout__
 sys.stderr = sys.__stderr__
+sys.stdin = sys.__stdin__
 `)
+          pyodide.globals.delete('__codora_stdin')
         } catch {
           // ignore
         }

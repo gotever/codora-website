@@ -11,6 +11,7 @@ export default function Navbar() {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, loading, logout } = useAuth()
+  const navLinks = user ? [...NAV_LINKS, { label: 'Profile', to: '/profile' }] : NAV_LINKS
 
   async function handleLogout() {
     try {
@@ -34,7 +35,7 @@ export default function Navbar() {
 
         {/* Navigation */}
         <nav className="navbar__nav" aria-label="Main navigation">
-          {NAV_LINKS.map((link) => {
+          {navLinks.map((link) => {
             const isLearningActive =
               link.to === '/learning' && location.pathname.startsWith('/lessons')
 
@@ -59,7 +60,7 @@ export default function Navbar() {
 
         {/* Auth actions */}
         {!loading && <div className="navbar__actions">
-          {user ? <><span className="navbar__user">{user.full_name}</span><button type="button" className="navbar__btn navbar__btn--login" onClick={handleLogout}>Log out</button></> : <>
+          {user ? <><Link to="/profile" className="navbar__user" aria-label="Open learner profile">{user.full_name}</Link><button type="button" className="navbar__btn navbar__btn--login" onClick={handleLogout}>Log out</button></> : <>
             <Link to="/register" className="navbar__btn navbar__btn--signup">Sign up</Link>
             <Link to="/login" state={{ from: { pathname: location.pathname, search: location.search } }} className="navbar__btn navbar__btn--login">Log in</Link>
           </>}

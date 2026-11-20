@@ -3,160 +3,137 @@
     {
       "id": "python-fundamentals",
       "title": "Python fundamentals",
-      "lessonCount": 8,
+      "lessonCount": 9,
       "paceLabel": "Go at your own pace",
       "lessons": [
         {
           "id": 1,
-          "title": "Your first Python program",
-          "description": "Meet Python and write a simple \"Hello, world!\""
+          "title": "Introduction to Python",
+          "description": "Meet Python, run a first program, and learn the basic structure of Python code."
         },
         {
           "id": 2,
-          "title": "Variables and data types",
-          "description": "Give your data a name and get to know the basics."
+          "title": "Input and Output",
+          "description": "Read user input, convert it when needed, and display results with print()."
         },
         {
           "id": 3,
-          "title": "Working with strings",
-          "description": "Create, combine, and work with text in Python."
+          "title": "Variables",
+          "description": "Store values under clear names and reuse them in a program."
         },
         {
           "id": 4,
-          "title": "Numbers and operators",
-          "description": "Do calculations and explore everyday operations."
+          "title": "Operators",
+          "description": "Use arithmetic, comparison, logical, and assignment operators."
         },
         {
           "id": 5,
-          "title": "Making decisions",
-          "description": "Choose what happens next with if, elif, and else."
+          "title": "Data Types",
+          "description": "Work with numbers, text, Boolean values, and common collections."
         },
         {
           "id": 6,
-          "title": "Repeating with loops",
-          "description": "Let for and while loops take care of repetition."
+          "title": "Conditional Statements and Loops",
+          "description": "Choose branches with if statements and repeat work with for and while."
         },
         {
           "id": 7,
-          "title": "Lists and collections",
-          "description": "Keep related values together and work with them."
+          "title": "Functions",
+          "description": "Define reusable blocks of code that accept arguments and return values."
         },
         {
           "id": 8,
-          "title": "Writing your own functions",
-          "description": "Turn useful pieces of code into reusable building blocks."
+          "title": "Global and Local Variables",
+          "description": "Understand variable scope and how functions read or update global names."
+        },
+        {
+          "id": 9,
+          "title": "Recursion",
+          "description": "Solve a problem through smaller calls to the same function and a base case."
         }
       ]
     }
   ],
   "courseNavigation": {
-    "id": "python-foundations",
-    "title": "Python foundations",
-    "description": "Build a strong coding foundation.",
-    "totalLessons": 12,
-    "completedLessons": 3,
+    "id": "python-fundamentals",
+    "title": "Python fundamentals",
+    "description": "A beginner-to-intermediate Python path.",
+    "totalLessons": 9,
+    "completedLessons": 0,
     "modules": [
       {
         "id": "module-01",
         "number": "01",
-        "title": "GETTING STARTED",
+        "title": "BEGINNER",
         "lessons": [
           {
             "id": "1",
             "number": "01",
-            "title": "Welcome to Python",
-            "duration": "4 min",
-            "status": "completed"
+            "title": "Introduction to Python",
+            "duration": "10 min",
+            "status": "upcoming"
           },
           {
             "id": "2",
             "number": "02",
-            "title": "Variables & data types",
+            "title": "Input and Output",
             "duration": "12 min",
-            "status": "completed"
+            "status": "upcoming"
           },
           {
             "id": "3",
             "number": "03",
-            "title": "Operators & expressions",
+            "title": "Variables",
             "duration": "10 min",
-            "status": "completed"
+            "status": "upcoming"
+          },
+          {
+            "id": "4",
+            "number": "04",
+            "title": "Operators",
+            "duration": "12 min",
+            "status": "upcoming"
+          },
+          {
+            "id": "5",
+            "number": "05",
+            "title": "Data Types",
+            "duration": "14 min",
+            "status": "upcoming"
+          },
+          {
+            "id": "6",
+            "number": "06",
+            "title": "Conditional Statements and Loops",
+            "duration": "20 min",
+            "status": "upcoming"
           }
         ]
       },
       {
         "id": "module-02",
         "number": "02",
-        "title": "BUILDING BLOCKS",
+        "title": "INTERMEDIATE",
         "lessons": [
-          {
-            "id": "4",
-            "number": "04",
-            "title": "Functions",
-            "duration": "15 min",
-            "status": "in_progress"
-          },
-          {
-            "id": "5",
-            "number": "05",
-            "title": "Scope & closures",
-            "duration": "18 min",
-            "status": "upcoming"
-          },
-          {
-            "id": "6",
-            "number": "06",
-            "title": "Lists & dictionaries",
-            "duration": "20 min",
-            "status": "upcoming"
-          },
           {
             "id": "7",
             "number": "07",
-            "title": "Loops & iteration",
+            "title": "Functions",
             "duration": "16 min",
             "status": "upcoming"
-          }
-        ]
-      },
-      {
-        "id": "module-03",
-        "number": "03",
-        "title": "ADVANCED CONCEPTS",
-        "lessons": [
+          },
           {
             "id": "8",
             "number": "08",
-            "title": "Conditionals & logic",
+            "title": "Global and Local Variables",
             "duration": "14 min",
             "status": "upcoming"
           },
           {
             "id": "9",
             "number": "09",
-            "title": "Working with modules",
-            "duration": "15 min",
-            "status": "upcoming"
-          },
-          {
-            "id": "10",
-            "number": "10",
-            "title": "Error handling & debug",
-            "duration": "22 min",
-            "status": "upcoming"
-          },
-          {
-            "id": "11",
-            "number": "11",
-            "title": "File I/O basics",
+            "title": "Recursion",
             "duration": "18 min",
-            "status": "upcoming"
-          },
-          {
-            "id": "12",
-            "number": "12",
-            "title": "Final mini project",
-            "duration": "30 min",
             "status": "upcoming"
           }
         ]
@@ -168,651 +145,836 @@
       "id": "1",
       "lessonNumber": 1,
       "moduleNumber": "01",
-      "moduleName": "GETTING STARTED",
-      "topic": "Welcome to Python",
-      "title": "Your very first Python program.",
-      "description": "Discover what Python is, why millions of developers love it, and write your first working line of code.",
-      "duration": "4 min lesson",
-      "exerciseCount": 1,
+      "moduleName": "BEGINNER",
+      "topic": "Introduction to Python",
+      "title": "Introduction to Python",
+      "description": "Làm quen với Python, cách chạy chương trình và cấu trúc cơ bản của một tệp Python.",
+      "duration": "10 min",
+      "exerciseCount": 2,
       "language": "Python",
-      "status": "completed",
-      "nextLesson": {
-        "id": "2",
-        "title": "Variables & data types"
-      },
+      "status": "upcoming",
       "sections": [
         {
-          "id": "sec-1-1",
+          "id": "lesson-1-section-1",
           "number": "01",
-          "title": "What is Python?",
+          "title": "Python là gì và chương trình chạy ra sao?",
           "paragraphs": [
-            "Python is a general-purpose programming language created by Guido van Rossum and released in 1991. Its design philosophy puts readability first — Python code is meant to look almost like plain English, so you spend less time deciphering syntax and more time solving real problems.",
-            "Because of that simplicity, Python has become one of the most popular languages on the planet. You will find it everywhere: data scientists use it to analyse millions of rows, web engineers build backends with it, game developers script logic in it, and AI researchers train models with it.",
-            "Most importantly for you right now: Python is a fantastic first language. If you can describe an idea in plain words, you are already halfway to writing Python."
-          ],
-          "takeaway": {
-            "label": "WHY PYTHON?",
-            "text": "Easy to read, powerful enough for professionals, and in demand everywhere from startups to NASA."
-          }
-        },
-        {
-          "id": "sec-1-2",
-          "number": "02",
-          "title": "The print() function",
-          "paragraphs": [
-            "The very first thing most programmers learn is how to make a program say something. In Python, you do that with the built-in print() function.",
-            "A function is a reusable action with a name. You call it by writing its name followed by parentheses. Whatever you place inside the parentheses is called an argument — the value you hand to the function so it can do its job.",
-            "Wrapping text in quotes (\" \" or ' ') tells Python you mean a literal piece of text, not a variable or command. That piece of text is called a string."
+            "Python là ngôn ngữ bậc cao có cú pháp dễ đọc. Chương trình thực thi các câu lệnh theo thứ tự từ trên xuống dưới.",
+            "Dấu # mở đầu một comment. Comment giúp ghi chú cho người đọc và không được Python thực thi. Các khoảng thụt lề thể hiện khối lệnh."
           ],
           "codeExample": {
-            "filename": "hello.py",
+            "filename": "example.py",
             "language": "Python",
-            "code": "print(\"Hello, World!\")",
-            "caption": "One function call. One string argument. One line of output."
-          }
-        },
-        {
-          "id": "sec-1-3",
-          "number": "03",
-          "title": "print() can do more than greet the world",
-          "paragraphs": [
-            "You are not limited to one message per program. You can call print() as many times as you like — each call prints on its own line.",
-            "You can also print numbers directly without quotes. Python knows 42 is a number, not text, so no quotes are needed."
-          ],
-          "codeExample": {
-            "filename": "multiprint.py",
-            "language": "Python",
-            "code": "print(\"I am learning Python!\")\nprint(\"One line at a time.\")\nprint(2025)",
-            "caption": "Three calls, three lines of output — in order, top to bottom."
+            "code": "name = \"Codora\"\nprint(\"Hello,\", name)  # Hiển thị lời chào",
+            "caption": "Chương trình gán một giá trị rồi in lời chào."
           },
-          "takeaway": {
-            "label": "THE TAKEAWAY",
-            "text": "Python runs your code line by line, from top to bottom. Each print() call adds one new line to the output."
-          }
-        },
-        {
-          "id": "sec-1-4",
-          "number": "04",
-          "title": "Your turn",
-          "paragraphs": [
-            "Now it is your turn to write a real Python program. The editor below works exactly like a professional code editor — type your code and hit Run to see the output instantly."
-          ],
           "challenge": {
-            "id": "challenge-hello-world",
-            "title": "Try it: say Hello World",
-            "description": "Use print() to display the message Hello World on the screen. Spelling and capitalisation must match exactly.",
-            "practiceLabel": "PRACTICE 1 OF 1",
-            "filename": "hello.py",
+            "id": "gfg-01-challenge-1",
+            "title": "In lời chào đầu tiên",
+            "description": "Hoàn thiện chương trình để in chính xác dòng Hello, Python!",
+            "practiceLabel": "CODE CHALLENGE 1",
+            "filename": "main.py",
             "language": "Python 3",
-            "initialCode": "# Type your code below and click Run\n",
-            "solutionCode": "print(\"Hello World\")",
+            "initialCode": "# Viết lệnh print() bên dưới\n",
             "testCases": [
               {
-                "id": "tc-hw-1",
                 "call": "stdout",
-                "expected": "Hello World"
+                "expected": "Hello, Python!",
+                "id": "gfg-01-c1-tc1"
+              }
+            ]
+          }
+        },
+        {
+          "id": "lesson-1-section-2",
+          "number": "02",
+          "title": "Comment và thứ tự thực thi",
+          "paragraphs": [
+            "Có thể dùng nhiều câu lệnh print() để tạo nhiều dòng kết quả. Dùng comment để giải thích mục đích của một đoạn code."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "print(\"Bắt đầu\")\n# Đây là ghi chú, không xuất hiện trong output\nprint(\"Tiếp tục\")",
+            "caption": "Comment bị bỏ qua; hai lệnh print tạo hai dòng."
+          },
+          "challenge": {
+            "id": "gfg-01-challenge-2",
+            "title": "In ba dòng theo thứ tự",
+            "description": "Viết ba lệnh print() để hiển thị lần lượt: Start, Python, Done.",
+            "practiceLabel": "CODE CHALLENGE 2",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "# Thêm ba lệnh print()\n",
+            "testCases": [
+              {
+                "call": "stdout",
+                "expected": "Start\nPython\nDone",
+                "id": "gfg-01-c2-tc1"
               }
             ]
           }
         }
-      ]
+      ],
+      "nextLesson": {
+        "id": "2",
+        "title": "Input and Output"
+      }
     },
     "2": {
       "id": "2",
       "lessonNumber": 2,
       "moduleNumber": "01",
-      "moduleName": "GETTING STARTED",
-      "topic": "Variables & data types",
-      "title": "Variables & data types in practice",
-      "description": "Explore the fundamental concepts behind variables & data types and build hands-on intuition with interactive code examples.",
+      "moduleName": "BEGINNER",
+      "topic": "Input and Output",
+      "title": "Input and Output",
+      "description": "Nhận dữ liệu từ người dùng, chuyển đổi kiểu đầu vào và định dạng output.",
       "duration": "12 min",
-      "exerciseCount": 1,
-      "language": "Python",
-      "status": "completed",
-      "prevLesson": {
-        "id": "1",
-        "title": "Lesson 01"
-      },
-      "nextLesson": {
-        "id": "3",
-        "title": "Lesson 03"
-      },
-      "sections": [
-        {
-          "id": "sec-2-1",
-          "number": "01",
-          "title": "Understanding Variables & data types",
-          "paragraphs": [
-            "In this lesson, we explore how variables & data types functions in modern Python and why it is a critical building block for writing clean, efficient software."
-          ],
-          "codeExample": {
-            "filename": "example.py",
-            "language": "Python",
-            "code": "# Exploring Variables & data types\nresult = \"Ready to code!\"\nprint(result)",
-            "caption": "Try running and experimenting with this example."
-          }
-        },
-        {
-          "id": "sec-2-2",
-          "number": "02",
-          "title": "Key Takeaways",
-          "paragraphs": [
-            "Practice writing code frequently to build confidence and muscle memory with these patterns."
-          ],
-          "takeaway": {
-            "label": "THE TAKEAWAY",
-            "text": "Small, focused practice leads to deep programming intuition."
-          }
-        }
-      ]
-    },
-    "3": {
-      "id": "3",
-      "lessonNumber": 3,
-      "moduleNumber": "01",
-      "moduleName": "GETTING STARTED",
-      "topic": "Operators & expressions",
-      "title": "Operators & expressions in practice",
-      "description": "Explore the fundamental concepts behind operators & expressions and build hands-on intuition with interactive code examples.",
-      "duration": "10 min",
-      "exerciseCount": 1,
-      "language": "Python",
-      "status": "completed",
-      "prevLesson": {
-        "id": "2",
-        "title": "Lesson 02"
-      },
-      "nextLesson": {
-        "id": "4",
-        "title": "Lesson 04"
-      },
-      "sections": [
-        {
-          "id": "sec-3-1",
-          "number": "01",
-          "title": "Understanding Operators & expressions",
-          "paragraphs": [
-            "In this lesson, we explore how operators & expressions functions in modern Python and why it is a critical building block for writing clean, efficient software."
-          ],
-          "codeExample": {
-            "filename": "example.py",
-            "language": "Python",
-            "code": "# Exploring Operators & expressions\nresult = \"Ready to code!\"\nprint(result)",
-            "caption": "Try running and experimenting with this example."
-          }
-        },
-        {
-          "id": "sec-3-2",
-          "number": "02",
-          "title": "Key Takeaways",
-          "paragraphs": [
-            "Practice writing code frequently to build confidence and muscle memory with these patterns."
-          ],
-          "takeaway": {
-            "label": "THE TAKEAWAY",
-            "text": "Small, focused practice leads to deep programming intuition."
-          }
-        }
-      ]
-    },
-    "4": {
-      "id": "4",
-      "lessonNumber": 4,
-      "moduleNumber": "02",
-      "moduleName": "BUILDING BLOCKS",
-      "topic": "Functions",
-      "title": "Write once. Use it again.",
-      "description": "Learn how functions turn a set of instructions into reusable code. Then put your new skills to work with a quick challenge.",
-      "duration": "15 min lesson",
       "exerciseCount": 2,
       "language": "Python",
-      "status": "in_progress",
-      "prevLesson": {
-        "id": "3",
-        "title": "Operators & expressions"
-      },
-      "nextLesson": {
-        "id": "5",
-        "title": "Scope & closures"
-      },
+      "status": "upcoming",
       "sections": [
         {
-          "id": "sec-1",
+          "id": "lesson-2-section-1",
           "number": "01",
-          "title": "Meet your first function",
+          "title": "Nhận input từ người dùng",
           "paragraphs": [
-            "A function is a reusable block of code that performs a specific task. Give it a name, pass in some information, and let it do the work whenever you need it."
+            "input() đọc một dòng dữ liệu và trả về chuỗi. Khi cần tính toán, hãy chuyển chuỗi sang int hoặc float trước khi dùng.",
+            "Trong Code challenge, mỗi test case cấp một input mẫu riêng để chương trình có thể được kiểm tra nhiều lần."
           ],
           "codeExample": {
-            "filename": "greeting.py",
+            "filename": "example.py",
             "language": "Python",
-            "code": "def greet(name):\n    return \"Hello, \" + name + \"!\"\n\ngreet(\"Ada\")",
-            "caption": "A name is the input. A greeting is the output."
+            "code": "name = input(\"Tên của bạn: \")\nprint(\"Xin chào,\", name)",
+            "caption": "input() trả về chuỗi; print() đưa kết quả ra màn hình."
           },
           "challenge": {
-            "id": "challenge-double",
-            "title": "Your turn: double a number",
-            "description": "Complete double(number) so it returns the number multiplied by 2.",
-            "practiceLabel": "PRACTICE 1 OF 2",
+            "id": "gfg-02-challenge-1",
+            "title": "Chào người dùng",
+            "description": "Đọc tên từ input và in lời chào theo mẫu: Hello, <name>!",
+            "practiceLabel": "CODE CHALLENGE 1",
             "filename": "main.py",
             "language": "Python 3",
-            "initialCode": "def double(number):\n    # Write your code here\n    pass",
-            "solutionCode": "def double(number):\n    return number * 2",
+            "initialCode": "name = input()\n# In lời chào tại đây\n",
             "testCases": [
               {
-                "id": "tc-1",
-                "call": "double(4)",
-                "expected": "8"
+                "call": "stdin",
+                "input": "An\n",
+                "expected": "Hello, An!",
+                "id": "gfg-02-c1-tc1"
               },
               {
-                "id": "tc-2",
-                "call": "double(-3)",
-                "expected": "-6"
+                "call": "stdin",
+                "input": "Minh\n",
+                "expected": "Hello, Minh!",
+                "id": "gfg-02-c1-tc2"
               }
             ]
           }
         },
         {
-          "id": "sec-2",
+          "id": "lesson-2-section-2",
           "number": "02",
-          "title": "Make it your own",
+          "title": "Chuyển đổi input và in kết quả",
           "paragraphs": [
-            "Parameters make functions flexible. Think of name as a placeholder: each time you call greet, you can pass in a different value."
+            "Dữ liệu nhận từ input() luôn là str. int() chuyển chuỗi số nguyên thành số nguyên; float() chuyển chuỗi số thập phân thành số thực.",
+            "print() có thể in nhiều giá trị, còn f-string giúp tạo output theo mẫu dễ đọc."
           ],
-          "takeaway": {
-            "label": "THE TAKEAWAY",
-            "text": "Define it once. Call it with different inputs. Get a new result."
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "first = int(input())\nsecond = int(input())\nprint(f\"Tổng: {first + second}\")",
+            "caption": "Đổi input thành số trước khi thực hiện phép cộng."
+          },
+          "challenge": {
+            "id": "gfg-02-challenge-2",
+            "title": "Cộng hai số nhập vào",
+            "description": "Đọc hai số nguyên trên hai dòng và in tổng của chúng.",
+            "practiceLabel": "CODE CHALLENGE 2",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "first = int(input())\nsecond = int(input())\n# In tổng hai số\n",
+            "testCases": [
+              {
+                "call": "stdin",
+                "input": "4\n8\n",
+                "expected": "12",
+                "id": "gfg-02-c2-tc1"
+              },
+              {
+                "call": "stdin",
+                "input": "-3\n10\n",
+                "expected": "7",
+                "id": "gfg-02-c2-tc2"
+              }
+            ]
           }
         }
-      ]
+      ],
+      "prevLesson": {
+        "id": "1",
+        "title": "Introduction to Python"
+      },
+      "nextLesson": {
+        "id": "3",
+        "title": "Variables"
+      }
+    },
+    "3": {
+      "id": "3",
+      "lessonNumber": 3,
+      "moduleNumber": "01",
+      "moduleName": "BEGINNER",
+      "topic": "Variables",
+      "title": "Variables",
+      "description": "Khai báo, đặt tên, gán lại và sử dụng biến để biểu diễn dữ liệu.",
+      "duration": "10 min",
+      "exerciseCount": 2,
+      "language": "Python",
+      "status": "upcoming",
+      "sections": [
+        {
+          "id": "lesson-3-section-1",
+          "number": "01",
+          "title": "Tạo và sử dụng biến",
+          "paragraphs": [
+            "Phép gán dùng dấu = để gắn một tên với một giá trị. Python tự suy ra kiểu dữ liệu từ giá trị nên không cần khai báo kiểu trước.",
+            "Tên biến nên mô tả dữ liệu, bắt đầu bằng chữ cái hoặc _, và không chứa dấu cách hay dấu gạch ngang."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "student_name = \"Linh\"\nage = 18\nprint(student_name, age)",
+            "caption": "Biến có thể lưu các giá trị với kiểu dữ liệu khác nhau."
+          },
+          "challenge": {
+            "id": "gfg-03-challenge-1",
+            "title": "Tạo thẻ thông tin",
+            "description": "Tạo biến name và age, rồi in đúng dòng: Linh is 18.",
+            "practiceLabel": "CODE CHALLENGE 1",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "name = \"Linh\"\nage = 18\n# In thông tin theo mẫu\n",
+            "testCases": [
+              {
+                "call": "stdout",
+                "expected": "Linh is 18",
+                "id": "gfg-03-c1-tc1"
+              }
+            ]
+          }
+        },
+        {
+          "id": "lesson-3-section-2",
+          "number": "02",
+          "title": "Cập nhật và gán nhiều biến",
+          "paragraphs": [
+            "Khi gán giá trị mới cho tên biến, giá trị hiện tại được thay thế. Python cũng cho phép gán nhiều biến trong một câu lệnh."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "left, right = \"tea\", \"coffee\"\nleft, right = right, left\nprint(left, right)",
+            "caption": "Có thể hoán đổi hai giá trị bằng phép gán đồng thời."
+          },
+          "challenge": {
+            "id": "gfg-03-challenge-2",
+            "title": "Hoán đổi hai giá trị",
+            "description": "Hoán đổi hai biến first và second rồi in chúng trên cùng một dòng.",
+            "practiceLabel": "CODE CHALLENGE 2",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "first = \"red\"\nsecond = \"blue\"\n# Hoán đổi hai giá trị\nprint(first, second)\n",
+            "testCases": [
+              {
+                "call": "stdout",
+                "expected": "blue red",
+                "id": "gfg-03-c2-tc1"
+              }
+            ]
+          }
+        }
+      ],
+      "prevLesson": {
+        "id": "2",
+        "title": "Input and Output"
+      },
+      "nextLesson": {
+        "id": "4",
+        "title": "Operators"
+      }
+    },
+    "4": {
+      "id": "4",
+      "lessonNumber": 4,
+      "moduleNumber": "01",
+      "moduleName": "BEGINNER",
+      "topic": "Operators",
+      "title": "Operators",
+      "description": "Dùng toán tử số học, so sánh và logic để tạo biểu thức từ các giá trị.",
+      "duration": "12 min",
+      "exerciseCount": 2,
+      "language": "Python",
+      "status": "upcoming",
+      "sections": [
+        {
+          "id": "lesson-4-section-1",
+          "number": "01",
+          "title": "Toán tử số học và gán",
+          "paragraphs": [
+            "Các toán tử +, -, *, /, //, % và ** thực hiện cộng, trừ, nhân, chia, chia lấy phần nguyên, chia lấy dư và lũy thừa.",
+            "Toán tử gán kết hợp như += cập nhật biến bằng một phép tính. Thứ tự ưu tiên giống quy tắc toán học; dùng ngoặc khi muốn làm rõ thứ tự."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "price = 12\nquantity = 3\ntotal = price * quantity\nprint(total)",
+            "caption": "Biểu thức tính ra một giá trị có thể lưu vào biến."
+          },
+          "challenge": {
+            "id": "gfg-04-challenge-1",
+            "title": "Tính tiền sau giảm giá",
+            "description": "Tính tổng tiền của 3 món giá 120 mỗi món sau khi giảm 10%, rồi in kết quả.",
+            "practiceLabel": "CODE CHALLENGE 1",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "price = 120\nquantity = 3\ndiscount = 10\n# Tính và in tổng tiền sau giảm giá\n",
+            "testCases": [
+              {
+                "call": "stdout",
+                "expected": "324.0",
+                "id": "gfg-04-c1-tc1"
+              }
+            ]
+          }
+        },
+        {
+          "id": "lesson-4-section-2",
+          "number": "02",
+          "title": "So sánh và logic",
+          "paragraphs": [
+            "Toán tử so sánh như ==, !=, <, <=, >, >= trả về True hoặc False. and, or và not kết hợp hoặc đảo điều kiện để chương trình ra quyết định.",
+            "Phân biệt = (gán giá trị) với == (so sánh hai giá trị)."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "age = 20\nhas_ticket = True\ncan_enter = age >= 18 and has_ticket\nprint(can_enter)",
+            "caption": "Kết quả so sánh có thể dùng trực tiếp trong biểu thức logic."
+          },
+          "challenge": {
+            "id": "gfg-04-challenge-2",
+            "title": "Đổi giây sang phút và giây",
+            "description": "Dùng // và % để đổi 367 giây thành phút và giây, in theo mẫu 6:7.",
+            "practiceLabel": "CODE CHALLENGE 2",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "total_seconds = 367\n# Tính số phút và số giây còn lại\n",
+            "testCases": [
+              {
+                "call": "stdout",
+                "expected": "6:7",
+                "id": "gfg-04-c2-tc1"
+              }
+            ]
+          }
+        }
+      ],
+      "prevLesson": {
+        "id": "3",
+        "title": "Variables"
+      },
+      "nextLesson": {
+        "id": "5",
+        "title": "Data Types"
+      }
     },
     "5": {
       "id": "5",
       "lessonNumber": 5,
-      "moduleNumber": "02",
-      "moduleName": "BUILDING BLOCKS",
-      "topic": "Scope & closures",
-      "title": "Scope & closures in practice",
-      "description": "Explore the fundamental concepts behind scope & closures and build hands-on intuition with interactive code examples.",
-      "duration": "18 min",
-      "exerciseCount": 1,
+      "moduleNumber": "01",
+      "moduleName": "BEGINNER",
+      "topic": "Data Types",
+      "title": "Data Types",
+      "description": "Nhận biết các kiểu dữ liệu Python thông dụng và chọn thao tác phù hợp với từng kiểu.",
+      "duration": "14 min",
+      "exerciseCount": 2,
       "language": "Python",
       "status": "upcoming",
-      "prevLesson": {
-        "id": "4",
-        "title": "Lesson 04"
-      },
-      "nextLesson": {
-        "id": "6",
-        "title": "Lesson 06"
-      },
       "sections": [
         {
-          "id": "sec-5-1",
+          "id": "lesson-5-section-1",
           "number": "01",
-          "title": "Understanding Scope & closures",
+          "title": "Số, chuỗi và Boolean",
           "paragraphs": [
-            "In this lesson, we explore how scope & closures functions in modern Python and why it is a critical building block for writing clean, efficient software."
+            "int biểu diễn số nguyên, float biểu diễn số thập phân, str lưu văn bản và bool nhận True hoặc False. Dùng type() để xem kiểu của giá trị.",
+            "Dữ liệu cùng kiểu thường hỗ trợ các phép toán tương ứng; ví dụ cộng số để tính tổng và nối chuỗi để tạo văn bản."
           ],
           "codeExample": {
             "filename": "example.py",
             "language": "Python",
-            "code": "# Exploring Scope & closures\nresult = \"Ready to code!\"\nprint(result)",
-            "caption": "Try running and experimenting with this example."
+            "code": "count = 3\nheight = 1.7\nname = \"Mai\"\nis_ready = True\nprint(type(count).__name__, type(height).__name__)",
+            "caption": "type(value).__name__ cho tên kiểu ngắn gọn."
+          },
+          "challenge": {
+            "id": "gfg-05-challenge-1",
+            "title": "Chuyển đổi dữ liệu",
+            "description": "Chuyển age_text thành int và price_text thành float, rồi in tên hai kiểu theo mẫu int float.",
+            "practiceLabel": "CODE CHALLENGE 1",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "age_text = \"21\"\nprice_text = \"19.5\"\n# Chuyển kiểu và in tên hai kiểu\n",
+            "testCases": [
+              {
+                "call": "stdout",
+                "expected": "int float",
+                "id": "gfg-05-c1-tc1"
+              }
+            ]
           }
         },
         {
-          "id": "sec-5-2",
+          "id": "lesson-5-section-2",
           "number": "02",
-          "title": "Key Takeaways",
+          "title": "Kiểu dữ liệu tập hợp",
           "paragraphs": [
-            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+            "list lưu nhiều phần tử theo thứ tự và có thể thay đổi; tuple có thứ tự nhưng không thể thay đổi; set giữ các phần tử duy nhất; dict lưu cặp khóa và giá trị.",
+            "Chọn cấu trúc dữ liệu theo cách cần truy cập và cập nhật thông tin."
           ],
-          "takeaway": {
-            "label": "THE TAKEAWAY",
-            "text": "Small, focused practice leads to deep programming intuition."
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "scores = [8, 9, 7]\npoint = (4, 6)\nprofile = {\"name\": \"Mai\"}\nunique_scores = {8, 8, 9}\nprint(scores[-1], point[0], profile[\"name\"], len(unique_scores))",
+            "caption": "Mỗi kiểu tập hợp có cách tổ chức và truy cập khác nhau."
+          },
+          "challenge": {
+            "id": "gfg-05-challenge-2",
+            "title": "Đọc dữ liệu từ các tập hợp",
+            "description": "Lấy phần tử cuối của list, tọa độ đầu của tuple, tên trong dict và số phần tử duy nhất trong set. In các giá trị cách nhau bằng dấu cách.",
+            "practiceLabel": "CODE CHALLENGE 2",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "scores = [8, 9, 7]\npoint = (4, 6)\nprofile = {\"name\": \"Mai\"}\nunique_scores = {8, 8, 9}\n# Truy cập và in bốn giá trị\n",
+            "testCases": [
+              {
+                "call": "stdout",
+                "expected": "7 4 Mai 2",
+                "id": "gfg-05-c2-tc1"
+              }
+            ]
           }
         }
-      ]
+      ],
+      "prevLesson": {
+        "id": "4",
+        "title": "Operators"
+      },
+      "nextLesson": {
+        "id": "6",
+        "title": "Conditional Statements and Loops"
+      }
     },
     "6": {
       "id": "6",
       "lessonNumber": 6,
-      "moduleNumber": "02",
-      "moduleName": "BUILDING BLOCKS",
-      "topic": "Lists & dictionaries",
-      "title": "Lists & dictionaries in practice",
-      "description": "Explore the fundamental concepts behind lists & dictionaries and build hands-on intuition with interactive code examples.",
+      "moduleNumber": "01",
+      "moduleName": "BEGINNER",
+      "topic": "Conditional Statements and Loops",
+      "title": "Conditional Statements and Loops",
+      "description": "Điều khiển luồng chương trình bằng if/elif/else và lặp bằng for, while.",
       "duration": "20 min",
-      "exerciseCount": 1,
+      "exerciseCount": 3,
       "language": "Python",
       "status": "upcoming",
-      "prevLesson": {
-        "id": "5",
-        "title": "Lesson 05"
-      },
-      "nextLesson": {
-        "id": "7",
-        "title": "Lesson 07"
-      },
       "sections": [
         {
-          "id": "sec-6-1",
+          "id": "lesson-6-section-1",
           "number": "01",
-          "title": "Understanding Lists & dictionaries",
+          "title": "Chọn nhánh với if, elif và else",
           "paragraphs": [
-            "In this lesson, we explore how lists & dictionaries functions in modern Python and why it is a critical building block for writing clean, efficient software."
+            "if chạy một khối khi điều kiện đúng. elif kiểm tra thêm điều kiện nếu các nhánh trước sai; else xử lý các trường hợp còn lại.",
+            "Các điều kiện có thể kết hợp bằng and, or và not. Thụt lề xác định câu lệnh thuộc nhánh nào."
           ],
           "codeExample": {
             "filename": "example.py",
             "language": "Python",
-            "code": "# Exploring Lists & dictionaries\nresult = \"Ready to code!\"\nprint(result)",
-            "caption": "Try running and experimenting with this example."
+            "code": "score = 76\nif score >= 80:\n    print(\"A\")\nelif score >= 60:\n    print(\"B\")\nelse:\n    print(\"C\")",
+            "caption": "Chỉ nhánh đầu tiên có điều kiện đúng sẽ chạy."
+          },
+          "challenge": {
+            "id": "gfg-06-challenge-1",
+            "title": "Phân loại điểm",
+            "description": "Đọc một điểm. In Pass nếu điểm từ 60 trở lên, nếu không in Try again.",
+            "practiceLabel": "CODE CHALLENGE 1",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "score = int(input())\n# Dùng if/else để in kết quả\n",
+            "testCases": [
+              {
+                "call": "stdin",
+                "input": "75\n",
+                "expected": "Pass",
+                "id": "gfg-06-c1-tc1"
+              },
+              {
+                "call": "stdin",
+                "input": "42\n",
+                "expected": "Try again",
+                "id": "gfg-06-c1-tc2"
+              }
+            ]
           }
         },
         {
-          "id": "sec-6-2",
+          "id": "lesson-6-section-2",
           "number": "02",
-          "title": "Key Takeaways",
+          "title": "Lặp với for và while",
           "paragraphs": [
-            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+            "for duyệt lần lượt các giá trị, thường kết hợp với range(). while tiếp tục chạy chừng nào điều kiện còn đúng.",
+            "Mỗi vòng while cần có bước làm thay đổi điều kiện để tránh lặp vô hạn. Có thể dùng break để dừng sớm và continue để chuyển sang lượt kế tiếp."
           ],
-          "takeaway": {
-            "label": "THE TAKEAWAY",
-            "text": "Small, focused practice leads to deep programming intuition."
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "total = 0\nfor number in range(1, 6):\n    if number % 2 == 0:\n        total += number\nprint(total)",
+            "caption": "for kết hợp if để chọn giá trị cần cộng."
+          },
+          "challenge": {
+            "id": "gfg-06-challenge-2",
+            "title": "Cộng các số chẵn",
+            "description": "Dùng vòng lặp để tính tổng các số chẵn từ 1 đến 10 và in tổng.",
+            "practiceLabel": "CODE CHALLENGE 2",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "total = 0\nfor number in range(1, 11):\n    # Cộng số chẵn vào total\n    pass\nprint(total)\n",
+            "testCases": [
+              {
+                "call": "stdout",
+                "expected": "30",
+                "id": "gfg-06-c2-tc1"
+              }
+            ]
+          }
+        },
+        {
+          "id": "lesson-6-section-3",
+          "number": "03",
+          "title": "Theo dõi vòng lặp while",
+          "paragraphs": [
+            "Vòng while phù hợp khi số lượt lặp phụ thuộc vào một điều kiện. Cập nhật biến đếm trong thân vòng lặp để chương trình tiến tới lúc dừng."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "count = 3\nwhile count > 0:\n    print(count)\n    count -= 1",
+            "caption": "Biến đếm giảm dần cho đến khi điều kiện sai."
+          },
+          "challenge": {
+            "id": "gfg-06-challenge-3",
+            "title": "Đếm ngược",
+            "description": "Dùng while để in các số từ 3 xuống 1, mỗi số trên một dòng.",
+            "practiceLabel": "CODE CHALLENGE 3",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "count = 3\nwhile count > 0:\n    # In count rồi cập nhật biến\n    pass\n",
+            "testCases": [
+              {
+                "call": "stdout",
+                "expected": "3\n2\n1",
+                "id": "gfg-06-c3-tc1"
+              }
+            ]
           }
         }
-      ]
+      ],
+      "prevLesson": {
+        "id": "5",
+        "title": "Data Types"
+      },
+      "nextLesson": {
+        "id": "7",
+        "title": "Functions"
+      }
     },
     "7": {
       "id": "7",
       "lessonNumber": 7,
       "moduleNumber": "02",
-      "moduleName": "BUILDING BLOCKS",
-      "topic": "Loops & iteration",
-      "title": "Loops & iteration in practice",
-      "description": "Explore the fundamental concepts behind loops & iteration and build hands-on intuition with interactive code examples.",
+      "moduleName": "INTERMEDIATE",
+      "topic": "Functions",
+      "title": "Functions",
+      "description": "Đóng gói logic thành hàm có thể gọi lại, truyền đối số và trả kết quả.",
       "duration": "16 min",
-      "exerciseCount": 1,
+      "exerciseCount": 2,
       "language": "Python",
       "status": "upcoming",
-      "prevLesson": {
-        "id": "6",
-        "title": "Lesson 06"
-      },
-      "nextLesson": {
-        "id": "8",
-        "title": "Lesson 08"
-      },
       "sections": [
         {
-          "id": "sec-7-1",
+          "id": "lesson-7-section-1",
           "number": "01",
-          "title": "Understanding Loops & iteration",
+          "title": "Định nghĩa và gọi hàm",
           "paragraphs": [
-            "In this lesson, we explore how loops & iteration functions in modern Python and why it is a critical building block for writing clean, efficient software."
+            "def bắt đầu một định nghĩa hàm. Thân hàm được thụt lề; hàm chỉ chạy khi được gọi bằng tên và dấu ngoặc.",
+            "Tham số là tên nhận dữ liệu bên trong hàm; đối số là giá trị truyền vào khi gọi."
           ],
           "codeExample": {
             "filename": "example.py",
             "language": "Python",
-            "code": "# Exploring Loops & iteration\nresult = \"Ready to code!\"\nprint(result)",
-            "caption": "Try running and experimenting with this example."
+            "code": "def greet(name):\n    return f\"Hello, {name}!\"\n\nprint(greet(\"Linh\"))",
+            "caption": "Hàm nhận một tham số và trả về một chuỗi."
+          },
+          "challenge": {
+            "id": "gfg-07-challenge-1",
+            "title": "Viết hàm chào hỏi",
+            "description": "Hoàn thiện greet(name) để trả về Hello, <name>!.",
+            "practiceLabel": "CODE CHALLENGE 1",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "def greet(name):\n    # Trả về lời chào\n    pass\n",
+            "testCases": [
+              {
+                "call": "greet(\"An\")",
+                "expected": "Hello, An!",
+                "id": "gfg-07-c1-tc1"
+              },
+              {
+                "call": "greet(\"Codora\")",
+                "expected": "Hello, Codora!",
+                "id": "gfg-07-c1-tc2"
+              }
+            ]
           }
         },
         {
-          "id": "sec-7-2",
+          "id": "lesson-7-section-2",
           "number": "02",
-          "title": "Key Takeaways",
+          "title": "Đối số và giá trị trả về",
           "paragraphs": [
-            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+            "return gửi kết quả về nơi gọi hàm và kết thúc lần chạy hàm hiện tại. Nếu cần, có thể đặt giá trị mặc định cho tham số.",
+            "Tách một phép tính thành hàm giúp kiểm tra cùng một logic với nhiều bộ dữ liệu."
           ],
-          "takeaway": {
-            "label": "THE TAKEAWAY",
-            "text": "Small, focused practice leads to deep programming intuition."
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "def rectangle_area(width, height):\n    return width * height\n\nprint(rectangle_area(4, 3))",
+            "caption": "Giá trị trả về có thể là số, chuỗi hoặc một cấu trúc dữ liệu."
+          },
+          "challenge": {
+            "id": "gfg-07-challenge-2",
+            "title": "Tính trung bình",
+            "description": "Hoàn thiện average(a, b, c) để trả về trung bình cộng của ba số.",
+            "practiceLabel": "CODE CHALLENGE 2",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "def average(a, b, c):\n    # Tính và trả về trung bình\n    pass\n",
+            "testCases": [
+              {
+                "call": "average(3, 6, 9)",
+                "expected": "6.0",
+                "id": "gfg-07-c2-tc1"
+              },
+              {
+                "call": "average(2, 4, 5)",
+                "expected": "3.6666666666666665",
+                "id": "gfg-07-c2-tc2"
+              }
+            ]
           }
         }
-      ]
+      ],
+      "prevLesson": {
+        "id": "6",
+        "title": "Conditional Statements and Loops"
+      },
+      "nextLesson": {
+        "id": "8",
+        "title": "Global and Local Variables"
+      }
     },
     "8": {
       "id": "8",
       "lessonNumber": 8,
-      "moduleNumber": "03",
-      "moduleName": "ADVANCED CONCEPTS",
-      "topic": "Conditionals & logic",
-      "title": "Conditionals & logic in practice",
-      "description": "Explore the fundamental concepts behind conditionals & logic and build hands-on intuition with interactive code examples.",
+      "moduleNumber": "02",
+      "moduleName": "INTERMEDIATE",
+      "topic": "Global and Local Variables",
+      "title": "Global and Local Variables",
+      "description": "Phân biệt biến cục bộ và toàn cục, đọc biến ngoài hàm và cập nhật state có chủ đích.",
       "duration": "14 min",
-      "exerciseCount": 1,
+      "exerciseCount": 2,
       "language": "Python",
       "status": "upcoming",
-      "prevLesson": {
-        "id": "7",
-        "title": "Lesson 07"
-      },
-      "nextLesson": {
-        "id": "9",
-        "title": "Lesson 09"
-      },
       "sections": [
         {
-          "id": "sec-8-1",
+          "id": "lesson-8-section-1",
           "number": "01",
-          "title": "Understanding Conditionals & logic",
+          "title": "Biến cục bộ và biến toàn cục",
           "paragraphs": [
-            "In this lesson, we explore how conditionals & logic functions in modern Python and why it is a critical building block for writing clean, efficient software."
+            "Tên được gán bên trong hàm thường là biến cục bộ và chỉ dùng trong hàm đó. Biến khai báo ở ngoài hàm là biến toàn cục, có thể được đọc trong hàm.",
+            "Ưu tiên truyền dữ liệu qua tham số và return vì cách đó làm luồng dữ liệu rõ ràng hơn biến toàn cục."
           ],
           "codeExample": {
             "filename": "example.py",
             "language": "Python",
-            "code": "# Exploring Conditionals & logic\nresult = \"Ready to code!\"\nprint(result)",
-            "caption": "Try running and experimenting with this example."
+            "code": "tax_rate = 0.1\ndef total_with_tax(price):\n    return price * (1 + tax_rate)\n\nprint(total_with_tax(50))",
+            "caption": "Hàm có thể đọc biến toàn cục mà không cần khai báo global."
+          },
+          "challenge": {
+            "id": "gfg-08-challenge-1",
+            "title": "Tính giá từ cấu hình toàn cục",
+            "description": "Dùng biến toàn cục tax_rate trong hàm total_with_tax(price) và trả về giá sau thuế.",
+            "practiceLabel": "CODE CHALLENGE 1",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "tax_rate = 0.1\ndef total_with_tax(price):\n    # Dùng tax_rate để tính và trả kết quả\n    pass\n",
+            "testCases": [
+              {
+                "call": "total_with_tax(100)",
+                "expected": "110.00000000000001",
+                "id": "gfg-08-c1-tc1"
+              },
+              {
+                "call": "total_with_tax(50)",
+                "expected": "55.00000000000001",
+                "id": "gfg-08-c1-tc2"
+              }
+            ]
           }
         },
         {
-          "id": "sec-8-2",
+          "id": "lesson-8-section-2",
           "number": "02",
-          "title": "Key Takeaways",
+          "title": "Cập nhật biến toàn cục",
           "paragraphs": [
-            "Practice writing code frequently to build confidence and muscle memory with these patterns."
+            "Muốn gán lại một tên toàn cục bên trong hàm, cần khai báo tên đó bằng global. Dùng global vừa đủ; với chương trình lớn, state truyền qua tham số thường dễ theo dõi hơn."
           ],
-          "takeaway": {
-            "label": "THE TAKEAWAY",
-            "text": "Small, focused practice leads to deep programming intuition."
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "visits = 0\ndef record_visit():\n    global visits\n    visits += 1\n    return visits\n\nprint(record_visit())",
+            "caption": "global báo rằng phép gán trong hàm cập nhật tên ở phạm vi toàn cục."
+          },
+          "challenge": {
+            "id": "gfg-08-challenge-2",
+            "title": "Tăng bộ đếm dùng chung",
+            "description": "Hoàn thiện record_visit() để tăng biến toàn cục visits lên 1 và trả giá trị mới.",
+            "practiceLabel": "CODE CHALLENGE 2",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "visits = 0\ndef record_visit():\n    # Khai báo và cập nhật visits\n    pass\n",
+            "testCases": [
+              {
+                "call": "record_visit()",
+                "expected": "1",
+                "id": "gfg-08-c2-tc1"
+              },
+              {
+                "call": "record_visit() + record_visit()",
+                "expected": "3",
+                "id": "gfg-08-c2-tc2"
+              }
+            ]
           }
         }
-      ]
+      ],
+      "prevLesson": {
+        "id": "7",
+        "title": "Functions"
+      },
+      "nextLesson": {
+        "id": "9",
+        "title": "Recursion"
+      }
     },
     "9": {
       "id": "9",
       "lessonNumber": 9,
-      "moduleNumber": "03",
-      "moduleName": "ADVANCED CONCEPTS",
-      "topic": "Working with modules",
-      "title": "Working with modules in practice",
-      "description": "Explore the fundamental concepts behind working with modules and build hands-on intuition with interactive code examples.",
-      "duration": "15 min",
-      "exerciseCount": 1,
+      "moduleNumber": "02",
+      "moduleName": "INTERMEDIATE",
+      "topic": "Recursion",
+      "title": "Recursion",
+      "description": "Dùng đệ quy để chia bài toán thành trường hợp cơ sở và bài toán nhỏ hơn.",
+      "duration": "18 min",
+      "exerciseCount": 2,
       "language": "Python",
       "status": "upcoming",
+      "sections": [
+        {
+          "id": "lesson-9-section-1",
+          "number": "01",
+          "title": "Trường hợp cơ sở và bước đệ quy",
+          "paragraphs": [
+            "Đệ quy xảy ra khi hàm gọi lại chính nó với dữ liệu nhỏ hơn. Trường hợp cơ sở trả kết quả ngay để dừng; trường hợp đệ quy tiến dần về trường hợp cơ sở.",
+            "Nếu thiếu điều kiện dừng hoặc tham số không tiến gần trường hợp cơ sở, hàm có thể gọi lặp đến giới hạn đệ quy."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "def factorial(n):\n    if n <= 1:  # Trường hợp cơ sở\n        return 1\n    return n * factorial(n - 1)\n\nprint(factorial(5))",
+            "caption": "Mỗi lời gọi giảm n cho đến khi chạm trường hợp cơ sở."
+          },
+          "challenge": {
+            "id": "gfg-09-challenge-1",
+            "title": "Tính giai thừa đệ quy",
+            "description": "Hoàn thiện factorial(n). Với n từ 0 trở lên, trả về tích các số từ 1 đến n.",
+            "practiceLabel": "CODE CHALLENGE 1",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "def factorial(n):\n    # Thêm base case và bước đệ quy\n    pass\n",
+            "testCases": [
+              {
+                "call": "factorial(0)",
+                "expected": "1",
+                "id": "gfg-09-c1-tc1"
+              },
+              {
+                "call": "factorial(5)",
+                "expected": "120",
+                "id": "gfg-09-c1-tc2"
+              }
+            ]
+          }
+        },
+        {
+          "id": "lesson-9-section-2",
+          "number": "02",
+          "title": "Theo dõi các lời gọi",
+          "paragraphs": [
+            "Có thể hình dung đệ quy như một chồng lời gọi: mỗi lần gọi chờ kết quả từ lời gọi nhỏ hơn, rồi trả kết quả khi lời gọi đó hoàn tất.",
+            "Kiểm tra các đầu vào nhỏ trước giúp phát hiện base case thiếu hoặc công thức đệ quy sai."
+          ],
+          "codeExample": {
+            "filename": "example.py",
+            "language": "Python",
+            "code": "def sum_to(n):\n    if n <= 0:\n        return 0\n    return n + sum_to(n - 1)\n\nprint(sum_to(4))",
+            "caption": "sum_to(4) rút gọn thành 4 + 3 + 2 + 1 + sum_to(0)."
+          },
+          "challenge": {
+            "id": "gfg-09-challenge-2",
+            "title": "Tính tổng chữ số đệ quy",
+            "description": "Hoàn thiện digit_sum(n) để trả về tổng các chữ số của số nguyên không âm n.",
+            "practiceLabel": "CODE CHALLENGE 2",
+            "filename": "main.py",
+            "language": "Python 3",
+            "initialCode": "def digit_sum(n):\n    # Dừng ở một chữ số; nếu không, cộng chữ số cuối với phần còn lại\n    pass\n",
+            "testCases": [
+              {
+                "call": "digit_sum(7)",
+                "expected": "7",
+                "id": "gfg-09-c2-tc1"
+              },
+              {
+                "call": "digit_sum(5082)",
+                "expected": "15",
+                "id": "gfg-09-c2-tc2"
+              }
+            ]
+          }
+        }
+      ],
       "prevLesson": {
         "id": "8",
-        "title": "Lesson 08"
-      },
-      "nextLesson": {
-        "id": "10",
-        "title": "Lesson 10"
-      },
-      "sections": [
-        {
-          "id": "sec-9-1",
-          "number": "01",
-          "title": "Understanding Working with modules",
-          "paragraphs": [
-            "In this lesson, we explore how working with modules functions in modern Python and why it is a critical building block for writing clean, efficient software."
-          ],
-          "codeExample": {
-            "filename": "example.py",
-            "language": "Python",
-            "code": "# Exploring Working with modules\nresult = \"Ready to code!\"\nprint(result)",
-            "caption": "Try running and experimenting with this example."
-          }
-        },
-        {
-          "id": "sec-9-2",
-          "number": "02",
-          "title": "Key Takeaways",
-          "paragraphs": [
-            "Practice writing code frequently to build confidence and muscle memory with these patterns."
-          ],
-          "takeaway": {
-            "label": "THE TAKEAWAY",
-            "text": "Small, focused practice leads to deep programming intuition."
-          }
-        }
-      ]
-    },
-    "10": {
-      "id": "10",
-      "lessonNumber": 10,
-      "moduleNumber": "03",
-      "moduleName": "ADVANCED CONCEPTS",
-      "topic": "Error handling & debug",
-      "title": "Error handling & debug in practice",
-      "description": "Explore the fundamental concepts behind error handling & debug and build hands-on intuition with interactive code examples.",
-      "duration": "22 min",
-      "exerciseCount": 1,
-      "language": "Python",
-      "status": "upcoming",
-      "prevLesson": {
-        "id": "9",
-        "title": "Lesson 09"
-      },
-      "nextLesson": {
-        "id": "11",
-        "title": "Lesson 11"
-      },
-      "sections": [
-        {
-          "id": "sec-10-1",
-          "number": "01",
-          "title": "Understanding Error handling & debug",
-          "paragraphs": [
-            "In this lesson, we explore how error handling & debug functions in modern Python and why it is a critical building block for writing clean, efficient software."
-          ],
-          "codeExample": {
-            "filename": "example.py",
-            "language": "Python",
-            "code": "# Exploring Error handling & debug\nresult = \"Ready to code!\"\nprint(result)",
-            "caption": "Try running and experimenting with this example."
-          }
-        },
-        {
-          "id": "sec-10-2",
-          "number": "02",
-          "title": "Key Takeaways",
-          "paragraphs": [
-            "Practice writing code frequently to build confidence and muscle memory with these patterns."
-          ],
-          "takeaway": {
-            "label": "THE TAKEAWAY",
-            "text": "Small, focused practice leads to deep programming intuition."
-          }
-        }
-      ]
-    },
-    "11": {
-      "id": "11",
-      "lessonNumber": 11,
-      "moduleNumber": "03",
-      "moduleName": "ADVANCED CONCEPTS",
-      "topic": "File I/O basics",
-      "title": "File I/O basics in practice",
-      "description": "Explore the fundamental concepts behind file i/o basics and build hands-on intuition with interactive code examples.",
-      "duration": "18 min",
-      "exerciseCount": 1,
-      "language": "Python",
-      "status": "upcoming",
-      "prevLesson": {
-        "id": "10",
-        "title": "Lesson 10"
-      },
-      "nextLesson": {
-        "id": "12",
-        "title": "Lesson 12"
-      },
-      "sections": [
-        {
-          "id": "sec-11-1",
-          "number": "01",
-          "title": "Understanding File I/O basics",
-          "paragraphs": [
-            "In this lesson, we explore how file i/o basics functions in modern Python and why it is a critical building block for writing clean, efficient software."
-          ],
-          "codeExample": {
-            "filename": "example.py",
-            "language": "Python",
-            "code": "# Exploring File I/O basics\nresult = \"Ready to code!\"\nprint(result)",
-            "caption": "Try running and experimenting with this example."
-          }
-        },
-        {
-          "id": "sec-11-2",
-          "number": "02",
-          "title": "Key Takeaways",
-          "paragraphs": [
-            "Practice writing code frequently to build confidence and muscle memory with these patterns."
-          ],
-          "takeaway": {
-            "label": "THE TAKEAWAY",
-            "text": "Small, focused practice leads to deep programming intuition."
-          }
-        }
-      ]
-    },
-    "12": {
-      "id": "12",
-      "lessonNumber": 12,
-      "moduleNumber": "03",
-      "moduleName": "ADVANCED CONCEPTS",
-      "topic": "Final mini project",
-      "title": "Final mini project in practice",
-      "description": "Explore the fundamental concepts behind final mini project and build hands-on intuition with interactive code examples.",
-      "duration": "30 min",
-      "exerciseCount": 1,
-      "language": "Python",
-      "status": "upcoming",
-      "prevLesson": {
-        "id": "11",
-        "title": "Lesson 11"
-      },
-      "sections": [
-        {
-          "id": "sec-12-1",
-          "number": "01",
-          "title": "Understanding Final mini project",
-          "paragraphs": [
-            "In this lesson, we explore how final mini project functions in modern Python and why it is a critical building block for writing clean, efficient software."
-          ],
-          "codeExample": {
-            "filename": "example.py",
-            "language": "Python",
-            "code": "# Exploring Final mini project\nresult = \"Ready to code!\"\nprint(result)",
-            "caption": "Try running and experimenting with this example."
-          }
-        },
-        {
-          "id": "sec-12-2",
-          "number": "02",
-          "title": "Key Takeaways",
-          "paragraphs": [
-            "Practice writing code frequently to build confidence and muscle memory with these patterns."
-          ],
-          "takeaway": {
-            "label": "THE TAKEAWAY",
-            "text": "Small, focused practice leads to deep programming intuition."
-          }
-        }
-      ]
+        "title": "Global and Local Variables"
+      }
     }
   },
   "exercises": [

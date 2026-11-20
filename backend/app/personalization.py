@@ -97,10 +97,12 @@ def personalize_lesson(
         for section in sections
     ]
     has_challenge = any(item["has_challenge"] for item in section_source)
-    instructions = """You adapt programming lessons for one learner. Keep the lesson skeleton exactly the same: same number and order of sections, section IDs, section titles, and main learning objectives. Adapt explanations, illustrative non-challenge examples, and takeaway text to the learner profile. Apply learning_preferences exactly when provided; null preference fields mean no preference has been stated, so use a neutral style without guessing. Use lesson.preknowledge and lesson.new_concepts as curriculum metadata. Use learner_profile.completed_lessons only as evidence that a lesson was marked complete, not as proof that every concept in it was mastered. Use learner_profile.concepts as mapped exercise evidence: mastered means at least two distinct mapped exercises were completed with scores of 8/10 or higher; demonstrated means at least one mapped exercise was completed; practicing means a mapped exercise was attempted without a completed result; studied means a completed lesson lists the concept in new_concepts; not_assessed means there is no exercise attempt or completed lesson evidence. These statuses are evidence, not guarantees of mastery. Match learner_profile.concepts to lesson.preknowledge and lesson.new_concepts by concept id; if a concept has no matching progress entry, treat it as not_assessed. For each preknowledge concept, treat not_assessed as no recorded evidence and explain the foundation before relying on it, using a simple concrete example; for practicing, briefly recall the core idea and clarify likely gaps with an example; for studied, give a concise refresher because a completed lesson is not proof of mastery; for demonstrated or mastered, acknowledge it in only one or two recap sentences and move on. For each new_concept, preserve it as a learning objective: when status is not_assessed, explain it fully at the learner's level with intuition and a relevant worked example; when practicing, target likely gaps with a worked example; when studied, give a concise refresher and add an example only if useful; when demonstrated or mastered, recap known basics in one or two sentences and do not reteach them; explain only any genuinely new sub-objective in the lesson. Do not infer mastery from level or completed_lessons alone. Scale vocabulary, steps, and example complexity using learner_profile.level and recent performance. Apply learning_preferences to style and depth: step_by_step uses ordered stages, conceptual explains why ideas connect, direct starts with the action; concise, balanced, and detailed adjust length and example detail. Preferences must not remove essential scaffolding or lesson objectives. If a preference is null, use a neutral style and continue without asking the learner to choose one. Preserve all new_concepts as the lesson's learning objectives. Keep all code examples valid Python and consistent with lesson facts. Include one output item per input section in the same order. Return JSON only with this shape: {"sections":[{"id":"existing section id","paragraphs":["..."],"visual_example":{"filename":"example.py","language":"Python","code":"...","caption":"..."} or null,"takeaway_text":"..." or null,"challenge":null or {"title":"...","description":"...","practiceLabel":"...","filename":"...","initialCode":"...","testCases":[{"expected":"exact stdout for a correct solution"}]}}]}. If the lesson already has any interactive challenge, set challenge to null for every output section; existing challenges must remain unchanged. If the lesson has no interactive challenge, create exactly one new challenge in the section where it best reinforces the taught concept, and set challenge to null in all other sections. Match the task difficulty to the learner profile and recent performance: beginner tasks should be small and guided, intermediate tasks should combine concepts, and advanced tasks can require edge-case reasoning. Low scores or repeated errors mean simpler scaffolding; strong results permit more demanding work. The challenge must run in the existing browser Python editor: use one deterministic stdout test case, provide starter code with a clearly editable input value and TODO, and make expected output the exact stdout of a correct solution. Write initialCode as plain Python source only, with no HTML tags, JSX, Markdown fences, or syntax-highlighting markup; ensure it is syntactically valid before the TODO is completed. Do not use input() or depend on stdin, files, network, or extra packages. Starter code must not contain the completed solution. Do not include a solution in the generated challenge. Do not add or remove sections. Use readable, direct learner-facing language."""
+    existing_challenge_count = sum(item["has_challenge"] for item in section_source)
+    instructions = """You adapt programming lessons for one learner. Keep the lesson skeleton exactly the same: same number and order of sections, section IDs, section titles, and main learning objectives. Adapt explanations, illustrative non-challenge examples, and takeaway text to the learner profile. Apply learning_preferences exactly when provided; null preference fields mean no preference has been stated, so use a neutral style without guessing. Use lesson.preknowledge and lesson.new_concepts as curriculum metadata. Use learner_profile.completed_lessons only as evidence that a lesson was marked complete, not as proof that every concept in it was mastered. Use learner_profile.concepts as mapped exercise evidence: mastered means at least two distinct mapped exercises were completed with scores of 8/10 or higher; demonstrated means at least one mapped exercise was completed; practicing means a mapped exercise was attempted without a completed result; studied means a completed lesson lists the concept in new_concepts; not_assessed means there is no exercise attempt or completed lesson evidence. These statuses are evidence, not guarantees of mastery. Match learner_profile.concepts to lesson.preknowledge and lesson.new_concepts by concept id; if a concept has no matching progress entry, treat it as not_assessed. For each preknowledge concept, treat not_assessed as no recorded evidence and explain the foundation before relying on it, using a simple concrete example; for practicing, briefly recall the core idea and clarify likely gaps with an example; for studied, give a concise refresher because a completed lesson is not proof of mastery; for demonstrated or mastered, acknowledge it in only one or two recap sentences and move on. For each new_concept, preserve it as a learning objective: when status is not_assessed, explain it fully at the learner's level with intuition and a relevant worked example; when practicing, target likely gaps with a worked example; when studied, give a concise refresher and add an example only if useful; when demonstrated or mastered, recap known basics in one or two sentences and do not reteach them; explain only any genuinely new sub-objective in the lesson. Do not infer mastery from level or completed_lessons alone. Scale vocabulary, steps, and example complexity using learner_profile.level and recent performance. Apply learning_preferences to style and depth: step_by_step uses ordered stages, conceptual explains why ideas connect, direct starts with the action; concise, balanced, and detailed adjust length and example detail. Preferences must not remove essential scaffolding or lesson objectives. If a preference is null, use a neutral style and continue without asking the learner to choose one. Preserve all new_concepts as the lesson's learning objectives. Keep all code examples valid Python and consistent with lesson facts. Include one output item per input section in the same order. Return JSON only with this shape: {"sections":[{"id":"existing section id","paragraphs":["..."],"visual_example":{"filename":"example.py","language":"Python","code":"...","caption":"..."} or null,"takeaway_text":"..." or null,"challenge":null or {"title":"...","description":"...","practiceLabel":"...","filename":"main.py","initialCode":"...","testCases":[{"call":"stdout" or "a_function_call(...)" or "stdin","input":"stdin text, only for call=stdin","expected":"expected stdout or return value"}]}}]}. Keep every existing challenge unchanged. If a section already has a challenge, return null for that section. The lesson must end with 2 or 3 Code challenges total: when the input lesson has fewer than 2, add exactly enough new challenges in suitable sections to reach 2; when it already has 2 or 3, add none. Never create quizzes, multiple-choice questions, or non-code activities. A stdout challenge uses call="stdout" and one or more deterministic expected output cases. A function challenge uses a simple Python call expression and expected return value. An input/output challenge may use call="stdin" with an input string and expected stdout; it must use the existing editor's stdin runner. Match the task difficulty to the learner profile and recent performance: beginner tasks should be small and guided, intermediate tasks should combine concepts, and advanced tasks can require edge-case reasoning. Low scores or repeated errors mean simpler scaffolding; strong results permit more demanding work. Provide starter code with a clearly editable value or TODO and no completed solution. Write initialCode as plain, syntactically valid Python source, with no HTML tags, JSX, Markdown fences, or syntax-highlighting markup. Expected outputs must exactly match Python behavior. Do not depend on files, network, or extra packages. Do not add or remove sections. Use readable, direct learner-facing language."""
     user_input = {
         "output_format": "Respond with valid JSON only, using a top-level sections array.",
         "lesson_has_challenge": has_challenge,
+        "existing_challenge_count": existing_challenge_count,
         "learner_profile": {
             "level": ability_data.get("level", "beginner"),
             "learning_preferences": ability_data.get("learning_preferences", LearningPreferences().model_dump()),
@@ -180,6 +182,7 @@ def personalize_lesson(
         raise HTTPException(502, "The lesson model returned an invalid structure")
 
     generated_challenge_count = 0
+    preserved_challenge_count = 0
     for original, rewritten in zip(sections, rewritten_sections):
         if not isinstance(rewritten, dict) or rewritten.get("id") != original.get("id"):
             raise HTTPException(502, "The lesson model changed the section structure")
@@ -199,7 +202,12 @@ def personalize_lesson(
             }
 
         generated_challenge = rewritten.get("challenge")
-        if not has_challenge and isinstance(generated_challenge, dict):
+        original_challenge = original.get("challenge")
+        if isinstance(original_challenge, dict):
+            if generated_challenge is not None:
+                raise HTTPException(502, "The lesson model attempted to replace an existing challenge")
+            preserved_challenge_count += 1
+        elif isinstance(generated_challenge, dict):
             required = ("title", "description", "practiceLabel", "filename", "initialCode")
             if not all(isinstance(generated_challenge.get(key), str) and generated_challenge[key].strip() for key in required):
                 raise HTTPException(502, "The lesson model returned an invalid challenge")
@@ -210,12 +218,30 @@ def personalize_lesson(
             test_cases = generated_challenge.get("testCases")
             if (
                 not isinstance(test_cases, list)
-                or len(test_cases) != 1
-                or not isinstance(test_cases[0], dict)
-                or not isinstance(test_cases[0].get("expected"), str)
-                or not test_cases[0]["expected"].strip()
+                or not test_cases
+                or any(
+                    not isinstance(case, dict)
+                    or not isinstance(case.get("expected"), str)
+                    or not case["expected"].strip()
+                    or not isinstance(case.get("call", "stdout"), str)
+                    or not case.get("call", "stdout").strip()
+                    or ("input" in case and not isinstance(case["input"], str))
+                    or (case.get("call") == "stdin" and "input" not in case)
+                    or ("input" in case and case.get("call") != "stdin")
+                    for case in test_cases
+                )
             ):
-                raise HTTPException(502, "The lesson model returned invalid challenge output")
+                raise HTTPException(502, "The lesson model returned invalid challenge test cases")
+            normalized_cases = []
+            for case_index, case in enumerate(test_cases, start=1):
+                normalized_case = {
+                    "id": f"ai-case-{original.get('id')}-{case_index}",
+                    "call": case.get("call", "stdout"),
+                    "expected": case["expected"],
+                }
+                if "input" in case:
+                    normalized_case["input"] = case["input"]
+                normalized_cases.append(normalized_case)
             original["challenge"] = {
                 "id": f"ai-{original.get('id')}",
                 "title": generated_challenge["title"],
@@ -224,16 +250,19 @@ def personalize_lesson(
                 "filename": generated_challenge["filename"],
                 "language": "Python",
                 "initialCode": generated_challenge["initialCode"],
-                "testCases": [{"id": f"ai-case-{original.get('id')}", "call": "stdout", "expected": test_cases[0]["expected"]}],
+                "testCases": normalized_cases,
             }
             generated_challenge_count += 1
+        elif generated_challenge is not None:
+            raise HTTPException(502, "The lesson model returned an invalid challenge")
 
         takeaway_text = rewritten.get("takeaway_text")
         if isinstance(original.get("takeaway"), dict) and isinstance(takeaway_text, str) and takeaway_text.strip():
             original["takeaway"]["text"] = takeaway_text
 
-    if not has_challenge and generated_challenge_count != 1:
-        raise HTTPException(502, "The lesson model did not return exactly one interactive challenge")
+    final_challenge_count = preserved_challenge_count + generated_challenge_count
+    if final_challenge_count < 2 or final_challenge_count > 3:
+        raise HTTPException(502, "The lesson model did not preserve the required 2–3 Code challenges")
     if generated_challenge_count:
         try:
             lesson["exerciseCount"] = int(lesson.get("exerciseCount", 0)) + generated_challenge_count

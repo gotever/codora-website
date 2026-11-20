@@ -65,6 +65,8 @@
   color: #f8fafc;
   white-space: pre;
   tab-size: 4;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
 }
 
 /* Caption */

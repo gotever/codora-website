@@ -5,12 +5,14 @@ export interface Lesson {
   number?: number
   title: string
   description: string
+  completed?: boolean
 }
 
 export interface Course {
   id: number | string
   title: string
   lessonCount: number
+  completedLessonCount?: number
   paceLabel?: string
   lessons: Lesson[]
 }
@@ -19,48 +21,53 @@ export const COURSES: Course[] = [
   {
     id: 'python-fundamentals',
     title: 'Python fundamentals',
-    lessonCount: 8,
+    lessonCount: 9,
     paceLabel: 'Go at your own pace',
     lessons: [
       {
         id: 1,
-        title: 'Your first Python program',
-        description: 'Meet Python and write a simple "Hello, world!"',
+        title: 'Introduction to Python',
+        description: 'Meet Python, run a first program, and learn the basic structure of Python code.',
       },
       {
         id: 2,
-        title: 'Variables and data types',
-        description: 'Give your data a name and get to know the basics.',
+        title: 'Input and Output',
+        description: 'Read user input, convert it when needed, and display results with print().',
       },
       {
         id: 3,
-        title: 'Working with strings',
-        description: 'Create, combine, and work with text in Python.',
+        title: 'Variables',
+        description: 'Store values under clear names and reuse them in a program.',
       },
       {
         id: 4,
-        title: 'Numbers and operators',
-        description: 'Do calculations and explore everyday operations.',
+        title: 'Operators',
+        description: 'Use arithmetic, comparison, logical, and assignment operators.',
       },
       {
         id: 5,
-        title: 'Making decisions',
-        description: 'Choose what happens next with if, elif, and else.',
+        title: 'Data Types',
+        description: 'Work with numbers, text, Boolean values, and common collections.',
       },
       {
         id: 6,
-        title: 'Repeating with loops',
-        description: 'Let for and while loops take care of repetition.',
+        title: 'Conditional Statements and Loops',
+        description: 'Choose branches with if statements and repeat work with for and while.',
       },
       {
         id: 7,
-        title: 'Lists and collections',
-        description: 'Keep related values together and work with them.',
+        title: 'Functions',
+        description: 'Define reusable blocks of code that accept arguments and return values.',
       },
       {
         id: 8,
-        title: 'Writing your own functions',
-        description: 'Turn useful pieces of code into reusable building blocks.',
+        title: 'Global and Local Variables',
+        description: 'Understand variable scope and how functions read or update global names.',
+      },
+      {
+        id: 9,
+        title: 'Recursion',
+        description: 'Solve a problem through smaller calls to the same function and a base case.',
       },
     ],
   },

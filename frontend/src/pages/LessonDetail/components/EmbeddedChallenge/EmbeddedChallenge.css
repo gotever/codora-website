@@ -130,6 +130,8 @@
   color: #f8fafc;
   white-space: pre;
   tab-size: 4;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
   overflow: auto;
   pointer-events: none;
   z-index: 1;
@@ -153,6 +155,8 @@
   line-height: 22px;
   white-space: pre;
   tab-size: 4;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
   overflow: auto;
   resize: none;
   z-index: 2;
@@ -303,6 +307,8 @@
   font-size: 13px;
   line-height: 1.6;
   color: #e2e8f0;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
   white-space: pre-wrap;
   word-break: break-all;
   min-height: 36px;

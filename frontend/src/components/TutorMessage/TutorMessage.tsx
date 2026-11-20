@@ -6,23 +6,27 @@ interface TutorMessageProps {
   text: string
 }
 
+function renderPlainText(text: string) {
+  return text.replace(/<=/g, '≤')
+}
+
 function renderInline(text: string): ReactNode[] {
   const parts = text.split(/(\*\*[^*]+\*\*|__[^_]+__|`[^`]+`|\*[^*]+\*)/g)
 
   return parts.filter(Boolean).map((part, index) => {
     if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={index}>{part.slice(2, -2)}</strong>
+      return <strong key={index}>{renderPlainText(part.slice(2, -2))}</strong>
     }
     if (part.startsWith('__') && part.endsWith('__')) {
-      return <strong key={index}>{part.slice(2, -2)}</strong>
+      return <strong key={index}>{renderPlainText(part.slice(2, -2))}</strong>
     }
     if (part.startsWith('`') && part.endsWith('`')) {
       return <code className="tutor-message__inline-code" key={index}>{part.slice(1, -1)}</code>
     }
     if (part.startsWith('*') && part.endsWith('*')) {
-      return <em key={index}>{part.slice(1, -1)}</em>
+      return <em key={index}>{renderPlainText(part.slice(1, -1))}</em>
     }
-    return part
+    return renderPlainText(part)
   })
 }
 

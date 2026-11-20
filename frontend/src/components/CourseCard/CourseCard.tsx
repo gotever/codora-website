@@ -7,15 +7,22 @@ interface CourseCardProps {
 }
 
 export default function CourseCard({ course }: CourseCardProps) {
+  const isCompleted = course.lessonCount > 0 && course.completedLessonCount === course.lessonCount
+
   return (
     <article className="course-card" aria-labelledby={`course-${course.id}-title`}>
       {/* Header */}
       <div className="course-card__header">
-        <h2 className="course-card__title" id={`course-${course.id}-title`}>
-          {course.title}
-        </h2>
+        <div className="course-card__title-row">
+          <h2 className="course-card__title" id={`course-${course.id}-title`}>
+            {course.title}
+          </h2>
+          {isCompleted && <span className="course-card__completed">Course completed</span>}
+        </div>
         <p className="course-card__meta">
-          {course.lessonCount} lessons
+          {course.completedLessonCount === undefined
+            ? `${course.lessonCount} lessons`
+            : `${course.completedLessonCount} of ${course.lessonCount} lessons completed`}
           {course.paceLabel && (
             <>
               <span className="course-card__meta-dot">·</span>

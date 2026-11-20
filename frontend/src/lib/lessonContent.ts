@@ -86,12 +86,16 @@ export function buildCourseNavigation(
   }
 
   const lessonDetails = details.flatMap(({ detail }) => detail ? [detail] : [])
+  const courseModules = Array.from(modules.values())
   return {
     id: String(course.id),
     title: course.title,
     description: course.description,
     totalLessons: lessonDetails.length,
-    completedLessons: lessonDetails.filter((detail) => detail.status === 'completed').length,
-    modules: Array.from(modules.values()),
+    completedLessons: courseModules.reduce(
+      (total, module) => total + module.lessons.filter((lesson) => lesson.status === 'completed').length,
+      0,
+    ),
+    modules: courseModules,
   }
 }

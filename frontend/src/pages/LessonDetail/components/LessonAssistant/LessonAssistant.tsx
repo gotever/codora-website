@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import type { ChatMessage, LessonChallengeContext } from '../../../../data/lessons'
-import { INITIAL_ASSISTANT_MESSAGES } from '../../../../data/lessons'
 import { askTutor, fetchContextChats } from '../../../../lib/api'
 import TutorMessage from '../../../../components/TutorMessage/TutorMessage'
 import './LessonAssistant.css'
@@ -24,7 +23,13 @@ export default function LessonAssistant({
   onCloseMobile,
   externalPrompt,
 }: LessonAssistantProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_ASSISTANT_MESSAGES)
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [{
+    id: 'lesson-welcome',
+    sender: 'assistant',
+    paragraphs: [`Xin chào! Mình có thể giúp bạn với bài học “${currentLessonTopic}”. Hãy hỏi về nội dung hoặc gửi phần Code challenge bạn đang làm nhé.`],
+    timestamp: 'TODAY',
+    feedbackGiven: null,
+  }])
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const chatContainerRef = useRef<HTMLDivElement>(null)

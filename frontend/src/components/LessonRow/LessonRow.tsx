@@ -33,8 +33,8 @@ export default function LessonRow({ lesson }: LessonRowProps) {
     <li role="listitem">
       <Link
         to={`/lessons/${lesson.id}`}
-        className="lesson-row"
-        aria-label={`Lesson ${padded}: ${lesson.title}`}
+        className={`lesson-row${lesson.completed ? ' lesson-row--completed' : ''}`}
+        aria-label={`Lesson ${padded}: ${lesson.title}${lesson.completed ? ', completed' : ''}`}
       >
         <span className="lesson-row__number" aria-label={`Lesson ${padded}`}>
           {padded}
@@ -43,7 +43,9 @@ export default function LessonRow({ lesson }: LessonRowProps) {
           <p className="lesson-row__title">{lesson.title}</p>
           <p className="lesson-row__description">{lesson.description}</p>
         </div>
-        <ArrowIcon />
+        {lesson.completed
+          ? <span className="lesson-row__completed" aria-label="Completed">✓</span>
+          : <ArrowIcon />}
       </Link>
     </li>
   )
