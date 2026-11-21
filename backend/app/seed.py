@@ -274,12 +274,22 @@ def main() -> None:
                     hidden_cases = json.loads(HIDDEN_DATA.read_text(encoding="utf-8"))
 
                 exercise_rows = []
+                exercise_lesson_orders = {
+                    "reverse_string": "5",
+                    "count_vowels": "5",
+                    "is_palindrome": "5",
+                    "sum_even": "6",
+                    "find_maximum": "6",
+                    "is_even": "4",
+                    "rectangle_area": "7",
+                    "count_words": "6",
+                    "find_second_largest": "6",
+                    "sum_digits": "9",
+                }
                 for exercise in data["exercises"]:
-                    # Keep the separate exercise workspace linked to the closest matching lesson.
-                    if exercise["functionName"] in ("reverse_string", "count_vowels", "is_palindrome"):
-                        lesson_id = lesson_ids["5"]
-                    else:
-                        lesson_id = lesson_ids["6"]
+                    # Link each exercise workspace to the lesson that covers its main concepts.
+                    lesson_order = exercise_lesson_orders.get(exercise["functionName"], "6")
+                    lesson_id = lesson_ids[lesson_order]
                     exercise_rows.append((exercise["id"], lesson_id, exercise["title"], exercise["difficulty"],
                         exercise["description"], exercise["functionName"], exercise["initialCode"],
                         json.dumps({"runner": data["testCases"][exercise["id"]],
@@ -305,7 +315,7 @@ def main() -> None:
                     else:
                         exercise_id = cur.execute("""INSERT INTO exercises(lesson_id,title,difficulty,description,function_name,
                             starter_code,test_cases,hints,tags)
-                            VALUES(%s,%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s::jsonb)""",
+                            VALUES(%s,%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s::jsonb) RETURNING id""",
                             (lesson_id, title, difficulty, description, function_name,
                              starter_code, test_cases, hints, tags)).fetchone()["id"]
                     cur.execute("DELETE FROM exercise_concepts WHERE exercise_id=%s", (exercise_id,))

@@ -1,6 +1,52 @@
 ﻿from typing import Any
 
 
+def promote_beginner_after_six_lessons_and_four_mastered_concepts(conn: Any, user_id: str) -> str | None:
+    completed = conn.execute(
+        """SELECT COUNT(DISTINCT lesson.id)::int AS completed_count
+            FROM lessons AS lesson
+            JOIN courses AS course ON course.id=lesson.course_id
+            JOIN user_progress AS progress
+              ON progress.item_id=lesson.id
+             AND progress.user_id=%s
+             AND progress.item_type='lesson'
+             AND progress.status='completed'
+            WHERE course.title='Python fundamentals'""",
+        (user_id,),
+    ).fetchone()["completed_count"]
+    if completed < 6:
+        return None
+
+    mastered = conn.execute(
+        """SELECT COUNT(*)::int AS mastered_count
+            FROM (
+                SELECT mapping.concept_id
+                FROM exercise_concepts AS mapping
+                JOIN user_progress AS progress
+                  ON progress.item_id=mapping.exercise_id
+                 AND progress.user_id=%s
+                 AND progress.item_type='exercise'
+                 AND progress.status='completed'
+                 AND progress.score>=8
+                GROUP BY mapping.concept_id
+                HAVING COUNT(DISTINCT mapping.exercise_id)>=2
+            ) AS mastered_concepts""",
+        (user_id,),
+    ).fetchone()["mastered_count"]
+    if mastered < 4:
+        return None
+
+    updated = conn.execute(
+        "UPDATE users SET level='intermediate' WHERE id=%s AND level='beginner' RETURNING level",
+        (user_id,),
+    ).fetchone()
+    if updated:
+        return updated["level"]
+
+    current = conn.execute("SELECT level FROM users WHERE id=%s", (user_id,)).fetchone()
+    return current["level"] if current else None
+
+
 def get_concept_details(conn: Any, concept_ids: list[str]) -> list[dict[str, str]]:
     ordered_ids = list(dict.fromkeys(concept_ids))
     if not ordered_ids:

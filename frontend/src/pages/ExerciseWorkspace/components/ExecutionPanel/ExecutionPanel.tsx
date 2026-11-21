@@ -286,6 +286,9 @@ export default function ExecutionPanel({
                     <strong>{runResult.summary?.label ?? (runResult.status === 'success' ? 'Accepted' : 'Execution failed')}</strong>
                   </div>
                   <div className="exec-panel__result-metrics">
+                    {runResult.summary?.passedCount !== undefined && runResult.summary.totalCount !== undefined && (
+                      <div><span>Tests:</span><strong>{runResult.summary.passedCount}/{runResult.summary.totalCount} passed</strong></div>
+                    )}
                     {runResult.summary?.runtimeMs !== undefined && (
                       <div><span>Runtime:</span><strong>{runResult.summary.runtimeMs} ms</strong></div>
                     )}

@@ -10,7 +10,7 @@ from psycopg import errors
 from .auth import current_user_id, hash_password, make_token, optional_current_user_id, verify_password
 from .db import connection, pool
 from .interaction_trace import write_interaction_trace
-from .learning_profile import get_all_concept_progress, get_completed_lessons
+from .learning_profile import get_all_concept_progress, get_completed_lessons, promote_beginner_after_six_lessons_and_four_mastered_concepts
 from .personalization import personalize_lesson as create_personalized_lesson
 from .runner import run_code_sandbox
 from .schemas import ChatInput, ExerciseWorkspaceInput, LearningPreferences, LoginInput, PersonalizeLessonInput, ProgressInput, RegisterInput, SubmitInput, TutorChatInput, UserLevelInput
@@ -165,7 +165,7 @@ def adapt_lesson(
 @app.get("/api/lessons/{lesson_id}/exercises")
 def lesson_exercises(lesson_id: int):
     with connection() as conn:
-        rows = conn.execute("SELECT id,lesson_id,title,difficulty,description,function_name,starter_code,test_cases,hints,tags FROM exercises WHERE lesson_id=%s ORDER BY title", (lesson_id,)).fetchall()
+        rows = conn.execute("SELECT id,lesson_id,title,difficulty,description,function_name,starter_code,test_cases,hints,tags FROM exercises WHERE lesson_id=%s ORDER BY (test_cases->>'number')::int,title", (lesson_id,)).fetchall()
     for row in rows:
         row["test_cases"] = strip_hidden_test_cases(row["test_cases"])
     return {"exercises": rows}
@@ -177,7 +177,7 @@ def list_exercises():
         rows = conn.execute("""SELECT e.id,e.lesson_id,e.title,e.difficulty,e.description,e.function_name,
             e.starter_code,e.test_cases,e.hints,e.tags,l.course_id,c.title AS course_title
             FROM exercises e JOIN lessons l ON l.id=e.lesson_id JOIN courses c ON c.id=l.course_id
-            ORDER BY e.title""").fetchall()
+            ORDER BY (e.test_cases->>'number')::int,e.title""").fetchall()
     for row in rows:
         row["test_cases"] = strip_hidden_test_cases(row["test_cases"])
     return {"exercises": rows}
@@ -318,6 +318,8 @@ def submit_exercise(
             conn.execute("""INSERT INTO ai_chats(user_id,exercise_id,context_key,event_type,role,message,code_snapshot)
                 VALUES(%s,%s,%s,'submission','user',%s,%s)""",
                 (user_id, exercise_id, f"exercise:{exercise_id}", json.dumps(submission, ensure_ascii=False), body.code))
+            if result["status"] == "Accepted":
+                promote_beginner_after_six_lessons_and_four_mastered_concepts(conn, user_id)
     return result
 
 
@@ -485,8 +487,14 @@ def put_progress(body: ProgressInput, user_id: str = Depends(current_user_id)):
             last_attempt_at=COALESCE(EXCLUDED.last_attempt_at,user_progress.last_attempt_at)
             RETURNING id,item_type,item_id,status,completed_at,score,last_attempt_at""",
             (user_id,body.item_type,body.item_id,body.status,body.status,body.score,body.score)).fetchone()
+        upgraded_level = None
+        if body.status == "completed":
+            upgraded_level = promote_beginner_after_six_lessons_and_four_mastered_concepts(conn, user_id)
     row["id"] = str(row["id"])
-    return {"progress": row}
+    response = {"progress": row}
+    if upgraded_level:
+        response["level"] = upgraded_level
+    return response
 
 
 @app.get("/api/chats")

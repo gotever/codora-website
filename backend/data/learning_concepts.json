@@ -388,23 +388,21 @@
     }
   },
   "exercises": {
-    "sum-of-even-numbers": [
-      "python.lists",
-      "python.for_loops",
-      "python.conditionals",
-      "python.arithmetic_operators"
-    ],
-    "reverse-a-string": [
-      "python.strings",
-      "python.string_slicing",
-      "python.string_operations"
-    ],
     "count-vowels": [
       "python.strings",
       "python.for_loops",
       "python.conditionals",
       "python.iteration",
       "python.variables"
+    ],
+    "count-words": [
+      "python.strings",
+      "python.string_operations",
+      "python.for_loops",
+      "python.conditionals",
+      "python.iteration",
+      "python.functions.parameters",
+      "python.functions.return_values"
     ],
     "find-maximum": [
       "python.lists",
@@ -413,11 +411,53 @@
       "python.comparisons",
       "python.variables"
     ],
+    "find-second-largest": [
+      "python.lists",
+      "python.for_loops",
+      "python.comparisons",
+      "python.conditionals",
+      "python.variables",
+      "python.iteration",
+      "python.functions.parameters",
+      "python.functions.return_values"
+    ],
+    "is-even-number": [
+      "python.operators",
+      "python.arithmetic_operators",
+      "python.comparisons",
+      "python.conditionals",
+      "python.functions.parameters",
+      "python.functions.return_values"
+    ],
     "is-palindrome": [
       "python.strings",
       "python.string_slicing",
       "python.string_operations",
       "python.conditionals"
+    ],
+    "rectangle-area": [
+      "python.numbers",
+      "python.arithmetic_operators",
+      "python.functions.parameters",
+      "python.functions.return_values"
+    ],
+    "reverse-a-string": [
+      "python.strings",
+      "python.string_slicing",
+      "python.string_operations"
+    ],
+    "sum-digits-recursively": [
+      "python.recursion",
+      "python.recursion_base_case",
+      "python.arithmetic_operators",
+      "python.functions.parameters",
+      "python.functions.return_values"
+    ],
+    "sum-of-even-numbers": [
+      "python.lists",
+      "python.for_loops",
+      "python.conditionals",
+      "python.arithmetic_operators"
     ]
   }
 }

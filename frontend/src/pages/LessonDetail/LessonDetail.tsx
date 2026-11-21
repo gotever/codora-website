@@ -69,7 +69,7 @@ function getConsecutiveErrors() {
 
 export default function LessonDetail() {
   const { id } = useParams<{ id: string }>()
-  const { user, loading: authLoading } = useAuth()
+  const { user, refresh, loading: authLoading } = useAuth()
   const [loadedLesson, setLoadedLesson] = useState<{
     requestedId: string
     lesson: LessonDetailType | null
@@ -204,6 +204,7 @@ export default function LessonDetail() {
     setCompletionNotice({ lessonId, status: 'saving' })
     try {
       await saveProgress(Number(lesson.id), 'lesson', 'completed')
+      if (user) await refresh()
       setCompletionNotice({ lessonId, status: 'completed' })
       setLoadedLesson((current) => {
         if (!current || current.requestedId !== lessonId || !current.courseNav) return current

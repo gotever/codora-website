@@ -129,7 +129,7 @@ export default function ExerciseWorkspace() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const { user } = useAuth()
+  const { user, refresh } = useAuth()
   const storageOwnerId = user?.id ?? 'guest'
   const { isLoading: pyodideLoading, loadError: pyodideError, runTestCase, isReady } = usePyodide()
   const [apiExercise, setApiExercise] = useState<ApiExercise | null>(null)
@@ -460,7 +460,10 @@ export default function ExerciseWorkspace() {
     updateConsecutiveErrorSession(allPassed)
     const progressExerciseId = getProgressExerciseId(exercise.id)
     if (progressExerciseId !== null && totalCount > 0) {
-      void saveProgress(progressExerciseId, 'exercise', allPassed || isExerciseCompleted ? 'completed' : 'in_progress', passedCount / totalCount * 10).catch(() => undefined)
+      const exerciseCompleted = allPassed || isExerciseCompleted
+      void saveProgress(progressExerciseId, 'exercise', exerciseCompleted ? 'completed' : 'in_progress', passedCount / totalCount * 10)
+        .then(() => { if (exerciseCompleted && user) void refresh() })
+        .catch(() => undefined)
     }
 
     const firstError = results.find((r) => !r.passed)
@@ -504,7 +507,10 @@ export default function ExerciseWorkspace() {
     try {
       const result: SubmitResult = await submitExercise(String(exercise.id), code)
       const allPassed = result.status === 'Accepted'
-      if (allPassed) setIsExerciseCompleted(true)
+      if (allPassed) {
+        setIsExerciseCompleted(true)
+        if (user) void refresh()
+      }
       updateConsecutiveErrorSession(allPassed)
       const details = [`Status: ${result.status}`, `Passed: ${result.passed_count}/${result.total_count} test cases`, `Runtime: ${result.runtime_ms} ms`]
       if (result.failed_case?.is_hidden) {

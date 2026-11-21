@@ -981,7 +981,7 @@
     {
       "id": "sum-of-even-numbers",
       "number": 4,
-      "total": 12,
+      "total": 10,
       "title": "Sum of even numbers",
       "difficulty": "Easy",
       "tags": [
@@ -1044,7 +1044,7 @@
     {
       "id": "reverse-a-string",
       "number": 1,
-      "total": 12,
+      "total": 10,
       "title": "Reverse a string",
       "difficulty": "Easy",
       "tags": [
@@ -1097,7 +1097,7 @@
     {
       "id": "count-vowels",
       "number": 2,
-      "total": 12,
+      "total": 10,
       "title": "Count vowels",
       "difficulty": "Easy",
       "tags": [
@@ -1153,7 +1153,7 @@
     {
       "id": "find-maximum",
       "number": 3,
-      "total": 12,
+      "total": 10,
       "title": "Find maximum",
       "difficulty": "Easy",
       "tags": [
@@ -1207,7 +1207,7 @@
     {
       "id": "is-palindrome",
       "number": 5,
-      "total": 12,
+      "total": 10,
       "title": "Check palindrome",
       "difficulty": "Easy",
       "tags": [
@@ -1261,6 +1261,298 @@
         }
       ],
       "initialCode": "def is_palindrome(s):\n    \"\"\"Return True if s is a palindrome, False otherwise.\"\"\"\n\n    # Write your solution here\n    pass\n"
+    },
+    {
+      "id": "is-even-number",
+      "number": 6,
+      "total": 10,
+      "title": "Check if a number is even",
+      "difficulty": "Easy",
+      "tags": [
+        "Numbers",
+        "Operators",
+        "Conditionals"
+      ],
+      "courseId": "python-fundamentals",
+      "courseTitle": "Python fundamentals",
+      "filename": "is_even.py",
+      "functionName": "is_even",
+      "description": "Given an integer <code>number</code>, return <code>True</code> if it is even and <code>False</code> otherwise.",
+      "functionSignature": "is_even(number)",
+      "inputDescription": "An integer number.",
+      "outputDescription": "A Boolean indicating whether number is even.",
+      "examples": [
+        {
+          "id": 1,
+          "input": "number = 8",
+          "output": "True",
+          "explanation": "8 is divisible by 2."
+        },
+        {
+          "id": 2,
+          "input": "number = 7",
+          "output": "False",
+          "explanation": "7 leaves a remainder when divided by 2."
+        }
+      ],
+      "constraints": [
+        "-1,000,000,000 ≤ number ≤ 1,000,000,000"
+      ],
+      "hints": [
+        {
+          "level": 1,
+          "label": "A Little Nudge",
+          "sublabel": "Look at the remainder after division by 2.",
+          "content": "What expression gives the remainder when number is divided by 2?"
+        },
+        {
+          "level": 2,
+          "label": "Guide Me Further",
+          "sublabel": "Use the comparison result directly.",
+          "content": "The comparison <code>number % 2 == 0</code> is already a Boolean."
+        },
+        {
+          "level": 3,
+          "label": "Show Me the Approach",
+          "sublabel": "Return the parity check.",
+          "content": "Use modulo to check divisibility by 2, then return that Boolean value."
+        }
+      ],
+      "initialCode": "def is_even(number):\n    \"\"\"Return True when number is even.\"\"\"\n\n    # Write your solution here\n    pass\n"
+    },
+    {
+      "id": "rectangle-area",
+      "number": 7,
+      "total": 10,
+      "title": "Calculate rectangle area",
+      "difficulty": "Easy",
+      "tags": [
+        "Numbers",
+        "Operators",
+        "Functions"
+      ],
+      "courseId": "python-fundamentals",
+      "courseTitle": "Python fundamentals",
+      "filename": "rectangle_area.py",
+      "functionName": "rectangle_area",
+      "description": "Given a rectangle's <code>width</code> and <code>height</code>, return its area.",
+      "functionSignature": "rectangle_area(width, height)",
+      "inputDescription": "Two non-negative numeric values: width and height.",
+      "outputDescription": "The rectangle area, calculated as width multiplied by height.",
+      "examples": [
+        {
+          "id": 1,
+          "input": "width = 5, height = 3",
+          "output": "15",
+          "explanation": "Area is width multiplied by height."
+        },
+        {
+          "id": 2,
+          "input": "width = 4, height = 4",
+          "output": "16",
+          "explanation": "A square uses the same formula."
+        }
+      ],
+      "constraints": [
+        "0 ≤ width ≤ 10,000",
+        "0 ≤ height ≤ 10,000"
+      ],
+      "hints": [
+        {
+          "level": 1,
+          "label": "A Little Nudge",
+          "sublabel": "Recall the rectangle area formula.",
+          "content": "Which operation combines width and height to calculate area?"
+        },
+        {
+          "level": 2,
+          "label": "Guide Me Further",
+          "sublabel": "Use both parameters.",
+          "content": "Multiply the two values supplied to the function."
+        },
+        {
+          "level": 3,
+          "label": "Show Me the Approach",
+          "sublabel": "Return the product.",
+          "content": "The area is <code>width * height</code>."
+        }
+      ],
+      "initialCode": "def rectangle_area(width, height):\n    \"\"\"Return the area of a rectangle.\"\"\"\n\n    # Write your solution here\n    pass\n"
+    },
+    {
+      "id": "count-words",
+      "number": 8,
+      "total": 10,
+      "title": "Count words in a string",
+      "difficulty": "Medium",
+      "tags": [
+        "Strings",
+        "Loops",
+        "Conditionals"
+      ],
+      "courseId": "python-fundamentals",
+      "courseTitle": "Python fundamentals",
+      "filename": "count_words.py",
+      "functionName": "count_words",
+      "description": "Given a string <code>s</code>, return the number of words. Words are non-empty sequences separated by whitespace.",
+      "functionSignature": "count_words(s)",
+      "inputDescription": "A string that may contain words and whitespace.",
+      "outputDescription": "The number of whitespace-separated words.",
+      "examples": [
+        {
+          "id": 1,
+          "input": "s = \"hello world\"",
+          "output": "2",
+          "explanation": "There are two whitespace-separated words."
+        },
+        {
+          "id": 2,
+          "input": "s = \"  one   two  \"",
+          "output": "2",
+          "explanation": "Extra whitespace does not create empty words."
+        }
+      ],
+      "constraints": [
+        "0 ≤ len(s) ≤ 10,000"
+      ],
+      "hints": [
+        {
+          "level": 1,
+          "label": "A Little Nudge",
+          "sublabel": "Think about what separates words.",
+          "content": "Whitespace can include spaces, tabs, and newlines."
+        },
+        {
+          "level": 2,
+          "label": "Guide Me Further",
+          "sublabel": "Use Python string tools carefully.",
+          "content": "The <code>split()</code> method separates a string on runs of whitespace."
+        },
+        {
+          "level": 3,
+          "label": "Show Me the Approach",
+          "sublabel": "Count the resulting words.",
+          "content": "The number of items in <code>s.split()</code> is the word count, including 0 for whitespace-only input."
+        }
+      ],
+      "initialCode": "def count_words(s):\n    \"\"\"Return the number of whitespace-separated words in s.\"\"\"\n\n    # Write your solution here\n    pass\n"
+    },
+    {
+      "id": "find-second-largest",
+      "number": 9,
+      "total": 10,
+      "title": "Find the second largest distinct number",
+      "difficulty": "Medium",
+      "tags": [
+        "Lists",
+        "Loops",
+        "Conditionals"
+      ],
+      "courseId": "python-fundamentals",
+      "courseTitle": "Python fundamentals",
+      "filename": "find_second_largest.py",
+      "functionName": "find_second_largest",
+      "description": "Given a list of integers, return the second largest distinct value. If the list has fewer than two distinct values, return <code>None</code>.",
+      "functionSignature": "find_second_largest(numbers)",
+      "inputDescription": "A list of integers; it may be empty or contain duplicates.",
+      "outputDescription": "The second largest distinct integer, or None when it does not exist.",
+      "examples": [
+        {
+          "id": 1,
+          "input": "numbers = [3, 1, 7, 2, 5]",
+          "output": "5",
+          "explanation": "The largest value is 7 and the second largest distinct value is 5."
+        },
+        {
+          "id": 2,
+          "input": "numbers = [5, 5, 3]",
+          "output": "3",
+          "explanation": "Duplicate maximum values count once."
+        }
+      ],
+      "constraints": [
+        "0 ≤ len(numbers) ≤ 10,000",
+        "-1,000,000 ≤ numbers[i] ≤ 1,000,000"
+      ],
+      "hints": [
+        {
+          "level": 1,
+          "label": "A Little Nudge",
+          "sublabel": "Keep track of two values.",
+          "content": "As you scan the list, track the largest and second largest distinct values seen so far."
+        },
+        {
+          "level": 2,
+          "label": "Guide Me Further",
+          "sublabel": "Handle duplicates separately.",
+          "content": "A value equal to the current largest should not become the second largest."
+        },
+        {
+          "level": 3,
+          "label": "Show Me the Approach",
+          "sublabel": "Consider the case where no answer exists.",
+          "content": "If fewer than two distinct values appear, return <code>None</code>; otherwise return the second distinct maximum."
+        }
+      ],
+      "initialCode": "def find_second_largest(numbers):\n    \"\"\"Return the second largest distinct value, or None.\"\"\"\n\n    # Write your solution here\n    pass\n"
+    },
+    {
+      "id": "sum-digits-recursively",
+      "number": 10,
+      "total": 10,
+      "title": "Sum digits recursively",
+      "difficulty": "Medium",
+      "tags": [
+        "Recursion",
+        "Numbers",
+        "Functions"
+      ],
+      "courseId": "python-fundamentals",
+      "courseTitle": "Python fundamentals",
+      "filename": "sum_digits.py",
+      "functionName": "sum_digits",
+      "description": "Given a non-negative integer <code>number</code>, return the sum of its digits using recursion.",
+      "functionSignature": "sum_digits(number)",
+      "inputDescription": "A non-negative integer.",
+      "outputDescription": "The sum of all decimal digits in number.",
+      "examples": [
+        {
+          "id": 1,
+          "input": "number = 123",
+          "output": "6",
+          "explanation": "1 + 2 + 3 equals 6."
+        },
+        {
+          "id": 2,
+          "input": "number = 908",
+          "output": "17",
+          "explanation": "9 + 0 + 8 equals 17."
+        }
+      ],
+      "constraints": [
+        "0 ≤ number ≤ 999,999,999"
+      ],
+      "hints": [
+        {
+          "level": 1,
+          "label": "A Little Nudge",
+          "sublabel": "Identify the recursive base case.",
+          "content": "A one-digit number can be returned as its own digit sum."
+        },
+        {
+          "level": 2,
+          "label": "Guide Me Further",
+          "sublabel": "Split off the last digit.",
+          "content": "Use <code>number % 10</code> for the last digit and <code>number // 10</code> for the remaining digits."
+        },
+        {
+          "level": 3,
+          "label": "Show Me the Approach",
+          "sublabel": "Combine the digit with a smaller problem.",
+          "content": "For numbers with at least two digits, add the last digit to a recursive call on <code>number // 10</code>."
+        }
+      ],
+      "initialCode": "def sum_digits(number):\n    \"\"\"Return the sum of digits using recursion.\"\"\"\n\n    # Write your solution here\n    pass\n"
     }
   ],
   "testCases": {
@@ -1287,10 +1579,10 @@
         "id": "case-3",
         "label": "Case 3",
         "inputLabel": "numbers =",
-        "input": "[]",
-        "expectedOutput": "0",
+        "input": "[2, 4, 6]",
+        "expectedOutput": "12",
         "explanation": "An empty list has no even numbers.",
-        "argsExpression": "([],)"
+        "argsExpression": "([2, 4, 6],)"
       }
     ],
     "reverse-a-string": [
@@ -1314,9 +1606,9 @@
         "id": "case-3",
         "label": "Case 3",
         "inputLabel": "s =",
-        "input": "\"\"",
-        "expectedOutput": "''",
-        "argsExpression": "(\"\",)"
+        "input": "\"OpenAI\"",
+        "expectedOutput": "'IAnepO'",
+        "argsExpression": "(\"OpenAI\",)"
       }
     ],
     "count-vowels": [
@@ -1366,9 +1658,9 @@
         "id": "case-3",
         "label": "Case 3",
         "inputLabel": "numbers =",
-        "input": "[42]",
-        "expectedOutput": "42",
-        "argsExpression": "([42],)"
+        "input": "[1, 9, 3]",
+        "expectedOutput": "9",
+        "argsExpression": "([1, 9, 3],)"
       }
     ],
     "is-palindrome": [
@@ -1394,19 +1686,140 @@
         "id": "case-3",
         "label": "Case 3",
         "inputLabel": "s =",
-        "input": "\"a\"",
+        "input": "\"level\"",
         "expectedOutput": "True",
         "explanation": "A single character string is always a palindrome.",
-        "argsExpression": "(\"a\",)"
+        "argsExpression": "(\"level\",)"
+      }
+    ],
+    "is-even-number": [
+      {
+        "id": "case-1",
+        "label": "Case 1",
+        "inputLabel": "number =",
+        "input": "number = 8",
+        "expectedOutput": "True",
+        "argsExpression": "(8,)"
       },
       {
-        "id": "case-4",
-        "label": "Case 4",
-        "inputLabel": "s =",
-        "input": "\"racecar\"",
+        "id": "case-2",
+        "label": "Case 2",
+        "inputLabel": "number =",
+        "input": "number = 7",
+        "expectedOutput": "False",
+        "argsExpression": "(7,)"
+      },
+      {
+        "id": "case-3",
+        "label": "Case 3",
+        "inputLabel": "number =",
+        "input": "number = -4",
         "expectedOutput": "True",
-        "explanation": "\"racecar\" reversed is \"racecar\".",
-        "argsExpression": "(\"racecar\",)"
+        "argsExpression": "(-4,)"
+      }
+    ],
+    "rectangle-area": [
+      {
+        "id": "case-1",
+        "label": "Case 1",
+        "inputLabel": "width =, height =",
+        "input": "width = 5, height = 3",
+        "expectedOutput": "15",
+        "argsExpression": "(5, 3)"
+      },
+      {
+        "id": "case-2",
+        "label": "Case 2",
+        "inputLabel": "width =, height =",
+        "input": "width = 10, height = 2",
+        "expectedOutput": "20",
+        "argsExpression": "(10, 2)"
+      },
+      {
+        "id": "case-3",
+        "label": "Case 3",
+        "inputLabel": "width =, height =",
+        "input": "width = 4, height = 4",
+        "expectedOutput": "16",
+        "argsExpression": "(4, 4)"
+      }
+    ],
+    "count-words": [
+      {
+        "id": "case-1",
+        "label": "Case 1",
+        "inputLabel": "s =",
+        "input": "s = \"hello world\"",
+        "expectedOutput": "2",
+        "argsExpression": "(\"hello world\",)"
+      },
+      {
+        "id": "case-2",
+        "label": "Case 2",
+        "inputLabel": "s =",
+        "input": "s = \"Python\"",
+        "expectedOutput": "1",
+        "argsExpression": "(\"Python\",)"
+      },
+      {
+        "id": "case-3",
+        "label": "Case 3",
+        "inputLabel": "s =",
+        "input": "s = \"one two three\"",
+        "expectedOutput": "3",
+        "argsExpression": "(\"one two three\",)"
+      }
+    ],
+    "find-second-largest": [
+      {
+        "id": "case-1",
+        "label": "Case 1",
+        "inputLabel": "numbers =",
+        "input": "numbers = [3, 1, 7, 2, 5]",
+        "expectedOutput": "5",
+        "argsExpression": "([3, 1, 7, 2, 5],)"
+      },
+      {
+        "id": "case-2",
+        "label": "Case 2",
+        "inputLabel": "numbers =",
+        "input": "numbers = [9, 4, 7]",
+        "expectedOutput": "7",
+        "argsExpression": "([9, 4, 7],)"
+      },
+      {
+        "id": "case-3",
+        "label": "Case 3",
+        "inputLabel": "numbers =",
+        "input": "numbers = [5, 5, 3]",
+        "expectedOutput": "3",
+        "argsExpression": "([5, 5, 3],)"
+      }
+    ],
+    "sum-digits-recursively": [
+      {
+        "id": "case-1",
+        "label": "Case 1",
+        "inputLabel": "number =",
+        "input": "number = 0",
+        "expectedOutput": "0",
+        "argsExpression": "(0,)"
+      },
+      {
+        "id": "case-2",
+        "label": "Case 2",
+        "inputLabel": "number =",
+        "input": "number = 123",
+        "expectedOutput": "6",
+        "argsExpression": "(123,)"
+      },
+      {
+        "id": "case-3",
+        "label": "Case 3",
+        "inputLabel": "number =",
+        "input": "number = 908",
+        "expectedOutput": "17",
+        "argsExpression": "(908,)"
       }
     ]
   }

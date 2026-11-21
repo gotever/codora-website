@@ -55,7 +55,7 @@ export default function Exercises() {
           courseId: record.test_cases.courseId ?? fallback?.courseId ?? String(record.course_id),
           courseTitle: record.course_title,
         }
-      }))
+      }).sort((left, right) => left.number - right.number))
     }).catch(() => {
       // The local curriculum remains usable while the optional API is offline.
     })

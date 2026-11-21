@@ -2,155 +2,1041 @@
   "is-palindrome": [
     {
       "id": "hidden-1",
-      "label": "Hidden 1: Odd length palindrome",
-      "argsExpression": "(\"racecar\",)",
+      "label": "Hidden 1: Normal: Classic palindrome",
+      "argsExpression": "(\"madam\",)",
       "expectedOutput": "True"
     },
     {
       "id": "hidden-2",
-      "label": "Hidden 2: Non-palindrome pair",
-      "argsExpression": "(\"ab\",)",
+      "label": "Hidden 2: Normal: Ordinary non-palindrome",
+      "argsExpression": "(\"python\",)",
       "expectedOutput": "False"
     },
     {
       "id": "hidden-3",
-      "label": "Hidden 3: Classic palindrome word",
-      "argsExpression": "(\"kayak\",)",
+      "label": "Hidden 3: Normal: Even-length palindrome",
+      "argsExpression": "(\"abba\",)",
       "expectedOutput": "True"
     },
     {
       "id": "hidden-4",
-      "label": "Hidden 4: Long symmetric word",
-      "argsExpression": "(\"abacaba\",)",
-      "expectedOutput": "True"
+      "label": "Hidden 4: Normal: Short non-palindrome",
+      "argsExpression": "(\"abc\",)",
+      "expectedOutput": "False"
     },
     {
       "id": "hidden-5",
-      "label": "Hidden 5: Even length palindrome",
-      "argsExpression": "(\"noon\",)",
+      "label": "Hidden 5: Normal: Repeated center pattern",
+      "argsExpression": "(\"rotor\",)",
       "expectedOutput": "True"
     },
     {
       "id": "hidden-6",
-      "label": "Hidden 6: Almost-palindrome (first & last match)",
-      "argsExpression": "(\"abca\",)",
-      "expectedOutput": "False"
+      "label": "Hidden 6: Normal: Repeated letters palindrome",
+      "argsExpression": "(\"refer\",)",
+      "expectedOutput": "True"
     },
     {
       "id": "hidden-7",
-      "label": "Hidden 7: Single character corner case",
-      "argsExpression": "(\"z\",)",
+      "label": "Hidden 7: Normal: Even palindrome word",
+      "argsExpression": "(\"deed\",)",
       "expectedOutput": "True"
     },
     {
       "id": "hidden-8",
-      "label": "Hidden 8: Long palindrome stress test",
-      "argsExpression": "(\"abcdefghijklmnopqrstuvwxyzyxwvutsrqponmlkjihgfedcba\",)",
+      "label": "Hidden 8: Normal: Almost palindrome",
+      "argsExpression": "(\"abcdc\",)",
+      "expectedOutput": "False"
+    },
+    {
+      "id": "hidden-9",
+      "label": "Hidden 9: Normal: Odd-length palindrome",
+      "argsExpression": "(\"abcba\",)",
       "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-10",
+      "label": "Hidden 10: Normal: Six-character palindrome",
+      "argsExpression": "(\"aabbaa\",)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-11",
+      "label": "Hidden 11: Normal: Even-length palindrome pair",
+      "argsExpression": "(\"abccba\",)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-12",
+      "label": "Hidden 12: Normal: Matching ends but different middle",
+      "argsExpression": "(\"abca\",)",
+      "expectedOutput": "False"
+    },
+    {
+      "id": "hidden-13",
+      "label": "Hidden 13: Edge: Single lowercase character",
+      "argsExpression": "(\"z\",)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-14",
+      "label": "Hidden 14: Edge: Two matching characters",
+      "argsExpression": "(\"aa\",)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-15",
+      "label": "Hidden 15: Edge: Two different characters",
+      "argsExpression": "(\"ab\",)",
+      "expectedOutput": "False"
+    },
+    {
+      "id": "hidden-16",
+      "label": "Hidden 16: Edge: Maximum length palindrome",
+      "argsExpression": "(\"a\" * 10000,)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-17",
+      "label": "Hidden 17: Edge: Maximum length non-palindrome",
+      "argsExpression": "(\"a\" * 9999 + \"b\",)",
+      "expectedOutput": "False"
     }
   ],
   "sum-of-even-numbers": [
     {
       "id": "hidden-1",
-      "label": "Hidden 1: All negative evens",
-      "argsExpression": "([-2, -4, -6],)",
-      "expectedOutput": "-12"
+      "label": "Hidden 1: Normal: Mixed positive evens",
+      "argsExpression": "([2, 4, 6],)",
+      "expectedOutput": "12"
     },
     {
       "id": "hidden-2",
-      "label": "Hidden 2: All zeros",
-      "argsExpression": "([0, 0, 0],)",
-      "expectedOutput": "0"
+      "label": "Hidden 2: Normal: Positive and negative values",
+      "argsExpression": "([-2, 3, 8],)",
+      "expectedOutput": "6"
     },
     {
       "id": "hidden-3",
-      "label": "Hidden 3: Mixed large numbers",
+      "label": "Hidden 3: Normal: Several even values",
+      "argsExpression": "([10, -3, 5, -4],)",
+      "expectedOutput": "6"
+    },
+    {
+      "id": "hidden-4",
+      "label": "Hidden 4: Normal: Includes zero",
+      "argsExpression": "([0, 1, 2],)",
+      "expectedOutput": "2"
+    },
+    {
+      "id": "hidden-5",
+      "label": "Hidden 5: Normal: One even value",
+      "argsExpression": "([2],)",
+      "expectedOutput": "2"
+    },
+    {
+      "id": "hidden-6",
+      "label": "Hidden 6: Normal: Odd-only list",
+      "argsExpression": "([7, 9, 11, 13],)",
+      "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-7",
+      "label": "Hidden 7: Normal: Larger values",
       "argsExpression": "([100, 201, 300],)",
       "expectedOutput": "400"
     },
     {
-      "id": "hidden-4",
-      "label": "Hidden 4: All odd numbers",
-      "argsExpression": "([1, 3, 5, 7, 9, 11],)",
+      "id": "hidden-8",
+      "label": "Hidden 8: Normal: Negative even total",
+      "argsExpression": "([-8, -3, 6],)",
+      "expectedOutput": "-2"
+    },
+    {
+      "id": "hidden-9",
+      "label": "Hidden 9: Normal: Repeated even values",
+      "argsExpression": "([4, 4, 4, 4],)",
+      "expectedOutput": "16"
+    },
+    {
+      "id": "hidden-10",
+      "label": "Hidden 10: Normal: Alternating odd and even",
+      "argsExpression": "([1, 2, 3, 4],)",
+      "expectedOutput": "6"
+    },
+    {
+      "id": "hidden-11",
+      "label": "Hidden 11: Normal: Positive and negative cancellation",
+      "argsExpression": "([12, -12, 5],)",
       "expectedOutput": "0"
     },
     {
-      "id": "hidden-5",
-      "label": "Hidden 5: Negative and positive cancellation",
-      "argsExpression": "([-10, 5, -20, 15, 30],)",
+      "id": "hidden-12",
+      "label": "Hidden 12: Normal: Values near limits",
+      "argsExpression": "([999, 1000, -1000],)",
       "expectedOutput": "0"
     },
     {
-      "id": "hidden-6",
-      "label": "Hidden 6: Single even number",
-      "argsExpression": "([42],)",
-      "expectedOutput": "42"
+      "id": "hidden-13",
+      "label": "Hidden 13: Edge: Empty list",
+      "argsExpression": "([], )",
+      "expectedOutput": "0"
     },
     {
-      "id": "hidden-7",
-      "label": "Hidden 7: Single odd number",
-      "argsExpression": "([13],)",
+      "id": "hidden-14",
+      "label": "Hidden 14: Edge: All zeros",
+      "argsExpression": "([0, 0, 0],)",
       "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-15",
+      "label": "Hidden 15: Edge: All negative evens",
+      "argsExpression": "([-2, -4, -6],)",
+      "expectedOutput": "-12"
+    },
+    {
+      "id": "hidden-16",
+      "label": "Hidden 16: Edge: Single maximum even",
+      "argsExpression": "([1000],)",
+      "expectedOutput": "1000"
+    },
+    {
+      "id": "hidden-17",
+      "label": "Hidden 17: Edge: Maximum length list",
+      "argsExpression": "([2] * 1000,)",
+      "expectedOutput": "2000"
     }
   ],
   "reverse-a-string": [
     {
       "id": "hidden-1",
-      "label": "Hidden 1: Single char",
-      "argsExpression": "(\"a\",)",
-      "expectedOutput": "'a'"
+      "label": "Hidden 1: Normal: Common word",
+      "argsExpression": "(\"world\",)",
+      "expectedOutput": "'dlrow'"
     },
     {
       "id": "hidden-2",
-      "label": "Hidden 2: Palindrome string",
-      "argsExpression": "(\"radar\",)",
-      "expectedOutput": "'radar'"
+      "label": "Hidden 2: Normal: Mixed-case text",
+      "argsExpression": "(\"OpenAI\",)",
+      "expectedOutput": "'IAnepO'"
     },
     {
       "id": "hidden-3",
-      "label": "Hidden 3: Numeric text",
+      "label": "Hidden 3: Normal: Numeric text",
       "argsExpression": "(\"12345\",)",
       "expectedOutput": "'54321'"
+    },
+    {
+      "id": "hidden-4",
+      "label": "Hidden 4: Normal: Letters and spaces",
+      "argsExpression": "(\"a b c\",)",
+      "expectedOutput": "'c b a'"
+    },
+    {
+      "id": "hidden-5",
+      "label": "Hidden 5: Normal: Palindrome text",
+      "argsExpression": "(\"racecar\",)",
+      "expectedOutput": "'racecar'"
+    },
+    {
+      "id": "hidden-6",
+      "label": "Hidden 6: Normal: Text with a digit",
+      "argsExpression": "(\"Python 3\",)",
+      "expectedOutput": "'3 nohtyP'"
+    },
+    {
+      "id": "hidden-7",
+      "label": "Hidden 7: Normal: Punctuation",
+      "argsExpression": "(\"!@#$\",)",
+      "expectedOutput": "'$#@!'"
+    },
+    {
+      "id": "hidden-8",
+      "label": "Hidden 8: Normal: Several words",
+      "argsExpression": "(\"ab cd ef\",)",
+      "expectedOutput": "'fe dc ba'"
+    },
+    {
+      "id": "hidden-9",
+      "label": "Hidden 9: Normal: Two words",
+      "argsExpression": "(\"level up\",)",
+      "expectedOutput": "'pu level'"
+    },
+    {
+      "id": "hidden-10",
+      "label": "Hidden 10: Normal: Short word",
+      "argsExpression": "(\"apple\",)",
+      "expectedOutput": "'elppa'"
+    },
+    {
+      "id": "hidden-11",
+      "label": "Hidden 11: Normal: Leading and trailing spaces",
+      "argsExpression": "(\"  hi  \",)",
+      "expectedOutput": "'  ih  '"
+    },
+    {
+      "id": "hidden-12",
+      "label": "Hidden 12: Normal: Hyphenated word",
+      "argsExpression": "(\"foo-bar\",)",
+      "expectedOutput": "'rab-oof'"
+    },
+    {
+      "id": "hidden-13",
+      "label": "Hidden 13: Edge: Empty string",
+      "argsExpression": "(\"\",)",
+      "expectedOutput": "''"
+    },
+    {
+      "id": "hidden-14",
+      "label": "Hidden 14: Edge: Single character",
+      "argsExpression": "(\"z\",)",
+      "expectedOutput": "'z'"
+    },
+    {
+      "id": "hidden-15",
+      "label": "Hidden 15: Edge: Whitespace only",
+      "argsExpression": "(\"   \",)",
+      "expectedOutput": "'   '"
+    },
+    {
+      "id": "hidden-16",
+      "label": "Hidden 16: Edge: Two punctuation marks",
+      "argsExpression": "(\"!?\",)",
+      "expectedOutput": "'?!'"
+    },
+    {
+      "id": "hidden-17",
+      "label": "Hidden 17: Edge: Newline at boundary",
+      "argsExpression": "(\"\\nA\",)",
+      "expectedOutput": "'A\\n'"
     }
   ],
   "count-vowels": [
     {
       "id": "hidden-1",
-      "label": "Hidden 1: No vowels at all",
+      "label": "Hidden 1: Normal 4: Education",
+      "argsExpression": "(\"education\",)",
+      "expectedOutput": "5"
+    },
+    {
+      "id": "hidden-2",
+      "label": "Hidden 2: Normal 5: Programming",
+      "argsExpression": "(\"programming\",)",
+      "expectedOutput": "3"
+    },
+    {
+      "id": "hidden-3",
+      "label": "Hidden 3: Normal 6: Mixed-case word",
+      "argsExpression": "(\"OpenAI\",)",
+      "expectedOutput": "4"
+    },
+    {
+      "id": "hidden-4",
+      "label": "Hidden 4: Normal 7: Two words",
+      "argsExpression": "(\"Beautiful day\",)",
+      "expectedOutput": "6"
+    },
+    {
+      "id": "hidden-5",
+      "label": "Hidden 5: Normal 8: Pangram",
+      "argsExpression": "(\"The quick brown fox jumps over the lazy dog\",)",
+      "expectedOutput": "11"
+    },
+    {
+      "id": "hidden-6",
+      "label": "Hidden 6: Normal 9: Repeated vowel letters",
+      "argsExpression": "(\"Queue\",)",
+      "expectedOutput": "4"
+    },
+    {
+      "id": "hidden-7",
+      "label": "Hidden 7: Normal 10: Uppercase vowels",
+      "argsExpression": "(\"AEIOU\",)",
+      "expectedOutput": "5"
+    },
+    {
+      "id": "hidden-8",
+      "label": "Hidden 8: Normal 11: Repeated syllables",
+      "argsExpression": "(\"BaNaNa\",)",
+      "expectedOutput": "3"
+    },
+    {
+      "id": "hidden-9",
+      "label": "Hidden 9: Normal 12: Short sentence",
+      "argsExpression": "(\"I like coding\",)",
+      "expectedOutput": "5"
+    },
+    {
+      "id": "hidden-10",
+      "label": "Hidden 10: Normal 13: Hyphenated word",
+      "argsExpression": "(\"co-operate\",)",
+      "expectedOutput": "5"
+    },
+    {
+      "id": "hidden-11",
+      "label": "Hidden 11: Normal 14: Repeated consonants",
+      "argsExpression": "(\"Mississippi\",)",
+      "expectedOutput": "4"
+    },
+    {
+      "id": "hidden-12",
+      "label": "Hidden 12: Normal 15: Vowels among consonants",
+      "argsExpression": "(\"encyclopedia\",)",
+      "expectedOutput": "5"
+    },
+    {
+      "id": "hidden-13",
+      "label": "Hidden 13: Edge 1: Empty string",
+      "argsExpression": "(\"\",)",
+      "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-14",
+      "label": "Hidden 14: Edge 2: No vowels",
       "argsExpression": "(\"rhythm\",)",
       "expectedOutput": "0"
     },
     {
-      "id": "hidden-2",
-      "label": "Hidden 2: All vowels uppercase and lowercase",
-      "argsExpression": "(\"aeiouAEIOU\",)",
-      "expectedOutput": "10"
+      "id": "hidden-15",
+      "label": "Hidden 15: Edge 3: Digits and punctuation only",
+      "argsExpression": "(\"1234!?-\",)",
+      "expectedOutput": "0"
     },
     {
-      "id": "hidden-3",
-      "label": "Hidden 3: Sentence with spaces",
-      "argsExpression": "(\"The quick brown fox\",)",
-      "expectedOutput": "5"
+      "id": "hidden-16",
+      "label": "Hidden 16: Edge 4: Single uppercase vowel",
+      "argsExpression": "(\"U\",)",
+      "expectedOutput": "1"
+    },
+    {
+      "id": "hidden-17",
+      "label": "Hidden 17: Edge 5: Maximum length string",
+      "argsExpression": "(\"aeiou\" * 2000,)",
+      "expectedOutput": "10000"
     }
   ],
   "find-maximum": [
     {
       "id": "hidden-1",
-      "label": "Hidden 1: All negative numbers",
-      "argsExpression": "([-100, -50, -200],)",
-      "expectedOutput": "-50"
+      "label": "Hidden 1: Normal: Positive values",
+      "argsExpression": "([2, 8, 4],)",
+      "expectedOutput": "8"
     },
     {
       "id": "hidden-2",
-      "label": "Hidden 2: Duplicate max numbers",
-      "argsExpression": "([10, 10, 10],)",
-      "expectedOutput": "10"
+      "label": "Hidden 2: Normal: Includes zero",
+      "argsExpression": "([0, -1, 3],)",
+      "expectedOutput": "3"
     },
     {
       "id": "hidden-3",
-      "label": "Hidden 3: Single element",
-      "argsExpression": "([999],)",
-      "expectedOutput": "999"
+      "label": "Hidden 3: Normal: Increasing values",
+      "argsExpression": "([1, 2, 3, 4],)",
+      "expectedOutput": "4"
+    },
+    {
+      "id": "hidden-4",
+      "label": "Hidden 4: Normal: Repeated candidate maximum",
+      "argsExpression": "([5, 5, 1],)",
+      "expectedOutput": "5"
+    },
+    {
+      "id": "hidden-5",
+      "label": "Hidden 5: Normal: Mixed signs",
+      "argsExpression": "([100, -200, 99],)",
+      "expectedOutput": "100"
+    },
+    {
+      "id": "hidden-6",
+      "label": "Hidden 6: Normal: Negative values",
+      "argsExpression": "([-10, -20, -30],)",
+      "expectedOutput": "-10"
+    },
+    {
+      "id": "hidden-7",
+      "label": "Hidden 7: Normal: Maximum in the middle",
+      "argsExpression": "([7, 9, 1, 3],)",
+      "expectedOutput": "9"
+    },
+    {
+      "id": "hidden-8",
+      "label": "Hidden 8: Normal: Zero is maximum",
+      "argsExpression": "([-1, 0, -2],)",
+      "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-9",
+      "label": "Hidden 9: Normal: Repeated values",
+      "argsExpression": "([2, 2, 3, 2],)",
+      "expectedOutput": "3"
+    },
+    {
+      "id": "hidden-10",
+      "label": "Hidden 10: Normal: Unsorted values",
+      "argsExpression": "([4, 8, 6, 7],)",
+      "expectedOutput": "8"
+    },
+    {
+      "id": "hidden-11",
+      "label": "Hidden 11: Normal: Positive maximum with negative values",
+      "argsExpression": "([100, -100, 99],)",
+      "expectedOutput": "100"
+    },
+    {
+      "id": "hidden-12",
+      "label": "Hidden 12: Normal: All values negative",
+      "argsExpression": "([-8, -3, -6],)",
+      "expectedOutput": "-3"
+    },
+    {
+      "id": "hidden-13",
+      "label": "Hidden 13: Edge: Single positive item",
+      "argsExpression": "([42],)",
+      "expectedOutput": "42"
+    },
+    {
+      "id": "hidden-14",
+      "label": "Hidden 14: Edge: Single minimum item",
+      "argsExpression": "([-10000],)",
+      "expectedOutput": "-10000"
+    },
+    {
+      "id": "hidden-15",
+      "label": "Hidden 15: Edge: All equal values",
+      "argsExpression": "([0, 0, 0],)",
+      "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-16",
+      "label": "Hidden 16: Edge: Maximum at end of list",
+      "argsExpression": "([1, 2, 10000],)",
+      "expectedOutput": "10000"
+    },
+    {
+      "id": "hidden-17",
+      "label": "Hidden 17: Edge: Values at lower bound",
+      "argsExpression": "([-10000, -9999],)",
+      "expectedOutput": "-9999"
+    }
+  ],
+  "is-even-number": [
+    {
+      "id": "hidden-1",
+      "label": "Hidden 1: Normal: Positive even number",
+      "argsExpression": "(12,)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-2",
+      "label": "Hidden 2: Normal: Positive odd number",
+      "argsExpression": "(15,)",
+      "expectedOutput": "False"
+    },
+    {
+      "id": "hidden-3",
+      "label": "Hidden 3: Normal: Negative even number",
+      "argsExpression": "(-10,)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-4",
+      "label": "Hidden 4: Normal: Negative odd number",
+      "argsExpression": "(-9,)",
+      "expectedOutput": "False"
+    },
+    {
+      "id": "hidden-5",
+      "label": "Hidden 5: Normal: Small even number",
+      "argsExpression": "(2,)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-6",
+      "label": "Hidden 6: Normal: Small odd number",
+      "argsExpression": "(3,)",
+      "expectedOutput": "False"
+    },
+    {
+      "id": "hidden-7",
+      "label": "Hidden 7: Normal: Larger even number",
+      "argsExpression": "(2468,)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-8",
+      "label": "Hidden 8: Normal: Larger odd number",
+      "argsExpression": "(1357,)",
+      "expectedOutput": "False"
+    },
+    {
+      "id": "hidden-9",
+      "label": "Hidden 9: Normal: Negative multiple of two",
+      "argsExpression": "(-100,)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-10",
+      "label": "Hidden 10: Normal: Negative odd value",
+      "argsExpression": "(-101,)",
+      "expectedOutput": "False"
+    },
+    {
+      "id": "hidden-11",
+      "label": "Hidden 11: Normal: Even boundary value",
+      "argsExpression": "(1000000000,)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-12",
+      "label": "Hidden 12: Normal: Odd boundary value",
+      "argsExpression": "(999999999,)",
+      "expectedOutput": "False"
+    },
+    {
+      "id": "hidden-13",
+      "label": "Hidden 13: Edge: Zero",
+      "argsExpression": "(0,)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-14",
+      "label": "Hidden 14: Edge: Negative one",
+      "argsExpression": "(-1,)",
+      "expectedOutput": "False"
+    },
+    {
+      "id": "hidden-15",
+      "label": "Hidden 15: Edge: Positive one",
+      "argsExpression": "(1,)",
+      "expectedOutput": "False"
+    },
+    {
+      "id": "hidden-16",
+      "label": "Hidden 16: Edge: Minimum boundary",
+      "argsExpression": "(-1000000000,)",
+      "expectedOutput": "True"
+    },
+    {
+      "id": "hidden-17",
+      "label": "Hidden 17: Edge: Just below maximum",
+      "argsExpression": "(999999998,)",
+      "expectedOutput": "True"
+    }
+  ],
+  "rectangle-area": [
+    {
+      "id": "hidden-1",
+      "label": "Hidden 1: Normal: Small rectangle",
+      "argsExpression": "(2, 6)",
+      "expectedOutput": "12"
+    },
+    {
+      "id": "hidden-2",
+      "label": "Hidden 2: Normal: Wide rectangle",
+      "argsExpression": "(9, 1)",
+      "expectedOutput": "9"
+    },
+    {
+      "id": "hidden-3",
+      "label": "Hidden 3: Normal: Tall rectangle",
+      "argsExpression": "(3, 12)",
+      "expectedOutput": "36"
+    },
+    {
+      "id": "hidden-4",
+      "label": "Hidden 4: Normal: Unequal sides",
+      "argsExpression": "(7, 5)",
+      "expectedOutput": "35"
+    },
+    {
+      "id": "hidden-5",
+      "label": "Hidden 5: Normal: Larger dimensions",
+      "argsExpression": "(8, 10)",
+      "expectedOutput": "80"
+    },
+    {
+      "id": "hidden-6",
+      "label": "Hidden 6: Normal: Medium rectangle",
+      "argsExpression": "(3, 11)",
+      "expectedOutput": "33"
+    },
+    {
+      "id": "hidden-7",
+      "label": "Hidden 7: Normal: Long rectangle",
+      "argsExpression": "(15, 4)",
+      "expectedOutput": "60"
+    },
+    {
+      "id": "hidden-8",
+      "label": "Hidden 8: Normal: Short height",
+      "argsExpression": "(20, 2)",
+      "expectedOutput": "40"
+    },
+    {
+      "id": "hidden-9",
+      "label": "Hidden 9: Normal: Square",
+      "argsExpression": "(6, 6)",
+      "expectedOutput": "36"
+    },
+    {
+      "id": "hidden-10",
+      "label": "Hidden 10: Normal: Two-digit sides",
+      "argsExpression": "(9, 12)",
+      "expectedOutput": "108"
+    },
+    {
+      "id": "hidden-11",
+      "label": "Hidden 11: Normal: Multiple of five",
+      "argsExpression": "(25, 5)",
+      "expectedOutput": "125"
+    },
+    {
+      "id": "hidden-12",
+      "label": "Hidden 12: Normal: Unequal larger sides",
+      "argsExpression": "(13, 7)",
+      "expectedOutput": "91"
+    },
+    {
+      "id": "hidden-13",
+      "label": "Hidden 13: Edge: Zero width",
+      "argsExpression": "(0, 5)",
+      "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-14",
+      "label": "Hidden 14: Edge: Zero height",
+      "argsExpression": "(4, 0)",
+      "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-15",
+      "label": "Hidden 15: Edge: Both sides zero",
+      "argsExpression": "(0, 0)",
+      "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-16",
+      "label": "Hidden 16: Edge: Maximum width",
+      "argsExpression": "(10000, 1)",
+      "expectedOutput": "10000"
+    },
+    {
+      "id": "hidden-17",
+      "label": "Hidden 17: Edge: Maximum height",
+      "argsExpression": "(1, 10000)",
+      "expectedOutput": "10000"
+    }
+  ],
+  "count-words": [
+    {
+      "id": "hidden-1",
+      "label": "Hidden 1: Normal: Four-word sentence",
+      "argsExpression": "(\"The quick brown fox\",)",
+      "expectedOutput": "4"
+    },
+    {
+      "id": "hidden-2",
+      "label": "Hidden 2: Normal: Longer sentence",
+      "argsExpression": "(\"count the words in this sentence\",)",
+      "expectedOutput": "6"
+    },
+    {
+      "id": "hidden-3",
+      "label": "Hidden 3: Normal: Repeated spaces",
+      "argsExpression": "(\"two  spaces\",)",
+      "expectedOutput": "2"
+    },
+    {
+      "id": "hidden-4",
+      "label": "Hidden 4: Normal: Leading and trailing whitespace",
+      "argsExpression": "(\" leading and trailing \",)",
+      "expectedOutput": "3"
+    },
+    {
+      "id": "hidden-5",
+      "label": "Hidden 5: Normal: Words separated by tabs",
+      "argsExpression": "(\"tabs\\tbetween\\twords\",)",
+      "expectedOutput": "3"
+    },
+    {
+      "id": "hidden-6",
+      "label": "Hidden 6: Normal: Punctuation stays with words",
+      "argsExpression": "(\"don't split punctuation\",)",
+      "expectedOutput": "3"
+    },
+    {
+      "id": "hidden-7",
+      "label": "Hidden 7: Normal: Numeric words",
+      "argsExpression": "(\"123 45\",)",
+      "expectedOutput": "2"
+    },
+    {
+      "id": "hidden-8",
+      "label": "Hidden 8: Normal: Mixed language names",
+      "argsExpression": "(\"Python,JavaScript and Go\",)",
+      "expectedOutput": "3"
+    },
+    {
+      "id": "hidden-9",
+      "label": "Hidden 9: Normal: Line-separated words",
+      "argsExpression": "(\"one\\ntwo\\nthree\",)",
+      "expectedOutput": "3"
+    },
+    {
+      "id": "hidden-10",
+      "label": "Hidden 10: Normal: Several internal spaces",
+      "argsExpression": "(\"spaced   words\",)",
+      "expectedOutput": "2"
+    },
+    {
+      "id": "hidden-11",
+      "label": "Hidden 11: Normal: Repeated word",
+      "argsExpression": "(\"word word word\",)",
+      "expectedOutput": "3"
+    },
+    {
+      "id": "hidden-12",
+      "label": "Hidden 12: Normal: Words with accents",
+      "argsExpression": "(\"caf? au lait\",)",
+      "expectedOutput": "3"
+    },
+    {
+      "id": "hidden-13",
+      "label": "Hidden 13: Edge: Empty string",
+      "argsExpression": "(\"\",)",
+      "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-14",
+      "label": "Hidden 14: Edge: Spaces only",
+      "argsExpression": "(\"     \",)",
+      "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-15",
+      "label": "Hidden 15: Edge: Whitespace characters only",
+      "argsExpression": "(\" \\t\\n \",)",
+      "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-16",
+      "label": "Hidden 16: Edge: Single word",
+      "argsExpression": "(\"word\",)",
+      "expectedOutput": "1"
+    },
+    {
+      "id": "hidden-17",
+      "label": "Hidden 17: Edge: Maximum length string",
+      "argsExpression": "(\"word \" * 1999 + \"word\",)",
+      "expectedOutput": "2000"
+    }
+  ],
+  "find-second-largest": [
+    {
+      "id": "hidden-1",
+      "label": "Hidden 1: Normal: Two distinct values",
+      "argsExpression": "([1, 2],)",
+      "expectedOutput": "1"
+    },
+    {
+      "id": "hidden-2",
+      "label": "Hidden 2: Normal: Ascending values",
+      "argsExpression": "([10, 20, 30],)",
+      "expectedOutput": "20"
+    },
+    {
+      "id": "hidden-3",
+      "label": "Hidden 3: Normal: All negative values",
+      "argsExpression": "([-1, -2, -3],)",
+      "expectedOutput": "-2"
+    },
+    {
+      "id": "hidden-4",
+      "label": "Hidden 4: Normal: Mixed signs",
+      "argsExpression": "([-5, 0, -1],)",
+      "expectedOutput": "-1"
+    },
+    {
+      "id": "hidden-5",
+      "label": "Hidden 5: Normal: Repeated maximum",
+      "argsExpression": "([4, 1, 4, 3],)",
+      "expectedOutput": "3"
+    },
+    {
+      "id": "hidden-6",
+      "label": "Hidden 6: Normal: Several repeated maxima",
+      "argsExpression": "([8, 8, 7, 6],)",
+      "expectedOutput": "7"
+    },
+    {
+      "id": "hidden-7",
+      "label": "Hidden 7: Normal: Unsorted with duplicates",
+      "argsExpression": "([2, 9, 5, 9, 3],)",
+      "expectedOutput": "5"
+    },
+    {
+      "id": "hidden-8",
+      "label": "Hidden 8: Normal: Positive and negative",
+      "argsExpression": "([10, -10, 0, 5],)",
+      "expectedOutput": "5"
+    },
+    {
+      "id": "hidden-9",
+      "label": "Hidden 9: Normal: Descending values",
+      "argsExpression": "([3, 2, 1],)",
+      "expectedOutput": "2"
+    },
+    {
+      "id": "hidden-10",
+      "label": "Hidden 10: Normal: Odd count of values",
+      "argsExpression": "([1, 3, 5, 7, 9],)",
+      "expectedOutput": "7"
+    },
+    {
+      "id": "hidden-11",
+      "label": "Hidden 11: Normal: Large mixed values",
+      "argsExpression": "([-100, 100, 0, 99],)",
+      "expectedOutput": "99"
+    },
+    {
+      "id": "hidden-12",
+      "label": "Hidden 12: Normal: Two repeated levels",
+      "argsExpression": "([12, 12, 11, 11, 10],)",
+      "expectedOutput": "11"
+    },
+    {
+      "id": "hidden-13",
+      "label": "Hidden 13: Edge: Empty list",
+      "argsExpression": "([], )",
+      "expectedOutput": "None"
+    },
+    {
+      "id": "hidden-14",
+      "label": "Hidden 14: Edge: Single item",
+      "argsExpression": "([42],)",
+      "expectedOutput": "None"
+    },
+    {
+      "id": "hidden-15",
+      "label": "Hidden 15: Edge: All values equal",
+      "argsExpression": "([5, 5, 5],)",
+      "expectedOutput": "None"
+    },
+    {
+      "id": "hidden-16",
+      "label": "Hidden 16: Edge: Maximum appears more than once",
+      "argsExpression": "([1, 5, 5],)",
+      "expectedOutput": "1"
+    },
+    {
+      "id": "hidden-17",
+      "label": "Hidden 17: Edge: Exactly two distinct values",
+      "argsExpression": "([2, 1],)",
+      "expectedOutput": "1"
+    }
+  ],
+  "sum-digits-recursively": [
+    {
+      "id": "hidden-1",
+      "label": "Hidden 1: Normal: Two digits",
+      "argsExpression": "(45,)",
+      "expectedOutput": "9"
+    },
+    {
+      "id": "hidden-2",
+      "label": "Hidden 2: Normal: Year-like number",
+      "argsExpression": "(2024,)",
+      "expectedOutput": "8"
+    },
+    {
+      "id": "hidden-3",
+      "label": "Hidden 3: Normal: Repeated ones",
+      "argsExpression": "(11111,)",
+      "expectedOutput": "5"
+    },
+    {
+      "id": "hidden-4",
+      "label": "Hidden 4: Normal: Three nines",
+      "argsExpression": "(999,)",
+      "expectedOutput": "27"
+    },
+    {
+      "id": "hidden-5",
+      "label": "Hidden 5: Normal: One followed by zeros",
+      "argsExpression": "(100000,)",
+      "expectedOutput": "1"
+    },
+    {
+      "id": "hidden-6",
+      "label": "Hidden 6: Normal: Mixed digits",
+      "argsExpression": "(314159,)",
+      "expectedOutput": "23"
+    },
+    {
+      "id": "hidden-7",
+      "label": "Hidden 7: Normal: Zeros at both ends",
+      "argsExpression": "(1001,)",
+      "expectedOutput": "2"
+    },
+    {
+      "id": "hidden-8",
+      "label": "Hidden 8: Normal: Even digits",
+      "argsExpression": "(2468,)",
+      "expectedOutput": "20"
+    },
+    {
+      "id": "hidden-9",
+      "label": "Hidden 9: Normal: Zeros in the middle",
+      "argsExpression": "(8050,)",
+      "expectedOutput": "13"
+    },
+    {
+      "id": "hidden-10",
+      "label": "Hidden 10: Normal: Nine digits",
+      "argsExpression": "(123456789,)",
+      "expectedOutput": "45"
+    },
+    {
+      "id": "hidden-11",
+      "label": "Hidden 11: Normal: Single non-zero digit",
+      "argsExpression": "(7,)",
+      "expectedOutput": "7"
+    },
+    {
+      "id": "hidden-12",
+      "label": "Hidden 12: Normal: Several trailing zeros",
+      "argsExpression": "(43002,)",
+      "expectedOutput": "9"
+    },
+    {
+      "id": "hidden-13",
+      "label": "Hidden 13: Edge: Zero base case",
+      "argsExpression": "(0,)",
+      "expectedOutput": "0"
+    },
+    {
+      "id": "hidden-14",
+      "label": "Hidden 14: Edge: Single digit",
+      "argsExpression": "(9,)",
+      "expectedOutput": "9"
+    },
+    {
+      "id": "hidden-15",
+      "label": "Hidden 15: Edge: Power of ten",
+      "argsExpression": "(100000000,)",
+      "expectedOutput": "1"
+    },
+    {
+      "id": "hidden-16",
+      "label": "Hidden 16: Edge: Maximum input",
+      "argsExpression": "(999999999,)",
+      "expectedOutput": "81"
+    },
+    {
+      "id": "hidden-17",
+      "label": "Hidden 17: Edge: One above a power of ten",
+      "argsExpression": "(100000001,)",
+      "expectedOutput": "2"
     }
   ]
 }
