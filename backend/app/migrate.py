@@ -14,8 +14,10 @@ MIGRATIONS = [
     Path(__file__).resolve().parents[1] / "migrations" / "009_exercise_concepts.sql",
     Path(__file__).resolve().parents[1] / "migrations" / "010_exercise_workspace_state.sql",
     Path(__file__).resolve().parents[1] / "migrations" / "011_lesson_challenge_progress.sql",
+    Path(__file__).resolve().parents[1] / "migrations" / "012_assessments.sql",
 ]
 REQUIRED_COLUMNS = {
+    "assessments": {"id", "user_id", "course_id", "status", "questions", "answers", "results", "score", "profile_snapshot", "submitted_at", "pass_score", "model_name", "prompt_version", "created_at", "updated_at"},
     "users": {"id", "email", "username", "password_hash", "full_name", "created_at", "level", "ai_tutor_memory", "learning_preferences"},
     "courses": {"id", "title", "description", "order_index"},
     "lessons": {"id", "title", "course_id", "content_markdown", "order_index", "preknowledge", "new_concepts"},
@@ -60,7 +62,7 @@ def main() -> None:
             conn.execute("SELECT pg_advisory_xact_lock(73190421)")
             for migration in MIGRATIONS:
                 conn.execute(migration.read_text(encoding="utf-8"))
-        print("Applied idempotent migrations 001_initial_schema.sql through 011_lesson_challenge_progress.sql")
+        print("Applied idempotent migrations 001_initial_schema.sql through 012_assessments.sql")
     finally:
         pool.close()
 

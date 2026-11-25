@@ -9,6 +9,7 @@ import ExerciseWorkspace from './pages/ExerciseWorkspace/ExerciseWorkspace'
 import LessonDetail from './pages/LessonDetail/LessonDetail'
 import AuthPage from './pages/AuthPage/AuthPage'
 import Profile from './pages/Profile/Profile'
+import Assessments from './pages/Assessments/Assessments'
 
 function AppContent() {
   const location = useLocation()
@@ -23,6 +24,8 @@ function AppContent() {
         <Route path="/login" element={<AuthPage mode="login" />} />
         <Route path="/register" element={<AuthPage mode="register" />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/assessments" element={<Assessments key={location.pathname} />} />
+        <Route path="/assessments/:id" element={<Assessments key={location.pathname} />} />
         <Route path="/" element={<Dashboard />} />
         <Route path="/learning" element={<Learning />} />
         <Route path="/lessons/:id" element={<LessonDetail />} />

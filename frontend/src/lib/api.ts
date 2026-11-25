@@ -332,3 +332,43 @@ export async function saveChat(message: string, role: 'user' | 'assistant', exer
     body: JSON.stringify({ message, role, exercise_id: exerciseId, code_snapshot: codeSnapshot ?? null }),
   })
 }
+
+export type AssessmentKind = 'knowledge' | 'code_tracing' | 'debugging' | 'conceptual_reasoning' | 'coding'
+export interface AssessmentQuestion {
+  id: string
+  kind: AssessmentKind
+  concept_id: string
+  prompt: string
+  options: { id: string; text: string }[]
+  starter_code: string | null
+  function_name: string | null
+  explanation?: string
+  correct_option_id?: string
+}
+export interface AssessmentSummary {
+  id: string
+  status: 'in_progress' | 'passed' | 'failed'
+  score: number | null
+  pass_score: number
+  created_at: string
+  submitted_at: string | null
+}
+export interface Assessment extends AssessmentSummary {
+  questions: AssessmentQuestion[]
+  answers: Record<string, string>
+  results: Record<string, { correct: boolean; passed?: number; total?: number }> | null
+}
+export interface AssessmentHistory {
+  unlocked: boolean
+  completed_count: number
+  assessments: AssessmentSummary[]
+  has_more: boolean
+  active_id: string | null
+}
+export const fetchAssessmentHistory = (offset = 0) => request<AssessmentHistory>(`/api/assessments?offset=${offset}`)
+export const createAssessment = () => request<Assessment>('/api/assessments', { method: 'POST' })
+export const fetchAssessment = (id: string) => request<Assessment>(`/api/assessments/${encodeURIComponent(id)}`)
+export const saveAssessmentDraft = (id: string, answers: Record<string, string>) =>
+  request(`/api/assessments/${encodeURIComponent(id)}/draft`, { method: 'PUT', body: JSON.stringify({ answers }) })
+export const submitAssessment = (id: string, answers: Record<string, string>) =>
+  request<Assessment>(`/api/assessments/${encodeURIComponent(id)}/submit`, { method: 'POST', body: JSON.stringify({ answers }) })

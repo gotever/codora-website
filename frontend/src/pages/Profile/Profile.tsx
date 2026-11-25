@@ -133,6 +133,7 @@ function AuthenticatedProfile({ user }: { user: AuthUser }) {
         <header className="profile-page__header">
           <span className="profile-page__eyebrow">YOUR LEARNING SPACE</span>
           <h1>Learner profile</h1>
+          <Link to="/assessments" className="profile-page__text-link">Personalized tests &amp; test history →</Link>
           <p>Review your account, learning progress, and how Codora adapts lessons for you.</p>
         </header>
 

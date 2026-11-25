@@ -5,6 +5,7 @@ import './Navbar.css'
 const NAV_LINKS = [
   { label: 'Learning', to: '/learning' },
   { label: 'Exercises', to: '/exercises' },
+  { label: 'Tests', to: '/assessments' },
 ]
 
 export default function Navbar() {

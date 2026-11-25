@@ -2,6 +2,8 @@
 
 
 def promote_beginner_after_six_lessons_and_four_mastered_concepts(conn: Any, user_id: str) -> str | None:
+    # A simultaneous progress completion and assessment submission must not miss promotion.
+    conn.execute('SELECT pg_advisory_xact_lock(hashtextextended(%s,731906))', (user_id,))
     completed = conn.execute(
         """SELECT COUNT(DISTINCT lesson.id)::int AS completed_count
             FROM lessons AS lesson
@@ -11,10 +13,14 @@ def promote_beginner_after_six_lessons_and_four_mastered_concepts(conn: Any, use
              AND progress.user_id=%s
              AND progress.item_type='lesson'
              AND progress.status='completed'
-            WHERE course.title='Python fundamentals'""",
+            WHERE lesson.id IN (SELECT l.id FROM lessons l JOIN courses c ON c.id=l.course_id
+                WHERE c.title='Python fundamentals' ORDER BY l.order_index,l.id LIMIT 6)""",
         (user_id,),
     ).fetchone()["completed_count"]
     if completed < 6:
+        return None
+
+    if not conn.execute("SELECT 1 FROM assessments WHERE user_id=%s AND status='passed' LIMIT 1", (user_id,)).fetchone():
         return None
 
     mastered = conn.execute(

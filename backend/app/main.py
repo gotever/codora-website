@@ -16,6 +16,7 @@ from .runner import run_code_sandbox
 from .schemas import ChatInput, ExerciseWorkspaceInput, LearningPreferences, LoginInput, PersonalizeLessonInput, ProgressInput, RegisterInput, SubmitInput, TutorChatInput, UserLevelInput
 from .settings import settings
 from .tutor import create_tutor_reply
+from .assessments import router as assessment_router
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
@@ -27,6 +28,7 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title="Codora API", version="1.0.0", lifespan=lifespan)
+app.include_router(assessment_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.frontend_origin],
@@ -434,6 +436,11 @@ def me(user_id: str = Depends(current_user_id)):
 @app.put("/api/auth/level")
 def update_level(body: UserLevelInput, user_id: str = Depends(current_user_id)):
     with connection() as conn:
+        current = conn.execute('SELECT level FROM users WHERE id=%s', (user_id,)).fetchone()
+        if current and current['level'] == 'beginner' and body.level != 'beginner':
+            promoted = promote_beginner_after_six_lessons_and_four_mastered_concepts(conn, user_id)
+            if not promoted or body.level != 'intermediate':
+                raise HTTPException(403, 'Pass the promotion assessment and master four concepts first')
         user = conn.execute(
             "UPDATE users SET level=%s WHERE id=%s RETURNING level", (body.level, user_id)
         ).fetchone()

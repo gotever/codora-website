@@ -28,12 +28,35 @@ services:
       - JWT_SECRET=${JWT_SECRET:-12345678901234567890123456789012}
       - COOKIE_SECURE=false
       - FRONTEND_ORIGIN=${FRONTEND_ORIGIN:-http://localhost:5173}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-6-luna}
+      - ASSESSMENT_RUNNER_URL=http://assessment-runner:3002
+      - ASSESSMENT_RUNNER_TOKEN=${ASSESSMENT_RUNNER_TOKEN:-codora-local-grader}
     depends_on:
       postgres:
         condition: service_healthy
+      assessment-runner:
+        condition: service_started
     volumes:
       - ./backend/app:/app/app
       - ./backend/data:/app/data
+
+  assessment-runner:
+    build: ./backend/assessment_runner
+    environment:
+      - ASSESSMENT_RUNNER_TOKEN=${ASSESSMENT_RUNNER_TOKEN:-codora-local-grader}
+    ports:
+      - "127.0.0.1:3002:3002"
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    mem_limit: 384m
+    cpus: 1
+    pids_limit: 32
+    cap_drop: [ALL]
+    cap_add: [SETUID, SETGID, KILL]
+    security_opt:
+      - no-new-privileges:true
 
 volumes:
   codora-postgres:
