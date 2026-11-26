@@ -132,6 +132,17 @@ Mỗi chỉ số ghi kèm: số mẫu N, thời điểm đo, commit, cấu hình
 - Mỗi lỗi ghi: mô tả, mức độ (Cao/Trung bình/Thấp), cách tái hiện, kết quả mong đợi và kết quả thực tế, file/dòng liên quan.
 - Lỗi đã biết: BUG-01, BUG-02, BUG-03, TST-01, TST-02 (`baseline-report.md`); TST-03, OBS-01 (`test-environment.md`); BUG-04: `_lesson_challenges` trong `tutor.py` ném `AttributeError`/`TypeError` khi metadata bài học sai dạng (ví dụ JSON là mảng, hoặc `sections` là `null`), trong khi `_lesson_summary` xử lý được (`tests/test_tutor_helpers.py`). BUG-05: `verify_password` trong `auth.py` ném `InvalidHashError` thay vì trả `False` khi hash lưu trong DB rỗng hoặc sai định dạng (`tests/test_auth_schemas_extra.py`).
 
+Lỗi tìm thấy ở `app/runner.py` (bộ chấm của `POST /api/exercises/{id}/submit`, chạy code người học trực tiếp trên máy chủ backend), chi tiết trong `tests/test_runner_edge_cases.py`:
+
+| Mã | Mức | Mô tả |
+|---|---|---|
+| BUG-06 | Cao | Danh sách chặn theo chuỗi con dễ bị vượt qua (`os.popen`, `__import__('subpro' + 'cess')`). Code người học chạy được lệnh shell và đọc được file trên máy chủ. |
+| BUG-07 | Cao | Tiến trình chấm kế thừa biến môi trường của server. Code người học đọc được `JWT_SECRET`, `DATABASE_URL`, `OPENAI_API_KEY` và trả chúng về qua trường `actual`. |
+| BUG-08 | Cao | Code người học có thể in chuỗi đánh dấu kết quả kèm JSON giả rồi `sys.exit(0)`, khiến bài được chấm Accepted mà không giải. |
+| BUG-09 | Trung bình | Code người học đọc được biến toàn cục `test_cases`, gồm cả đáp án của test ẩn. |
+| BUG-10 | Trung bình | Thông báo lỗi của test ẩn được trả về nguyên văn, nên có thể làm lộ input của test ẩn qua `raise`. |
+| BUG-11 | Thấp | `IndentationError`/`TabError` bị báo là "Runtime Error" thay vì "Syntax Error"; số dòng trong thông báo lỗi bị lệch 6 dòng do phần khung của runner. |
+
 ## 9. Danh sách task
 
 Toàn bộ công việc kiểm thử nằm trên branch `test/codora-testing`.
@@ -143,7 +154,7 @@ Toàn bộ công việc kiểm thử nằm trên branch `test/codora-testing`.
 | 3 | Dựng PostgreSQL riêng cho test và chạy lại các test bị skip | `docker-compose.test.yml`, `docs/testing/test-environment.md` | Xong |
 | 4 | Unit test hàm thuần trong `tutor.py` | `backend/tests/test_tutor_helpers.py` | Xong |
 | 5 | Unit test `auth.py` và validate `schemas.py` | `backend/tests/test_auth_schemas_extra.py`  Xong |
-| 6 | Test case biên cho `runner.py` | `backend/tests/test_runner_edge_cases.py` | |
+| 6 | Test case biên cho `runner.py` | `backend/tests/test_runner_edge_cases.py`  Xong |
 | 7 | Test API exercises và submit: tra theo id/slug, không lộ hidden test, công thức điểm | `backend/tests/test_api_exercises.py` | |
 | 8 | Test API auth, workspace, progress và phân quyền owner | `backend/tests/test_api_auth_workspace.py` | |
 | 9 | Đo chỉ số đánh giá | `backend/scripts/measure_metrics.py`, số liệu | |
