@@ -361,6 +361,8 @@ export interface Assessment extends AssessmentSummary {
 export interface AssessmentHistory {
   unlocked: boolean
   completed_count: number
+  mastered_count: number
+  required_mastered?: number
   assessments: AssessmentSummary[]
   has_more: boolean
   active_id: string | null

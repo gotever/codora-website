@@ -16,10 +16,11 @@ function AppContent() {
   // The workspace and lesson detail pages have their own integrated layout / status footers
   const isWorkspace = location.pathname.startsWith('/exercises/')
   const isLesson = location.pathname.startsWith('/lessons')
+  const isAssessmentDetail = location.pathname.startsWith('/assessments/')
 
   return (
     <>
-      {!location.pathname.startsWith('/login') && !location.pathname.startsWith('/register') && <Navbar />}
+      {!isAssessmentDetail && !location.pathname.startsWith('/login') && !location.pathname.startsWith('/register') && <Navbar />}
       <Routes>
         <Route path="/login" element={<AuthPage mode="login" />} />
         <Route path="/register" element={<AuthPage mode="register" />} />
@@ -34,7 +35,7 @@ function AppContent() {
         {/* Fallback: redirect unknown routes to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      {!isWorkspace && !isLesson && !location.pathname.startsWith('/login') && !location.pathname.startsWith('/register') && <Footer />}
+      {!isWorkspace && !isLesson && !isAssessmentDetail && !location.pathname.startsWith('/login') && !location.pathname.startsWith('/register') && <Footer />}
     </>
   )
 }

@@ -130,71 +130,87 @@ export function usePyodide(): UsePyodideReturn {
 
       const start = performance.now()
 
-      // Set up stdout/stderr and stdin for deterministic program challenges.
+      pyodide.globals.set('__codora_code', code)
       pyodide.globals.set('__codora_stdin', stdin)
-      pyodide.runPython(`
-import sys, io
+
+      try {
+        pyodide.runPython(`
+import ast, io, sys, traceback
+
 __stdout_capture = io.StringIO()
 __stderr_capture = io.StringIO()
+__codora_ret = None
+__codora_err = ""
+__orig_stdout, __orig_stderr, __orig_stdin = sys.stdout, sys.stderr, sys.stdin
 sys.stdout = __stdout_capture
 sys.stderr = __stderr_capture
 sys.stdin = io.StringIO(__codora_stdin)
+try:
+    __codora_ns = {'__name__': '__main__'}
+    __codora_tree = ast.parse(__codora_code, '<solution>', 'exec')
+    if __codora_tree.body and isinstance(__codora_tree.body[-1], ast.Expr):
+        __codora_last = ast.Expression(__codora_tree.body.pop().value)
+        ast.fix_missing_locations(__codora_last)
+        if __codora_tree.body:
+            exec(compile(__codora_tree, '<solution>', 'exec'), __codora_ns)
+        __codora_val = eval(compile(__codora_last, '<solution>', 'eval'), __codora_ns)
+        if __codora_val is not None:
+            __codora_ret = str(__codora_val)
+    else:
+        exec(compile(__codora_tree, '<solution>', 'exec'), __codora_ns)
+except BaseException:
+    __codora_err = traceback.format_exc()
+finally:
+    sys.stdout = __orig_stdout
+    sys.stderr = __orig_stderr
+    sys.stdin = __orig_stdin
 `)
-
-      try {
-        const result = pyodide.runPython(code)
         const elapsed = performance.now() - start
+        const stdout = String(pyodide.globals.get('__stdout_capture').getvalue() || '')
+        const stderr = String(pyodide.globals.get('__stderr_capture').getvalue() || '')
+        const errText = String(pyodide.globals.get('__codora_err') || '')
+        const retVal = pyodide.globals.get('__codora_ret')
+        const returnValue = retVal !== undefined && retVal !== null ? String(retVal) : null
 
-        const stdout = pyodide.runPython('__stdout_capture.getvalue()')
-        const stderr = pyodide.runPython('__stderr_capture.getvalue()')
+        for (const name of [
+          '__codora_code',
+          '__codora_stdin',
+          '__codora_ret',
+          '__codora_err',
+          '__stdout_capture',
+          '__stderr_capture',
+        ]) {
+          try {
+            pyodide.globals.delete(name)
+          } catch {
+            // ignore cleanup errors
+          }
+        }
 
-        // Restore stdout/stderr
-        pyodide.runPython(`
-sys.stdout = sys.__stdout__
-sys.stderr = sys.__stderr__
-sys.stdin = sys.__stdin__
-`)
-        pyodide.globals.delete('__codora_stdin')
+        if (errText) {
+          return {
+            success: false,
+            output: stdout,
+            error: cleanPythonError(errText),
+            returnValue: null,
+            executionTime: Math.round(elapsed),
+          }
+        }
 
         return {
           success: true,
-          output: stdout || '',
-          error: stderr || '',
-          returnValue: result !== undefined && result !== null
-            ? String(result)
-            : null,
+          output: stdout,
+          error: stderr,
+          returnValue,
           executionTime: Math.round(elapsed),
         }
       } catch (err: any) {
         const elapsed = performance.now() - start
-
-        // Try to capture any partial stdout
-        let stdout = ''
-        try {
-          stdout = pyodide.runPython('__stdout_capture.getvalue()')
-        } catch {
-          // ignore
-        }
-
-        // Restore stdout/stderr
-        try {
-          pyodide.runPython(`
-sys.stdout = sys.__stdout__
-sys.stderr = sys.__stderr__
-sys.stdin = sys.__stdin__
-`)
-          pyodide.globals.delete('__codora_stdin')
-        } catch {
-          // ignore
-        }
-
         const rawError = err?.message || String(err)
-        const cleanError = cleanPythonError(rawError)
-
         return {
           success: false,
-          output: stdout,
-          error: cleanError,
+          output: '',
+          error: cleanPythonError(rawError),
           returnValue: null,
           executionTime: Math.round(elapsed),
         }
@@ -233,9 +249,13 @@ repr(__test_result)
   }
 }
 
-/** Extract the last meaningful line(s) from a Python traceback */
+/** Extract the meaningful error message and user code location from a Python traceback */
 function cleanPythonError(raw: string): string {
   const lines = raw.split('\n').filter((l) => l.trim())
+  const solutionIdx = lines.findLastIndex((l) => l.includes('File "<solution>"'))
+  if (solutionIdx !== -1) {
+    return lines.slice(solutionIdx).join('\n')
+  }
   for (let i = lines.length - 1; i >= 0; i--) {
     if (/^[A-Z]\w*(Error|Exception|Warning):/.test(lines[i].trim())) {
       return lines.slice(i).join('\n')

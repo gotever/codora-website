@@ -37,6 +37,9 @@ def test_contract_and_redaction():
     row=dict(id=uuid4(),status='in_progress',score=None,pass_score=8,created_at=None,submitted_at=None,answers={},results=None,questions=qs)
     public=json.dumps(service.public_assessment(row),default=str)
     assert all(secret not in public for secret in ('correct_option_id','reference_solution','"tests"','explanation'))
+    with_extra = [{**q, 'type': 'coding' if q['kind'] == 'coding' else 'mcq'} for q in qs]
+    validated = service.GeneratedAssessment.model_validate(dict(questions=with_extra))
+    assert all('type' not in q for q in validated.model_dump()['questions'])
     qs[0]['kind']='coding'
     with pytest.raises(ValueError): service.GeneratedAssessment.model_validate(dict(questions=qs))
 
@@ -80,11 +83,55 @@ def complete(conn,user,lessons):
         conn.execute("INSERT INTO user_progress(user_id,item_type,item_id,status,completed_at) VALUES(%s,'lesson',%s,'completed',now()) ON CONFLICT DO NOTHING",(user,lesson))
 
 
+def master_concepts(conn, user, lesson_id, count=4, prefix='python.unlock'):
+    exercises = [conn.execute(
+        "INSERT INTO exercises(lesson_id,title,difficulty,function_name) VALUES(%s,%s,'Easy','f') RETURNING id",
+        (lesson_id, f'{prefix}-ex-{n}'),
+    ).fetchone()['id'] for n in range(2)]
+    for n in range(count):
+        concept = f'{prefix}.{n}'
+        conn.execute('INSERT INTO learning_concepts(id,name) VALUES(%s,%s) ON CONFLICT DO NOTHING', (concept, concept))
+        for exercise in exercises:
+            conn.execute('INSERT INTO exercise_concepts(exercise_id,concept_id) VALUES(%s,%s) ON CONFLICT DO NOTHING', (exercise, concept))
+    for exercise in exercises:
+        conn.execute(
+            "INSERT INTO user_progress(user_id,item_type,item_id,status,score,completed_at) VALUES(%s,'exercise',%s,'completed',10,now()) ON CONFLICT DO NOTHING",
+            (user, exercise),
+        )
+
+
+def test_eligibility_requires_six_lessons_and_four_mastered_concepts(monkeypatch):
+    lessons = [{'id': i, 'course_id': 1, 'title': f'L{i}', 'new_concepts': [], 'preknowledge': [], 'completed': True} for i in range(6)]
+    fake_conn = type('FakeConn', (), {
+        'execute': lambda self, *_args, **_kwargs: type('Res', (), {'fetchall': lambda self: lessons})(),
+    })()
+
+    monkeypatch.setattr(service, 'count_mastered_concepts', lambda *_args: 3)
+    _, unlocked = service.eligibility(fake_conn, 'user-1')
+    assert unlocked is False
+
+    monkeypatch.setattr(service, 'count_mastered_concepts', lambda *_args: 4)
+    _, unlocked = service.eligibility(fake_conn, 'user-1')
+    assert unlocked is True
+
+
 def test_unlock_cache_drafts_and_owner(api):
     conn,client,user,lessons=api
     complete(conn,user,lessons[1:])
     assert client.post('/api/assessments').status_code==403
     complete(conn,user,lessons[:1])
+    # All 6 lessons done, but 0 mastered concepts: still locked.
+    assert client.post('/api/assessments').status_code==403
+    hist = client.get('/api/assessments').json()
+    assert hist['unlocked'] is False and hist['completed_count'] == 6 and hist['mastered_count'] == 0
+    # 3 mastered concepts: still locked.
+    master_concepts(conn, user, lessons[0], count=3, prefix='python.unlock3')
+    assert client.post('/api/assessments').status_code==403
+    assert client.get('/api/assessments').json()['mastered_count'] == 3
+    # Master a 4th concept: unlocked.
+    master_concepts(conn, user, lessons[0], count=1, prefix='python.unlock4')
+    hist = client.get('/api/assessments').json()
+    assert hist['unlocked'] is True and hist['mastered_count'] == 4
     response=client.post('/api/assessments')
     assert response.status_code==200,response.text
     a=response.json(); path='/api/assessments/'+a['id']
@@ -100,6 +147,7 @@ def test_unlock_cache_drafts_and_owner(api):
 def test_submission_retry_history_and_immutable_result(api,monkeypatch):
     conn,client,user,lessons=api
     complete(conn,user,lessons[:6])
+    master_concepts(conn, user, lessons[0], count=4, prefix='python.retry')
     a=client.post('/api/assessments').json(); path='/api/assessments/'+a['id']
     answers={q['id']:'def identity(x):\n    return x' if q['kind']=='coding' else '1' for q in questions()}
     def unavailable(*_): raise HTTPException(503,'Unavailable')
@@ -121,6 +169,7 @@ def test_submission_retry_history_and_immutable_result(api,monkeypatch):
 def test_failed_test_keeps_beginner(api):
     conn,client,user,lessons=api
     complete(conn,user,lessons[:6])
+    master_concepts(conn, user, lessons[0], count=4, prefix='python.fail')
     a=client.post('/api/assessments').json()
     answers={q['id']:'def identity(x):\n    return 99' if q['kind']=='coding' else '0' for q in questions()}
     result=client.post('/api/assessments/'+a['id']+'/submit',json={'answers':answers})
@@ -186,3 +235,85 @@ def test_versioned_lesson_memory_is_in_personalization(api):
 def test_isolated_grader(code,expected,passed):
     result=service.coding_grade(code,{'function_name':'f','tests':[{'args':[1],'expected':expected}]})
     assert result=={'passed':passed,'total':1}
+
+
+def test_grade_coding_local_behavior():
+    q_int = {'function_name': 'f', 'tests': [{'args': [1], 'expected': 1}, {'args': [2], 'expected': 2}]}
+    assert service.grade_coding_local('def f(x):\n    return x', q_int) == {'passed': 2, 'total': 2}
+    assert service.grade_coding_local('def f(x):\n    return 99', q_int) == {'passed': 0, 'total': 2}
+    assert service.grade_coding_local('def f(x):\n    return True', {'function_name': 'f', 'tests': [{'args': [1], 'expected': 1}]}) == {'passed': 0, 'total': 1}
+    assert service.grade_coding_local('def f(x):\n    return True', {'function_name': 'f', 'tests': [{'args': [1], 'expected': True}]}) == {'passed': 1, 'total': 1}
+    assert service.grade_coding_local('import os\ndef f(x):\n    return x', q_int) == {'passed': 0, 'total': 2}
+    assert service.grade_coding_local('def f(x):\n    open("x")\n    return x', q_int) == {'passed': 0, 'total': 2}
+    assert service.grade_coding_local('def f(x):\n    while True:\n        pass', {'function_name': 'f', 'tests': [{'args': [1], 'expected': 1}]}) == {'passed': 0, 'total': 1}
+
+
+def test_coding_grade_local_fallback_flag(monkeypatch):
+    import httpx
+    q = {'function_name': 'f', 'tests': [{'args': [3], 'expected': 3}]}
+    def connect_error(*_args, **_kwargs):
+        raise httpx.ConnectError('Connection refused')
+    monkeypatch.setattr(service.httpx, 'post', connect_error)
+
+    monkeypatch.setattr(service.settings, 'assessment_runner_local_fallback', False)
+    with pytest.raises(HTTPException) as err:
+        service.coding_grade('def f(x):\n    return x', q)
+    assert err.value.status_code == 503
+
+    monkeypatch.setattr(service.settings, 'assessment_runner_local_fallback', True)
+    assert service.coding_grade('def f(x):\n    return x', q) == {'passed': 1, 'total': 1}
+
+    req = httpx.Request('POST', 'http://127.0.0.1:3002/grade')
+    resp = httpx.Response(401, request=req)
+    def status_error(*_args, **_kwargs):
+        return resp
+    monkeypatch.setattr(service.httpx, 'post', status_error)
+    with pytest.raises(HTTPException) as auth_err:
+        service.coding_grade('def f(x):\n    return x', q)
+    assert auth_err.value.status_code == 503
+
+
+def test_question_normalization_accepts_harmless_llm_quirks():
+    qs = questions()
+    # Normalize MCQ quirks: tests=None, empty coding strings, uppercase Q id, scalar option text, case-insensitive key
+    qs[0]['id'] = 'Q1'
+    qs[0]['tests'] = None
+    qs[0]['function_name'] = ''
+    qs[0]['starter_code'] = '   '
+    qs[0]['reference_solution'] = ''
+    qs[0]['options'] = [{'id': 'A', 'text': 42}, {'id': 'B', 'text': 43}, {'id': 'C', 'text': 44}, {'id': 'D', 'text': 45}]
+    qs[0]['correct_option_id'] = 'a'
+    # Normalize coding quirks: options=None, empty correct_option_id, integer id
+    qs[7]['id'] = 8
+    qs[7]['options'] = None
+    qs[7]['correct_option_id'] = ''
+
+    validated = service.GeneratedAssessment.model_validate({'questions': qs})
+    dumped = validated.model_dump()['questions']
+    assert dumped[0]['id'] == 'q1'
+    assert dumped[0]['correct_option_id'] == 'A'
+    assert dumped[0]['options'][0]['text'] == '42'
+    assert dumped[7]['id'] == 'q8'
+    assert dumped[7]['options'] == []
+
+
+def test_generate_retries_once_on_validation_error(monkeypatch):
+    from types import SimpleNamespace
+    calls = []
+    bad = questions()
+    bad[0]['concept_id'] = 'python.not_in_context'
+    good = questions()
+
+    def create(**kwargs):
+        calls.append(kwargs)
+        payload = bad if len(calls) == 1 else good
+        return SimpleNamespace(output_text=json.dumps({'questions': payload}))
+
+    monkeypatch.setattr(service, 'OpenAI', lambda **_: SimpleNamespace(responses=SimpleNamespace(create=create)))
+    monkeypatch.setattr(service.settings, 'openai_api_key', 'test-key')
+    monkeypatch.setattr(service, 'coding_grade', lambda *_: {'passed': 3, 'total': 3})
+
+    result = service.generate({'concepts': [{'id': 'python.test'}]})
+    assert len(result) == 10
+    assert len(calls) == 2
+    assert 'previous_attempt_error' in calls[1]['input']

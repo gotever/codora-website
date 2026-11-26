@@ -11,6 +11,8 @@ interface WorkspaceCodeEditorProps {
   readOnly?: boolean
   statusLabel?: string
   onExitReadOnly?: () => void
+  autoFocus?: boolean
+  fillHeight?: boolean
 }
 
 export default function WorkspaceCodeEditor({
@@ -21,6 +23,8 @@ export default function WorkspaceCodeEditor({
   readOnly = false,
   statusLabel,
   onExitReadOnly,
+  autoFocus = true,
+  fillHeight = false,
 }: WorkspaceCodeEditorProps) {
   const [copied, setCopied] = useState(false)
   const [cursorPos, setCursorPos] = useState({ line: 1, col: 1 })
@@ -70,9 +74,11 @@ export default function WorkspaceCodeEditor({
       setCursorPos({ line: e.position.lineNumber, col: e.position.column })
     })
 
-    // Auto-focus editor
-    editor.focus()
-  }, [])
+    // Auto-focus editor unless explicitly disabled (e.g., multi-question exam workspace)
+    if (autoFocus) {
+      editor.focus()
+    }
+  }, [autoFocus])
 
   // Update editor value if value prop changes externally (e.g. exercise change or reset)
   useEffect(() => {
@@ -92,7 +98,7 @@ export default function WorkspaceCodeEditor({
   }
 
   return (
-    <div className="ws-editor">
+    <div className={`ws-editor ${fillHeight ? 'ws-editor--fill' : ''}`}>
       {/* Top Header: </> Code, Actions */}
       <div className="ws-editor__top-bar">
         <div className="ws-editor__title">
@@ -198,7 +204,7 @@ export default function WorkspaceCodeEditor({
       {/* Monaco Editor Container */}
       <div className="ws-editor__canvas">
         <Editor
-          height="276px"
+          height={fillHeight ? '100%' : '276px'}
           language="python"
           value={value}
           onChange={(val) => onChange(val ?? '')}

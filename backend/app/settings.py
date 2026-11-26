@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-6-luna"
     assessment_runner_url: str = "http://127.0.0.1:3002"
     assessment_runner_token: str = "codora-local-grader"
+    assessment_runner_local_fallback: bool = False
     cookie_secure: bool = False
     frontend_origin: str = "http://localhost:5173"
 

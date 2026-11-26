@@ -31,7 +31,7 @@ if not exist "%ROOT%frontend\node_modules\.bin\vite.cmd" (
 echo Starting Codora backend and frontend in separate windows...
 echo PostgreSQL must be running before the backend starts.
 
-start "Codora Backend" /D "%ROOT%backend" cmd /k "call .venv\Scripts\activate.bat && python -m app.migrate && python -m app.seed && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 3001"
+start "Codora Backend" /D "%ROOT%backend" cmd /k "set "ASSESSMENT_RUNNER_LOCAL_FALLBACK=true" && call .venv\Scripts\activate.bat && python -m app.migrate && python -m app.seed && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 3001"
 start "Codora Frontend" /D "%ROOT%frontend" cmd /k "npm run dev"
 
 echo Frontend: http://localhost:5173

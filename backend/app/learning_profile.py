@@ -1,4 +1,25 @@
-﻿from typing import Any
+from typing import Any
+
+REQUIRED_MASTERED_CONCEPTS = 4
+
+
+def count_mastered_concepts(conn: Any, user_id: str) -> int:
+    return conn.execute(
+        """SELECT COUNT(*)::int AS mastered_count
+            FROM (
+                SELECT mapping.concept_id
+                FROM exercise_concepts AS mapping
+                JOIN user_progress AS progress
+                  ON progress.item_id=mapping.exercise_id
+                 AND progress.user_id=%s
+                 AND progress.item_type='exercise'
+                 AND progress.status='completed'
+                 AND progress.score>=8
+                GROUP BY mapping.concept_id
+                HAVING COUNT(DISTINCT mapping.exercise_id)>=2
+            ) AS mastered_concepts""",
+        (user_id,),
+    ).fetchone()["mastered_count"]
 
 
 def promote_beginner_after_six_lessons_and_four_mastered_concepts(conn: Any, user_id: str) -> str | None:
@@ -23,23 +44,7 @@ def promote_beginner_after_six_lessons_and_four_mastered_concepts(conn: Any, use
     if not conn.execute("SELECT 1 FROM assessments WHERE user_id=%s AND status='passed' LIMIT 1", (user_id,)).fetchone():
         return None
 
-    mastered = conn.execute(
-        """SELECT COUNT(*)::int AS mastered_count
-            FROM (
-                SELECT mapping.concept_id
-                FROM exercise_concepts AS mapping
-                JOIN user_progress AS progress
-                  ON progress.item_id=mapping.exercise_id
-                 AND progress.user_id=%s
-                 AND progress.item_type='exercise'
-                 AND progress.status='completed'
-                 AND progress.score>=8
-                GROUP BY mapping.concept_id
-                HAVING COUNT(DISTINCT mapping.exercise_id)>=2
-            ) AS mastered_concepts""",
-        (user_id,),
-    ).fetchone()["mastered_count"]
-    if mastered < 4:
+    if count_mastered_concepts(conn, user_id) < REQUIRED_MASTERED_CONCEPTS:
         return None
 
     updated = conn.execute(

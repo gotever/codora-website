@@ -1,8 +1,8 @@
-﻿# Bài kiểm tra cá nhân hóa sau sáu bài đầu
+# Bài kiểm tra cá nhân hóa sau sáu bài đầu
 
 ## Luồng đã triển khai
 
-- Mở khóa khi hoàn thành đủ sáu lesson đầu của Python fundamentals, xác định bằng order_index và id; sáu lesson bất kỳ không đủ.
+- Mở khóa khi **vừa** hoàn thành đủ sáu lesson đầu của Python fundamentals (xác định bằng order_index và id; sáu lesson bất kỳ không đủ) **vừa** đạt trạng thái `mastered` ở ít nhất 4 concept (mỗi concept cần hoàn thành tối thiểu 2 bài Exercises khác nhau với điểm >= 8/10).
 - Mỗi đề có 7 câu trắc nghiệm (knowledge, code_tracing, debugging, conceptual_reasoning, mỗi câu 4 lựa chọn) và 3 câu coding Python.
 - Tạo đề bằng AI theo concept evidence trong learning_profile, learning_preferences và hai trường concepts_to_practice / recurring_errors từ các context liên quan. Các context lesson có suffix phiên bản cũng được đọc. Tần suất submission fail gần đây theo concept là tín hiệu bổ sung; không đưa code/chat cá nhân vào prompt.
 - Chỉ sinh đề khi chưa có đề chưa nộp. Một partial unique index và advisory transaction lock bảo đảm một đề đang làm cho mỗi user, kể cả khi mở nhiều tab.
@@ -22,7 +22,7 @@ API: GET/POST /api/assessments; GET /api/assessments/{id}; PUT /api/assessments/
 
 Chạy migration từ backend: `.venv/Scripts/python.exe -m app.migrate` (Windows), rồi khởi động lại backend nếu không dùng reload.
 
-Runner coding dùng service riêng: `docker compose up -d --build assessment-runner`. Backend chạy native mặc định gọi http://127.0.0.1:3002; backend trong Compose dùng http://assessment-runner:3002. ASSESSMENT_RUNNER_TOKEN phải khớp giữa backend và runner; OPENAI_API_KEY / OPENAI_MODEL dùng cấu hình hiện có.
+Runner coding dùng service riêng: `docker compose up -d --build assessment-runner`. Backend chạy native mặc định gọi http://127.0.0.1:3002; backend trong Compose dùng http://assessment-runner:3002. ASSESSMENT_RUNNER_TOKEN phải khớp giữa backend và runner; OPENAI_API_KEY / OPENAI_MODEL dùng cấu hình hiện có. Khi chạy dev cục bộ trên Windows qua `run.bat` mà không bật Docker, script tự đặt `ASSESSMENT_RUNNER_LOCAL_FALLBACK=true` để backend tự động fallback sang subprocess Python cục bộ nếu cổng `3002` không kết nối được (mặc định biến này là `false` để Docker/production luôn fail-closed).
 
 Runner không mount DB/source/secrets ứng dụng. Code chạy dưới UID không đặc quyền, seccomp chặn network/spawn/ptrace/signals, giới hạn CPU, RAM, output và timeout; filesystem container chỉ đọc, /tmp có giới hạn. Reference solutions được kiểm tra trong runner trước khi lưu đề. Runner lỗi khi chấm không đánh trượt người học: transaction không ghi kết quả và đề vẫn chưa nộp.
 

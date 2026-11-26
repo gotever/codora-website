@@ -169,3 +169,26 @@
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
+
+/* Flexible full-height mode for split-pane exam workspace */
+.ws-editor--fill {
+  height: 100%;
+  min-height: 240px;
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+}
+
+.ws-editor--fill .ws-editor__canvas {
+  height: auto;
+  min-height: 180px;
+  flex: 1;
+}
+
+.ws-editor--fill .ws-editor__canvas section,
+.ws-editor--fill .ws-editor__canvas div[data-keybinding-context],
+.ws-editor--fill .ws-editor__canvas .monaco-editor,
+.ws-editor--fill .ws-editor__loading {
+  height: 100% !important;
+  min-height: 180px;
+}
