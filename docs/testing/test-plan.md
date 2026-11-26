@@ -182,7 +182,7 @@ Toàn bộ công việc kiểm thử nằm trên branch `test/codora-testing`.
 | 7 | Test API exercises và submit: tra theo id/slug, không lộ hidden test, công thức điểm | `backend/tests/test_api_exercises.py`  Xong |
 | 8 | Test API auth, workspace, progress và phân quyền owner | `backend/tests/test_api_auth_workspace.py`  Xong |
 | 9 | Đo chỉ số đánh giá | `backend/scripts/measure_metrics.py`, `docs/testing/metrics-report.md`, `docs/testing/metrics-results.json` | Xong |
-| 10 | Danh sách lỗi và báo cáo kết quả kiểm thử (kèm coverage) | `docs/testing/test-report.md` | |
+| 10 | Danh sách lỗi và báo cáo kết quả kiểm thử (kèm coverage) | `docs/testing/test-report.md`  Xong |
 
 Ngoài phạm vi đợt này: test frontend (máy kiểm thử chưa có Node.js), E2E, CI.
 
