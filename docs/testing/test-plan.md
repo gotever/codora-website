@@ -130,7 +130,7 @@ Mỗi chỉ số ghi kèm: số mẫu N, thời điểm đo, commit, cấu hình
 
 - Mã lỗi: `BUG-xx` cho lỗi trong code ứng dụng, `TST-xx` cho test lỗi thời hoặc test sai.
 - Mỗi lỗi ghi: mô tả, mức độ (Cao/Trung bình/Thấp), cách tái hiện, kết quả mong đợi và kết quả thực tế, file/dòng liên quan.
-- Lỗi đã biết: BUG-01, BUG-02, BUG-03, TST-01, TST-02 (`baseline-report.md`); TST-03, OBS-01 (`test-environment.md`).
+- Lỗi đã biết: BUG-01, BUG-02, BUG-03, TST-01, TST-02 (`baseline-report.md`); TST-03, OBS-01 (`test-environment.md`); BUG-04: `_lesson_challenges` trong `tutor.py` ném `AttributeError`/`TypeError` khi metadata bài học sai dạng (ví dụ JSON là mảng, hoặc `sections` là `null`), trong khi `_lesson_summary` xử lý được (`tests/test_tutor_helpers.py`).
 
 ## 9. Danh sách task
 
@@ -141,7 +141,7 @@ Toàn bộ công việc kiểm thử nằm trên branch `test/codora-testing`.
 | 1 | Viết kế hoạch kiểm thử | `docs/testing/test-plan.md` | Xong |
 | 2 | Lập baseline bộ test hiện có | `docs/testing/baseline-report.md` | Xong |
 | 3 | Dựng PostgreSQL riêng cho test và chạy lại các test bị skip | `docker-compose.test.yml`, `docs/testing/test-environment.md` | Xong |
-| 4 | Unit test hàm thuần trong `tutor.py` | `backend/tests/test_tutor_helpers.py` | |
+| 4 | Unit test hàm thuần trong `tutor.py` | `backend/tests/test_tutor_helpers.py` | Xong |
 | 5 | Unit test `auth.py` và validate `schemas.py` | `backend/tests/test_auth_schemas_extra.py` | |
 | 6 | Test case biên cho `runner.py` | `backend/tests/test_runner_edge_cases.py` | |
 | 7 | Test API exercises và submit: tra theo id/slug, không lộ hidden test, công thức điểm | `backend/tests/test_api_exercises.py` | |
