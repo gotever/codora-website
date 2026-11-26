@@ -153,6 +153,14 @@ Lỗi và ghi nhận từ test API exercises/submit (`tests/test_api_exercises.p
 | OBS-04 | Thấp | Bài đã `completed` vẫn giữ trạng thái completed khi nộp lại sai, nhưng `score` bị ghi đè bằng điểm lần nộp mới nhất (ví dụ từ 10 xuống 7,5). |
 | OBS-05 | Thấp | Dữ liệu test ẩn của `count-words` có chuỗi `"caf? au lait"`, dấu hiệu chữ "é" bị lỗi mã hóa khi xuất dữ liệu. |
 
+Lỗi từ test API auth/level/progress/workspace (`tests/test_api_auth_workspace.py`):
+
+| Mã | Mức | Mô tả |
+|---|---|---|
+| BUG-13 | Trung bình | Level do client quyết định: `POST /api/auth/register` nhận trường `level`, nên đăng ký thẳng là `advanced` được mà không qua bài kiểm tra. Người dùng không phải beginner cũng tự đổi được sang level bất kỳ qua `PUT /api/auth/level` (ví dụ intermediate → advanced). |
+| BUG-14 | Trung bình | `PUT /api/progress` tin trạng thái và điểm do client gửi: đánh dấu bài tập `completed` với điểm 10 được mà không cần nộp bài để chấm. Điểm này lại được dùng để tính concept đã thành thạo và điều kiện mở bài kiểm tra. |
+| OBS-06 | Thấp | Đăng xuất chỉ xóa cookie ở trình duyệt. Token JWT cũ vẫn dùng được tới khi hết hạn (7 ngày), vì server không có cơ chế thu hồi token. |
+
 ## 9. Danh sách task
 
 Toàn bộ công việc kiểm thử nằm trên branch `test/codora-testing`.
@@ -166,7 +174,7 @@ Toàn bộ công việc kiểm thử nằm trên branch `test/codora-testing`.
 | 5 | Unit test `auth.py` và validate `schemas.py` | `backend/tests/test_auth_schemas_extra.py`  Xong |
 | 6 | Test case biên cho `runner.py` | `backend/tests/test_runner_edge_cases.py`  Xong |
 | 7 | Test API exercises và submit: tra theo id/slug, không lộ hidden test, công thức điểm | `backend/tests/test_api_exercises.py`  Xong |
-| 8 | Test API auth, workspace, progress và phân quyền owner | `backend/tests/test_api_auth_workspace.py` | |
+| 8 | Test API auth, workspace, progress và phân quyền owner | `backend/tests/test_api_auth_workspace.py`  Xong |
 | 9 | Đo chỉ số đánh giá | `backend/scripts/measure_metrics.py`, số liệu | |
 | 10 | Danh sách lỗi và báo cáo kết quả kiểm thử (kèm coverage) | `docs/testing/test-report.md` | |
 
