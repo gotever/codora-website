@@ -161,6 +161,12 @@ Lỗi từ test API auth/level/progress/workspace (`tests/test_api_auth_workspac
 | BUG-14 | Trung bình | `PUT /api/progress` tin trạng thái và điểm do client gửi: đánh dấu bài tập `completed` với điểm 10 được mà không cần nộp bài để chấm. Điểm này lại được dùng để tính concept đã thành thạo và điều kiện mở bài kiểm tra. |
 | OBS-06 | Thấp | Đăng xuất chỉ xóa cookie ở trình duyệt. Token JWT cũ vẫn dùng được tới khi hết hạn (7 ngày), vì server không có cơ chế thu hồi token. |
 
+Lỗi từ phần đo chỉ số (`docs/testing/metrics-report.md`):
+
+| Mã | Mức | Mô tả |
+|---|---|---|
+| BUG-15 | Thấp | `runner.py` bỏ dấu nháy trước khi so sánh, nên trả về sai kiểu vẫn được Accepted (ví dụ trả chuỗi `"15"` khi đáp án là số `15`, hoặc `"True"` khi đáp án là `True`). |
+
 ## 9. Danh sách task
 
 Toàn bộ công việc kiểm thử nằm trên branch `test/codora-testing`.
@@ -175,7 +181,7 @@ Toàn bộ công việc kiểm thử nằm trên branch `test/codora-testing`.
 | 6 | Test case biên cho `runner.py` | `backend/tests/test_runner_edge_cases.py`  Xong |
 | 7 | Test API exercises và submit: tra theo id/slug, không lộ hidden test, công thức điểm | `backend/tests/test_api_exercises.py`  Xong |
 | 8 | Test API auth, workspace, progress và phân quyền owner | `backend/tests/test_api_auth_workspace.py`  Xong |
-| 9 | Đo chỉ số đánh giá | `backend/scripts/measure_metrics.py`, số liệu | |
+| 9 | Đo chỉ số đánh giá | `backend/scripts/measure_metrics.py`, `docs/testing/metrics-report.md`, `docs/testing/metrics-results.json` | Xong |
 | 10 | Danh sách lỗi và báo cáo kết quả kiểm thử (kèm coverage) | `docs/testing/test-report.md` | |
 
 Ngoài phạm vi đợt này: test frontend (máy kiểm thử chưa có Node.js), E2E, CI.

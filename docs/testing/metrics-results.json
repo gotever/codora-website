@@ -1,0 +1,352 @@
+{
+  "measured_at": "2026-11-26T18:06:07+00:00",
+  "commit": "c8b9af6",
+  "python": "3.14.4",
+  "task_success": {
+    "learner_flows": {
+      "tasks": 20,
+      "succeeded": 10,
+      "success_rate": 0.5,
+      "success_rate_by_lookup": {
+        "id": 1.0,
+        "slug": 0.0
+      },
+      "failures": [
+        {
+          "exercise": "sum-of-even-numbers",
+          "lookup": "slug",
+          "success": false,
+          "failed_steps": [
+            "submit_accepted",
+            "progress_completed",
+            "in_history"
+          ],
+          "submit_http_status": 500
+        },
+        {
+          "exercise": "reverse-a-string",
+          "lookup": "slug",
+          "success": false,
+          "failed_steps": [
+            "submit_accepted",
+            "progress_completed",
+            "in_history"
+          ],
+          "submit_http_status": 500
+        },
+        {
+          "exercise": "count-vowels",
+          "lookup": "slug",
+          "success": false,
+          "failed_steps": [
+            "submit_accepted",
+            "progress_completed",
+            "in_history"
+          ],
+          "submit_http_status": 500
+        },
+        {
+          "exercise": "find-maximum",
+          "lookup": "slug",
+          "success": false,
+          "failed_steps": [
+            "submit_accepted",
+            "progress_completed",
+            "in_history"
+          ],
+          "submit_http_status": 500
+        },
+        {
+          "exercise": "is-palindrome",
+          "lookup": "slug",
+          "success": false,
+          "failed_steps": [
+            "submit_accepted",
+            "progress_completed",
+            "in_history"
+          ],
+          "submit_http_status": 500
+        },
+        {
+          "exercise": "is-even-number",
+          "lookup": "slug",
+          "success": false,
+          "failed_steps": [
+            "submit_accepted",
+            "progress_completed",
+            "in_history"
+          ],
+          "submit_http_status": 500
+        },
+        {
+          "exercise": "rectangle-area",
+          "lookup": "slug",
+          "success": false,
+          "failed_steps": [
+            "submit_accepted",
+            "progress_completed",
+            "in_history"
+          ],
+          "submit_http_status": 500
+        },
+        {
+          "exercise": "count-words",
+          "lookup": "slug",
+          "success": false,
+          "failed_steps": [
+            "submit_accepted",
+            "progress_completed",
+            "in_history"
+          ],
+          "submit_http_status": 500
+        },
+        {
+          "exercise": "find-second-largest",
+          "lookup": "slug",
+          "success": false,
+          "failed_steps": [
+            "submit_accepted",
+            "progress_completed",
+            "in_history"
+          ],
+          "submit_http_status": 500
+        },
+        {
+          "exercise": "sum-digits-recursively",
+          "lookup": "slug",
+          "success": false,
+          "failed_steps": [
+            "submit_accepted",
+            "progress_completed",
+            "in_history"
+          ],
+          "submit_http_status": 500
+        }
+      ]
+    },
+    "ai_tutor_real_openai": {
+      "status": "not_measured",
+      "reason": "run with --openai-samples N and a real OPENAI_API_KEY"
+    }
+  },
+  "precision_recall": {
+    "preference_detector": {
+      "tp": 20,
+      "fp": 5,
+      "fn": 4,
+      "precision": 0.8,
+      "recall": 0.8333,
+      "messages": 35,
+      "exact_match_rate": 0.7714,
+      "errors": [
+        {
+          "message": "Đi thẳng vào cách làm đi",
+          "expected": {
+            "explanation_style": "direct"
+          },
+          "predicted": {}
+        },
+        {
+          "message": "Giải thích vừa đủ thôi",
+          "expected": {
+            "detail_level": "balanced"
+          },
+          "predicted": {}
+        },
+        {
+          "message": "Ngắn gọn và đi thẳng vào cách làm",
+          "expected": {
+            "detail_level": "concise",
+            "explanation_style": "direct"
+          },
+          "predicted": {
+            "detail_level": "concise"
+          }
+        },
+        {
+          "message": "Không cần chi tiết đâu",
+          "expected": {
+            "detail_level": "concise"
+          },
+          "predicted": {
+            "detail_level": "detailed"
+          }
+        },
+        {
+          "message": "Bài này có chi tiết gì cần chú ý không?",
+          "expected": {},
+          "predicted": {
+            "detail_level": "detailed"
+          }
+        },
+        {
+          "message": "Đừng giải thích từng bước nữa",
+          "expected": {},
+          "predicted": {
+            "explanation_style": "step_by_step"
+          }
+        },
+        {
+          "message": "How do I return directly from a loop?",
+          "expected": {},
+          "predicted": {
+            "explanation_style": "direct"
+          }
+        },
+        {
+          "message": "My turtle moves in the wrong direction",
+          "expected": {},
+          "predicted": {
+            "explanation_style": "direct"
+          }
+        }
+      ]
+    },
+    "runner": {
+      "learner_submissions": {
+        "tp": 20,
+        "fp": 3,
+        "fn": 0,
+        "precision": 0.8696,
+        "recall": 1.0,
+        "tn": 16,
+        "submissions": 39,
+        "accuracy": 0.9231,
+        "errors": [
+          {
+            "exercise": "is-palindrome",
+            "expected_correct": false,
+            "status": "Accepted",
+            "passed": "20/20",
+            "code": "def is_palindrome(s):\n    return str(s == s[::-1])"
+          },
+          {
+            "exercise": "rectangle-area",
+            "expected_correct": false,
+            "status": "Accepted",
+            "passed": "20/20",
+            "code": "def rectangle_area(width, height):\n    return str(width * height)"
+          },
+          {
+            "exercise": "sum-digits-recursively",
+            "expected_correct": false,
+            "status": "Accepted",
+            "passed": "20/20",
+            "code": "def sum_digits(n):\n    return str(sum(int(d) for d in str(n)))"
+          }
+        ]
+      },
+      "including_adversarial": {
+        "tp": 20,
+        "fp": 5,
+        "fn": 0,
+        "precision": 0.8,
+        "recall": 1.0,
+        "tn": 16,
+        "submissions": 41,
+        "accuracy": 0.878,
+        "errors": [
+          {
+            "exercise": "is-palindrome",
+            "expected_correct": false,
+            "status": "Accepted",
+            "passed": "20/20",
+            "code": "def is_palindrome(s):\n    return str(s == s[::-1])"
+          },
+          {
+            "exercise": "rectangle-area",
+            "expected_correct": false,
+            "status": "Accepted",
+            "passed": "20/20",
+            "code": "def rectangle_area(width, height):\n    return str(width * height)"
+          },
+          {
+            "exercise": "sum-digits-recursively",
+            "expected_correct": false,
+            "status": "Accepted",
+            "passed": "20/20",
+            "code": "def sum_digits(n):\n    return str(sum(int(d) for d in str(n)))"
+          },
+          {
+            "exercise": "rectangle-area",
+            "expected_correct": false,
+            "status": "Accepted",
+            "passed": "20/20",
+            "code": "import sys, json\ndef rectangle_area(width, height):\n    print('---CODORA_RESULT_START---')\n    print(json.dumps([{'passed': True}] * len(globals()['test_cases'])))\n    sys.exit(0)"
+          },
+          {
+            "exercise": "rectangle-area",
+            "expected_correct": false,
+            "status": "Accepted",
+            "passed": "20/20",
+            "code": "def rectangle_area(width, height):\n    import ast\n    for case in globals()['test_cases']:\n        if ast.literal_eval(case['argsExpression']) == (width, height):\n            return int(case['expectedOutput'])"
+          }
+        ]
+      }
+    }
+  },
+  "data_accuracy": {
+    "checks": 201,
+    "errors": 0,
+    "error_rate": 0.0,
+    "details": []
+  },
+  "latency": {
+    "GET /api/exercises": {
+      "n": 30,
+      "median_ms": 5.35,
+      "p90_ms": 5.96,
+      "min_ms": 4.46,
+      "max_ms": 6.45
+    },
+    "GET /api/exercises/{id}": {
+      "n": 30,
+      "median_ms": 3.48,
+      "p90_ms": 4.72,
+      "min_ms": 2.7,
+      "max_ms": 6.3
+    },
+    "GET /api/courses/{id}/lessons": {
+      "n": 30,
+      "median_ms": 3.93,
+      "p90_ms": 5.06,
+      "min_ms": 3.27,
+      "max_ms": 19.36
+    },
+    "GET /api/progress": {
+      "n": 30,
+      "median_ms": 6.96,
+      "p90_ms": 9.93,
+      "min_ms": 5.18,
+      "max_ms": 14.23
+    },
+    "PUT /api/exercises/{id}/workspace": {
+      "n": 30,
+      "median_ms": 4.21,
+      "p90_ms": 4.65,
+      "min_ms": 3.18,
+      "max_ms": 4.95
+    },
+    "POST /api/auth/login": {
+      "n": 30,
+      "median_ms": 48.08,
+      "p90_ms": 50.96,
+      "min_ms": 46.17,
+      "max_ms": 52.2
+    },
+    "POST /api/exercises/{id}/submit (Accepted, 20 test)": {
+      "n": 30,
+      "median_ms": 23.34,
+      "p90_ms": 25.57,
+      "min_ms": 21.23,
+      "max_ms": 32.15
+    },
+    "POST /api/tutor/chat (OpenAI giả lập, chỉ phần backend)": {
+      "n": 30,
+      "median_ms": 10.85,
+      "p90_ms": 13.17,
+      "min_ms": 8.67,
+      "max_ms": 14.04
+    }
+  }
+}
