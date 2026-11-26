@@ -143,6 +143,16 @@ Lỗi tìm thấy ở `app/runner.py` (bộ chấm của `POST /api/exercises/{i
 | BUG-10 | Trung bình | Thông báo lỗi của test ẩn được trả về nguyên văn, nên có thể làm lộ input của test ẩn qua `raise`. |
 | BUG-11 | Thấp | `IndentationError`/`TabError` bị báo là "Runtime Error" thay vì "Syntax Error"; số dòng trong thông báo lỗi bị lệch 6 dòng do phần khung của runner. |
 
+Lỗi và ghi nhận từ test API exercises/submit (`tests/test_api_exercises.py`):
+
+| Mã | Mức | Mô tả |
+|---|---|---|
+| BUG-12 | Trung bình | Người dùng đã đăng nhập nộp bài qua slug (ví dụ `POST /api/exercises/is-palindrome/submit`) bị lỗi 500: endpoint ghi slug vào cột `ai_chats.exercise_id` kiểu BIGINT (`invalid input syntax for type bigint`). Tiến độ và lịch sử nộp bài không được lưu. Nộp qua id số thì bình thường. |
+| OBS-02 | Thấp | Tài liệu dự án đặt quy tắc chỉ dùng 6 bảng, nhưng sau migration 012 schema có 11 bảng (thêm `learning_concepts`, `exercise_concepts`, `exercise_workspace_state`, `lesson_challenge_progress`, `assessments`). |
+| OBS-03 | Thấp | Khi sai test ẩn, response vẫn trả `label` của test đó (ví dụ "Hidden 13: Edge: Empty string"), tức là gợi ý input của test ẩn. |
+| OBS-04 | Thấp | Bài đã `completed` vẫn giữ trạng thái completed khi nộp lại sai, nhưng `score` bị ghi đè bằng điểm lần nộp mới nhất (ví dụ từ 10 xuống 7,5). |
+| OBS-05 | Thấp | Dữ liệu test ẩn của `count-words` có chuỗi `"caf? au lait"`, dấu hiệu chữ "é" bị lỗi mã hóa khi xuất dữ liệu. |
+
 ## 9. Danh sách task
 
 Toàn bộ công việc kiểm thử nằm trên branch `test/codora-testing`.
@@ -155,7 +165,7 @@ Toàn bộ công việc kiểm thử nằm trên branch `test/codora-testing`.
 | 4 | Unit test hàm thuần trong `tutor.py` | `backend/tests/test_tutor_helpers.py` | Xong |
 | 5 | Unit test `auth.py` và validate `schemas.py` | `backend/tests/test_auth_schemas_extra.py`  Xong |
 | 6 | Test case biên cho `runner.py` | `backend/tests/test_runner_edge_cases.py`  Xong |
-| 7 | Test API exercises và submit: tra theo id/slug, không lộ hidden test, công thức điểm | `backend/tests/test_api_exercises.py` | |
+| 7 | Test API exercises và submit: tra theo id/slug, không lộ hidden test, công thức điểm | `backend/tests/test_api_exercises.py`  Xong |
 | 8 | Test API auth, workspace, progress và phân quyền owner | `backend/tests/test_api_auth_workspace.py` | |
 | 9 | Đo chỉ số đánh giá | `backend/scripts/measure_metrics.py`, số liệu | |
 | 10 | Danh sách lỗi và báo cáo kết quả kiểm thử (kèm coverage) | `docs/testing/test-report.md` | |
