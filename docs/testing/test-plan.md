@@ -92,7 +92,7 @@ python -m pytest -q
 python -m pytest tests/test_runner.py::test_sandbox_accepted
 ```
 
-Lệnh frontend sẽ được bổ sung sau khi cài Vitest.
+Chạy đầy đủ với PostgreSQL test và grader cô lập: xem `docs/testing/test-environment.md` (dùng `docker-compose.test.yml`).
 
 ## 6. Tiêu chí
 
@@ -130,7 +130,7 @@ Mỗi chỉ số ghi kèm: số mẫu N, thời điểm đo, commit, cấu hình
 
 - Mã lỗi: `BUG-xx` cho lỗi trong code ứng dụng, `TST-xx` cho test lỗi thời hoặc test sai.
 - Mỗi lỗi ghi: mô tả, mức độ (Cao/Trung bình/Thấp), cách tái hiện, kết quả mong đợi và kết quả thực tế, file/dòng liên quan.
-- Lỗi đã biết tính đến baseline: BUG-01, BUG-02, BUG-03, TST-01, TST-02 (chi tiết trong `baseline-report.md`).
+- Lỗi đã biết: BUG-01, BUG-02, BUG-03, TST-01, TST-02 (`baseline-report.md`); TST-03, OBS-01 (`test-environment.md`).
 
 ## 9. Danh sách task
 
@@ -140,7 +140,7 @@ Toàn bộ công việc kiểm thử nằm trên branch `test/codora-testing`.
 |---:|---|---|---|
 | 1 | Viết kế hoạch kiểm thử | `docs/testing/test-plan.md` | Xong |
 | 2 | Lập baseline bộ test hiện có | `docs/testing/baseline-report.md` | Xong |
-| 3 | Dựng PostgreSQL riêng cho test và chạy lại các test bị skip | `docker-compose.test.yml`, kết quả chạy | |
+| 3 | Dựng PostgreSQL riêng cho test và chạy lại các test bị skip | `docker-compose.test.yml`, `docs/testing/test-environment.md` | Xong |
 | 4 | Unit test hàm thuần trong `tutor.py` | `backend/tests/test_tutor_helpers.py` | |
 | 5 | Unit test `auth.py` và validate `schemas.py` | `backend/tests/test_auth_schemas_extra.py` | |
 | 6 | Test case biên cho `runner.py` | `backend/tests/test_runner_edge_cases.py` | |
